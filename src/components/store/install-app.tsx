@@ -108,7 +108,6 @@ export function InstallBanner() {
       <img src="/favicon/android-chrome-192x192.png" alt="" className="size-12 shrink-0 rounded-2xl bg-white/5" />
       <div className="min-w-0 flex-1">
         <p className="text-sm font-bold leading-tight">Get the ManaBrand app</p>
-        <p className="text-xs text-white/65">Shop faster — opens like an app, right from your home screen.</p>
       </div>
       <button type="button" onClick={() => (app.canPrompt ? app.install().then(close) : setHelp(true))} className="h-10 shrink-0 rounded-full bg-[#c8102e] px-4 text-sm font-bold">Install</button>
       <button type="button" aria-label="Not now" onClick={close} className="grid size-8 shrink-0 place-items-center rounded-full text-white/60 hover:bg-white/10"><X className="size-4" /></button>

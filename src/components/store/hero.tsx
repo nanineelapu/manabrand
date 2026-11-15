@@ -19,7 +19,7 @@ const STOCK: Record<string, string> = {
   accessories: "1584917865442-de89df76afd3", // red handbag
   gourmet: "1596040033229-a9821ebd058d",     // spices
 };
-const DEFAULT_STOCK = "1487222477894-8943e31ef7b2"; // men's fashion: leather jacket and tie
+const DEFAULT_STOCK = "1480429370139-e0132c086e2a"; // men's fashion: pinstripe blazer and tie
 const WIDTHS = [640, 1024, 1536, 2200] as const;
 const urlAt = (s: HeroSlide, w: number) => (s.image ? `${s.image}?w=${w}&auto=format&q=75` : `https://images.unsplash.com/photo-${STOCK[s.category ?? ""] ?? DEFAULT_STOCK}?auto=format&fit=crop&crop=entropy&w=${w}&h=${Math.round(w * 0.66)}&q=70`);
 /** src + srcSet so every screen downloads only the size it needs. */
