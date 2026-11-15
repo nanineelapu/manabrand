@@ -300,6 +300,23 @@ async function main() {
   await as("authenticated", shopper);
   await mustFail("customer cannot upload to banners", () => db.query(`insert into storage.objects (bucket_id, name) values ('banners','x.jpg')`), /row-level/);
 
+  // ---- collections: only an admin can create / change / delete them; everyone can read them
+  await as("authenticated", shopper);
+  await mustFail("customer cannot create a collection", () => db.query(`insert into collections (slug, name) values ('hack', 'Hack')`), /row-level/);
+  await as("authenticated", admin);
+  const col = await one<{ id: string }>(`insert into collections (slug, name, story, photo_kind, sort) values ('festival-gifts', 'Festival gifts', 'test', 'candle', 99) returning id`);
+  const colProds = await one<{ id: string }>(`select id from products where status='active' limit 2`);
+  for (const [i, pr] of colProds.entries()) await db.query(`insert into collection_products (collection_id, product_id, sort) values ($1,$2,$3)`, [col[0].id, pr.id, i]);
+  ok("admin can create a collection and add products", (await one(`select 1 from collection_products where collection_id=$1`, [col[0].id])).length === 2);
+  await as("anon");
+  ok("anyone can read collections and their products", (await one(`select 1 from collections where slug='festival-gifts'`)).length === 1 && (await one(`select 1 from collection_products where collection_id=$1`, [col[0].id])).length === 2);
+  await as("authenticated", shopper);
+  const del = await one(`delete from collections where slug='festival-gifts' returning id`);
+  ok("customer cannot delete a collection", del.length === 0);
+  await as("authenticated", admin);
+  await db.query(`delete from collections where slug='festival-gifts'`);
+  ok("deleting a collection removes its product links", (await one(`select 1 from collection_products where collection_id=$1`, [col[0].id])).length === 0);
+
   console.log(`\n${passed} passed, ${failed} failed`);
   process.exit(failed ? 1 : 0);
 }

@@ -239,6 +239,48 @@ export async function setBannerStatus(id: string, status: "live" | "draft"): Pro
   });
 }
 
+/* =============================================================== collections */
+/** Create or update a collection and replace the set of products inside it. */
+export async function saveCollection(input: { id?: string; name: string; story: string; photo: string; productIds: string[] }): Promise<Result<{ id: string }>> {
+  return guarded(["admin"], async () => {
+    const name = clampStr(input.name, 60); if (name.length < 2) return { ok: false, error: "Give the collection a name." };
+    const supabase = await createClient();
+    const fields = { name, story: clampStr(input.story, 200), photo_kind: clampStr(input.photo, 30) || "decor" };
+    let id = input.id && isUuid(input.id) ? input.id : undefined;
+    if (id) {
+      const { error } = await supabase.from("collections").update(fields).eq("id", id);
+      if (error) throw new Error(error.message);
+    } else {
+      const base = slugify(name) || "collection";
+      const { data: taken } = await supabase.from("collections").select("slug").like("slug", `${base}%`);
+      const used = new Set((taken ?? []).map((r: { slug: string }) => r.slug));
+      let slug = base; for (let i = 2; used.has(slug); i++) slug = `${base}-${i}`;
+      const { data: last } = await supabase.from("collections").select("sort").order("sort", { ascending: false }).limit(1);
+      const { data, error } = await supabase.from("collections").insert({ ...fields, slug, sort: ((last?.[0] as { sort?: number } | undefined)?.sort ?? 0) + 1 }).select("id").single();
+      if (error) throw new Error(error.message);
+      id = (data as { id: string }).id;
+    }
+    const ids = [...new Set(input.productIds.filter(isUuid))].slice(0, 200);
+    const { error: dErr } = await supabase.from("collection_products").delete().eq("collection_id", id);
+    if (dErr) throw new Error(dErr.message);
+    if (ids.length) {
+      const { error: iErr } = await supabase.from("collection_products").insert(ids.map((product_id, i) => ({ collection_id: id, product_id, sort: i })));
+      if (iErr) throw new Error(iErr.message);
+    }
+    bust("/admin", "/collections", "/");
+    return { ok: true, id: id! };
+  });
+}
+export async function removeCollection(id: string): Promise<Result> {
+  return guarded(["admin"], async () => {
+    if (!isUuid(id)) return { ok: false, error: "Collection not found." };
+    const { error } = await (await createClient()).from("collections").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+    bust("/admin", "/collections", "/");
+    return { ok: true };
+  });
+}
+
 /* ============================================================ moderation etc */
 export async function moderateReview(id: string, action: "publish" | "remove"): Promise<Result> {
   return guarded(["admin"], async () => {
