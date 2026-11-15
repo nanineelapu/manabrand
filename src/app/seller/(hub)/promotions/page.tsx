@@ -1,0 +1,15 @@
+import { PromotionsManager } from "@/components/seller/promotions-manager";
+import { PageHeader } from "@/components/shared/blocks";
+import { getSellerProducts, getSellerPromotions } from "@/lib/data";
+
+export const metadata = { title: "Promotions" };
+
+export default async function PromotionsPage() {
+  const products = await getSellerProducts();
+  return (
+    <>
+      <PageHeader title="Promotions" subtitle="Run discounts and join marketplace events to boost sales" />
+      <PromotionsManager productNames={products.map((p) => p.name)} initial={await getSellerPromotions()} />
+    </>
+  );
+}

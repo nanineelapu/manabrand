@@ -1,0 +1,13 @@
+{
+  "name": "ManaBrand",
+  "short_name": "ManaBrand",
+  "description": "Shop fashion, electronics, home, beauty and more from verified sellers.",
+  "start_url": "/",
+  "icons": [
+    { "src": "/favicon/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/favicon/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "theme_color": "#0d1f19",
+  "background_color": "#0d1f19",
+  "display": "standalone"
+}

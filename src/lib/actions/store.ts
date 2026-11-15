@@ -1,0 +1,205 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { sendEmail } from "@/lib/email/send";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { emailError, nameError, normalizeEmail, normalizePhone } from "@/lib/auth/validation";
+import { clampStr, currentActor, demoResult, fail, guarded, isUuid, live, type Result } from "./common";
+
+/* ================================================================= orders */
+export interface CartLineInput { productId: string; color: string; size: string; qty: number }
+export interface AddressInput { name: string; phone: string; line1: string; line2?: string; city: string; state: string; pincode: string }
+
+/**
+ * Places the order inside ONE database transaction (place_order): prices, stock, coupon and shipping are all
+ * decided by the database. The browser only says WHAT it wants, never how much it costs.
+ */
+export async function placeOrder(input: {
+  lines: CartLineInput[]; address: AddressInput; method: "upi" | "card" | "cod" | "netbanking"; coupon?: string | null; express?: boolean;
+}): Promise<Result<{ orderId: string; number: string; total: number; paymentStatus: "paid" | "pending" }>> {
+  return guarded(["customer"], async () => {
+    const supabase = await createClient();
+    const items = input.lines.map((l) => ({ product_id: l.productId, color: l.color, option_value: l.size, qty: l.qty }));
+    if (!items.every((i) => isUuid(i.product_id))) return { ok: false, error: "Your bag contains items that are no longer available. Please remove them and try again." };
+    const phone = normalizePhone(input.address.phone);
+    if (!phone) return { ok: false, error: "Enter a valid delivery phone number." };
+
+    const { data, error } = await supabase.rpc("place_order", {
+      p_items: items, p_address: { ...input.address, phone }, p_payment_method: input.method,
+      p_coupon: input.coupon ?? null, p_express: Boolean(input.express),
+    });
+    if (error) throw new Error(error.message);
+    const row = (Array.isArray(data) ? data[0] : data) as { order_id: string; order_number: string; total: number };
+
+    // PAYMENTS: with no gateway connected (PAYMENT_MODE != "live"), online methods are confirmed immediately — TEST MODE ONLY.
+    // Replace this block with the gateway's webhook calling confirm_payment(order, payment_id).
+    let paymentStatus: "paid" | "pending" = "pending";
+    if (input.method !== "cod" && process.env.PAYMENT_MODE !== "live") {
+      const { error: payErr } = await createAdminClient().rpc("confirm_payment", { p_order: row.order_id, p_ref: `TEST-${Date.now()}` });
+      if (!payErr) paymentStatus = "paid";
+    }
+    const actor = await currentActor();
+    if (actor?.email) {
+      void sendEmail({ to: actor.email, subject: `Order ${row.order_number} confirmed`,
+        html: `<p>Thanks for shopping with ManaBrand. Your order <b>${row.order_number}</b> (₹${row.total}) has been placed. You can track it in your account.</p>` });
+    }
+    revalidatePath("/account/orders");
+    return { ok: true, orderId: row.order_id, number: row.order_number, total: row.total, paymentStatus };
+  });
+}
+
+export async function cancelOrder(orderId: string, reason: string): Promise<Result> {
+  return guarded(["customer", "admin"], async () => {
+    if (!isUuid(orderId)) return { ok: false, error: "Order not found." };
+    const { error } = await (await createClient()).rpc("cancel_order", { p_order: orderId, p_reason: clampStr(reason, 200) });
+    if (error) throw new Error(error.message);
+    revalidatePath("/account/orders"); revalidatePath("/admin/orders");
+    return { ok: true };
+  });
+}
+
+export async function requestReturn(input: { orderId: string; itemId: string; type: "return" | "exchange" | "refund"; reason: string; note?: string }): Promise<Result> {
+  return guarded(["customer"], async () => {
+    if (!isUuid(input.orderId) || !isUuid(input.itemId)) return { ok: false, error: "Item not found." };
+    const { error } = await (await createClient()).rpc("request_return", {
+      p_order: input.orderId, p_item: input.itemId, p_type: input.type, p_reason: clampStr(input.reason, 120), p_note: clampStr(input.note, 500) || null,
+    });
+    if (error) throw new Error(error.message);
+    revalidatePath("/account/returns"); revalidatePath(`/account/orders/${input.orderId}`);
+    return { ok: true };
+  });
+}
+
+/* ================================================================ addresses */
+export async function saveAddress(input: AddressInput & { id?: string; label: "Home" | "Work" | "Other"; isDefault: boolean }): Promise<Result<{ id: string }>> {
+  return guarded(["customer"], async (actor) => {
+    const phone = normalizePhone(input.phone);
+    if (!phone) return { ok: false, error: "Enter a valid 10-digit mobile number." };
+    if (!/^[1-9]\d{5}$/.test(input.pincode)) return { ok: false, error: "Enter a valid 6-digit pincode." };
+    const row = { user_id: actor.id, label: input.label, name: clampStr(input.name, 80), phone, line1: clampStr(input.line1, 160), line2: clampStr(input.line2, 160) || null,
+      city: clampStr(input.city, 60), state: clampStr(input.state, 60), pincode: input.pincode, is_default: input.isDefault };
+    if (!row.name || !row.line1 || !row.city || !row.state) return { ok: false, error: "Please complete the address." };
+    const supabase = await createClient();
+    if (input.isDefault) await supabase.from("addresses").update({ is_default: false }).eq("user_id", actor.id);   // the unique index allows one default
+    const q = input.id && isUuid(input.id) ? supabase.from("addresses").update(row).eq("id", input.id).eq("user_id", actor.id).select("id").single()
+                                           : supabase.from("addresses").insert(row).select("id").single();
+    const { data, error } = await q;
+    if (error) throw new Error(error.message);
+    revalidatePath("/account/addresses");
+    return { ok: true, id: (data as { id: string }).id };
+  });
+}
+export async function deleteAddress(id: string): Promise<Result> {
+  return guarded(["customer"], async (actor) => {
+    const { error } = await (await createClient()).from("addresses").delete().eq("id", id).eq("user_id", actor.id);
+    if (error) throw new Error(error.message);
+    revalidatePath("/account/addresses");
+    return { ok: true };
+  });
+}
+
+/* ================================================================= profile */
+export async function updateProfile(input: { name: string; dob?: string; notifyOrders: boolean; notifyOffers: boolean; notifyWhatsapp: boolean }): Promise<Result> {
+  return guarded(["customer", "seller", "admin"], async (actor) => {
+    const nErr = nameError(input.name); if (nErr) return { ok: false, error: nErr };
+    const { error } = await (await createClient()).from("profiles").update({
+      full_name: input.name.trim(), dob: input.dob || null, notify_orders: input.notifyOrders, notify_offers: input.notifyOffers, notify_whatsapp: input.notifyWhatsapp,
+    }).eq("id", actor.id);
+    if (error) throw new Error(error.message);
+    revalidatePath("/account", "layout");
+    return { ok: true };
+  });
+}
+
+/* ========================================================= cart & wishlist */
+export async function loadShopperState(): Promise<Result<{ wishlist: string[]; cart: { productId: string; color: string; size: string; qty: number }[]; coupon: string | null }>> {
+  return guarded(["customer"], async (actor) => {
+    const supabase = await createClient();
+    const [w, c] = await Promise.all([
+      supabase.from("wishlists").select("product_id").eq("user_id", actor.id).order("created_at", { ascending: false }),
+      supabase.from("carts").select("coupon, cart_items(product_id, color, option_value, qty)").eq("user_id", actor.id).maybeSingle(),
+    ]);
+    const cart = ((c.data as { coupon: string | null; cart_items: { product_id: string; color: string | null; option_value: string; qty: number }[] } | null)?.cart_items ?? [])
+      .map((i) => ({ productId: i.product_id, color: i.color ?? "", size: i.option_value, qty: i.qty }));
+    return { ok: true, wishlist: (w.data ?? []).map((x: { product_id: string }) => x.product_id), cart, coupon: (c.data as { coupon: string | null } | null)?.coupon ?? null };
+  });
+}
+export async function saveWishlist(productIds: string[]): Promise<Result> {
+  return guarded(["customer"], async (actor) => {
+    const ids = [...new Set(productIds.filter(isUuid))].slice(0, 200);
+    const supabase = await createClient();
+    await supabase.from("wishlists").delete().eq("user_id", actor.id);
+    if (ids.length) { const { error } = await supabase.from("wishlists").insert(ids.map((p) => ({ user_id: actor.id, product_id: p }))); if (error) throw new Error(error.message); }
+    return { ok: true };
+  });
+}
+export async function saveCart(lines: CartLineInput[], coupon: string | null): Promise<Result> {
+  return guarded(["customer"], async (actor) => {
+    const supabase = await createClient();
+    const { data: cart, error } = await supabase.from("carts").upsert({ user_id: actor.id, coupon, updated_at: new Date().toISOString() }, { onConflict: "user_id" }).select("id").single();
+    if (error) throw new Error(error.message);
+    const id = (cart as { id: string }).id;
+    await supabase.from("cart_items").delete().eq("cart_id", id);
+    const rows = lines.filter((l) => isUuid(l.productId)).slice(0, 40).map((l) => ({ cart_id: id, product_id: l.productId, color: l.color || null, option_value: l.size, qty: Math.min(10, Math.max(1, l.qty)) }));
+    if (rows.length) { const { error: e2 } = await supabase.from("cart_items").insert(rows); if (e2) throw new Error(e2.message); }
+    return { ok: true };
+  });
+}
+
+/* ================================================================== reviews */
+export async function submitReview(input: { productId: string; rating: number; title: string; body: string }): Promise<Result> {
+  return guarded(["customer"], async (actor) => {
+    if (!isUuid(input.productId)) return { ok: false, error: "Product not found." };
+    if (!(input.rating >= 1 && input.rating <= 5)) return { ok: false, error: "Choose a rating from 1 to 5." };
+    const body = clampStr(input.body, 1000);
+    if (body.length < 10) return { ok: false, error: "Please write at least a few words." };
+    const supabase = await createClient();
+    const [{ data: p }, { data: a }] = await Promise.all([
+      supabase.from("profiles").select("full_name").eq("id", actor.id).single(),
+      supabase.from("addresses").select("city").eq("user_id", actor.id).order("is_default", { ascending: false }).limit(1).maybeSingle(),
+    ]);
+    const name = (p as { full_name: string } | null)?.full_name ?? "Customer";
+    const { error } = await supabase.from("reviews").insert({
+      product_id: input.productId, user_id: actor.id, rating: Math.round(input.rating), title: clampStr(input.title, 80), body,
+      status: "pending", verified: true, author_name: `${name.split(" ")[0]} ${name.split(" ")[1]?.[0] ?? ""}.`.replace(/ \.$/, ""), author_city: (a as { city: string } | null)?.city ?? null,
+    });
+    // RLS only lets verified buyers (delivered order) in, and only as 'pending'
+    if (error) return { ok: false, error: /duplicate/i.test(error.message) ? "You’ve already reviewed this product." : "Only customers who received this product can review it." };
+    return { ok: true };
+  });
+}
+
+/* ================================================================== follows */
+export async function toggleFollow(sellerId: string): Promise<Result<{ following: boolean }>> {
+  return guarded(["customer"], async (actor) => {
+    const supabase = await createClient();
+    const { data } = await supabase.from("seller_follows").select("seller_id").eq("seller_id", sellerId).eq("user_id", actor.id).maybeSingle();
+    if (data) { await supabase.from("seller_follows").delete().eq("seller_id", sellerId).eq("user_id", actor.id); return { ok: true, following: false }; }
+    const { error } = await supabase.from("seller_follows").insert({ seller_id: sellerId, user_id: actor.id });
+    if (error) throw new Error(error.message);
+    return { ok: true, following: true };
+  });
+}
+
+/* ============================================================ public forms */
+export async function subscribeNewsletter(emailRaw: string): Promise<Result> {
+  if (!live()) return demoResult();
+  const email = normalizeEmail(emailRaw);
+  if (!email) return { ok: false, error: emailError(emailRaw) ?? "Enter a valid email." };
+  try {
+    const { error } = await createAdminClient().from("newsletter_subscribers").upsert({ email }, { onConflict: "email" });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  } catch (e) { return fail(e); }
+}
+
+export async function sendContactMessage(input: { name: string; email: string; topic: string; message: string }): Promise<Result> {
+  if (!live()) return demoResult();
+  const email = normalizeEmail(input.email);
+  if (!email || nameError(input.name) || clampStr(input.message, 2000).length < 10) return { ok: false, error: "Please fill in your name, a valid email and a message." };
+  try {
+    const { error } = await createAdminClient().from("contact_messages").insert({ name: clampStr(input.name, 80), email, topic: clampStr(input.topic, 60), message: clampStr(input.message, 2000) });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  } catch (e) { return fail(e); }
+}

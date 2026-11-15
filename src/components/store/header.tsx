@@ -1,0 +1,155 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { ChevronDown, Heart, Menu, Search, ShoppingBag, User } from "lucide-react";
+import { Logo, LogoImage } from "@/components/brand/logo";
+import { ProductImage } from "@/components/brand/product-image";
+import { IconButton } from "@/components/ui/button";
+import { Sheet } from "@/components/ui/sheet";
+import { useCart, useUi, useWishlist } from "@/lib/stores";
+import { useMounted } from "@/lib/stores/hydrate";
+import { cn } from "@/lib/utils";
+import type { CmsLink, HeaderItem } from "@/lib/cms/types";
+
+/** `items` is the menu resolved from the CMS (Navigation) merged with the shop's categories. */
+interface Props { items: HeaderItem[]; accountLabel?: string; quickLinks?: CmsLink[] }
+
+const capsule = "flex h-14 items-center rounded-full border border-white/10 bg-black/90 backdrop-blur-xl lg:h-[64px]";
+
+export function StoreHeader({ items, accountLabel = "Account" }: Props) {
+  const mounted = useMounted();
+  const pathname = usePathname();
+  const { setMenu, setSearch, setCart } = useUi();
+  const bag = useCart((s) => s.lines.reduce((a, l) => a + l.qty, 0));
+  const wish = useWishlist((s) => s.ids.length);
+
+  // below lg the header slides away while reading (scroll down) and returns on any scroll up
+  const [hidden, setHidden] = useState(false);
+  useEffect(() => {
+    let last = window.scrollY, raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const y = window.scrollY, d = y - last;
+        if (Math.abs(d) > 6) { setHidden(y > 140 && d > 0); last = y; }
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { window.removeEventListener("scroll", onScroll); cancelAnimationFrame(raf); };
+  }, []);
+
+  return (
+    // data-round: the one place (besides hero buttons) allowed to have rounded corners — the capsule look
+    <header data-round data-theme="dark" className={cn("sticky top-0 z-40 px-3 pt-3 transition-transform duration-300 ease-out md:px-6 lg:pt-4 lg:!translate-y-0", hidden && "-translate-y-[140%]")}>
+      <div className="mx-auto flex max-w-[1380px] items-center justify-between gap-5 sm:gap-8">
+        {/* capsule 1 — brand */}
+        <div className={cn(capsule, "shrink-0 gap-1 pl-1.5 pr-3 lg:px-5")}>
+          <IconButton label="Open menu" className="text-white hover:bg-white/10 lg:hidden" onClick={() => setMenu(true)}><Menu className="size-[22px]" /></IconButton>
+          <Link href="/" aria-label="ManaBrand home" className="flex shrink-0 items-center">
+            <LogoImage size="sm" priority className="h-[42px] lg:h-[50px]" />
+          </Link>
+        </div>
+
+        {/* capsule 2 — menu, search, bag */}
+        <div className={cn(capsule, "min-w-0 gap-0.5 pl-2 pr-1.5 lg:pl-3 lg:pr-2")}>
+          <nav aria-label="Primary" className="hidden min-w-0 items-center lg:flex">
+            {items.filter((it) => it.showOn !== "mobile").map((it) => it.dropdown ? (
+              <div key={it.href + it.label} className="group/nav relative">
+                <NavLink href={it.href} active={pathname === it.href} accent={it.accent} chevron>{it.label}</NavLink>
+                <div className="invisible absolute left-1/2 top-full z-50 w-[540px] -translate-x-1/2 pt-4 opacity-0 transition-all duration-150 group-focus-within/nav:visible group-focus-within/nav:opacity-100 group-hover/nav:visible group-hover/nav:opacity-100">
+                  <div className="grid grid-cols-[1fr_180px] gap-6 rounded-3xl border border-white/10 bg-black/95 p-5 text-white">
+                    <div>
+                      <p className="mb-3 text-xs font-medium uppercase tracking-[0.14em] text-white/50">Shop {it.dropdown.name}</p>
+                      <ul className="grid grid-cols-2 gap-x-6">
+                        <li><Link href={`/category/${it.dropdown.slug}`} className="block py-2 text-sm font-semibold text-accent">All {it.dropdown.name}</Link></li>
+                        {it.dropdown.subs.map((sub) => (
+                          <li key={sub}><Link href={`/category/${it.dropdown!.slug}?sub=${encodeURIComponent(sub)}`} className="block py-2 text-sm text-white/75 hover:text-white">{sub}</Link></li>
+                        ))}
+                      </ul>
+                    </div>
+                    <Link href={it.href} className="relative block aspect-[4/5] overflow-hidden rounded-2xl">
+                      <ProductImage photo={it.dropdown.photo} seed={it.dropdown.slug} sizes="180px" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <NavLink key={it.href + it.label} href={it.href} active={pathname === it.href} accent={it.accent}>{it.label}</NavLink>
+            ))}
+          </nav>
+
+          <IconButton label="Search" className="text-white hover:bg-white/10" onClick={() => setSearch(true)}><Search className="size-[20px]" /></IconButton>
+          <Link href="/wishlist" aria-label={`Wishlist${mounted && wish ? `, ${wish} items` : ""}`} className="relative hidden size-11 place-items-center rounded-full hover:bg-white/10 xl:grid">
+            <Heart className="size-[20px]" />{mounted && wish > 0 && <span className="absolute -right-0.5 -top-0.5 grid min-w-[18px] place-items-center rounded-full bg-accent px-1 text-[10px] font-bold leading-[18px] text-white tabular">{wish > 9 ? "9+" : wish}</span>}
+          </Link>
+          <Link href="/account" aria-label={accountLabel} title={accountLabel} className="hidden size-11 place-items-center rounded-full hover:bg-white/10 lg:grid"><User className="size-[20px]" /></Link>
+
+          {/* red call-to-action: checkout when the bag has items, otherwise the shop. The bag icon + count sit beside the words. */}
+          <Link href={mounted && bag > 0 ? "/checkout" : "/shop"} prefetch aria-label={`Order now${mounted && bag ? `, ${bag} items in bag` : ""}`}
+            className="ml-1 inline-flex h-11 items-center gap-2 rounded-full bg-primary pl-4 pr-3.5 text-[14px] font-bold text-white transition-colors hover:bg-primary-hover lg:h-12 lg:pl-6 lg:pr-5 lg:text-[15px]">
+            Order now
+            <span className="relative grid place-items-center">
+              <ShoppingBag className="size-[19px]" />
+              {mounted && bag > 0 && <span className="absolute -right-2 -top-2 grid min-w-[17px] place-items-center rounded-full bg-white px-1 text-[10px] font-bold leading-[17px] text-primary tabular">{bag > 9 ? "9+" : bag}</span>}
+            </span>
+          </Link>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function NavLink({ href, children, active, accent, chevron }: { href: string; children: React.ReactNode; active?: boolean; accent?: boolean; chevron?: boolean }) {
+  return (
+    <Link href={href} aria-current={active ? "page" : undefined}
+      className={cn("inline-flex h-10 items-center gap-1 whitespace-nowrap px-2 text-[14px] font-semibold tracking-tight transition-colors xl:px-3.5 xl:text-[15px]",
+        active || accent ? "text-accent" : "text-white/85 hover:text-white")}>
+      {children}{chevron && <ChevronDown className="hidden size-3.5 opacity-60 xl:block" />}
+    </Link>
+  );
+}
+
+/* ------------------------------------------------------------ Mobile menu */
+export function MobileMenu({ items, quickLinks = [] }: Props) {
+  const open = useUi((s) => s.menuOpen);
+  const setOpen = useUi((s) => s.setMenu);
+  const close = () => setOpen(false);
+  return (
+    <Sheet open={open} onClose={close} side="left" hideHeader className="lg:hidden">
+      <div className="-mx-5 flex items-center justify-between border-b border-line px-5 py-4">
+        <Logo />
+        <button onClick={close} className="h-9 bg-bg-subtle px-3.5 text-sm font-medium">Close</button>
+      </div>
+      <nav className="py-2" aria-label="Menu">
+        {items.filter((it) => it.showOn !== "desktop").map((it) => it.dropdown ? (
+          <details key={it.href + it.label} className="group border-b border-line">
+            <summary className="flex min-h-14 cursor-pointer items-center justify-between text-[15px] font-semibold">
+              {it.label}<ChevronDown className="chev size-5 text-muted transition-transform" />
+            </summary>
+            <ul className="pb-3 pl-1">
+              <li><Link onClick={close} href={it.href} className="block py-2.5 text-sm font-semibold text-accent">Shop all {it.dropdown.name}</Link></li>
+              {it.dropdown.subs.map((s) => (
+                <li key={s}><Link onClick={close} href={`/category/${it.dropdown!.slug}?sub=${encodeURIComponent(s)}`} className="block py-2.5 text-sm text-muted">{s}</Link></li>
+              ))}
+            </ul>
+          </details>
+        ) : <MenuRow key={it.href + it.label} href={it.href} onClick={close} accent={it.accent}>{it.label}</MenuRow>)}
+      </nav>
+      <div className="mt-4 grid grid-cols-2 gap-2.5 text-sm">
+        {quickLinks.map((q) => (
+          <Link key={q.href + q.label} href={q.href} onClick={close} className="rounded-2xl bg-black px-4 py-3.5 font-semibold text-white transition-colors hover:bg-primary">{q.label}</Link>
+        ))}
+      </div>
+      <Link href="/seller/register" onClick={close} className="mt-4 flex items-center justify-between border border-line bg-accent-soft p-4 text-fg">
+        <span><span className="block text-sm font-semibold">Sell on ManaBrand</span><span className="text-xs text-muted">Open your store in minutes</span></span>
+        <span aria-hidden className="text-accent">→</span>
+      </Link>
+    </Sheet>
+  );
+}
+
+function MenuRow({ href, children, onClick, accent }: { href: string; children: React.ReactNode; onClick: () => void; accent?: boolean }) {
+  return <Link href={href} onClick={onClick} className={cn("flex min-h-14 items-center border-b border-line text-[15px] font-semibold", accent && "text-accent")}>{children}</Link>;
+}
