@@ -12,14 +12,14 @@ export type HeroSlideData = HeroSlide;
 /** Bright stock photos (Unsplash) used when a slide has no uploaded photo — matched to the slide's category. */
 const STOCK: Record<string, string> = {
   fashion: "1609357605129-26f69add5d6e",     // teal dress, flowing
-  gift: "1523293182086-7651a899d37f",        // perfume gift, blue
+  gift: "1559454403-b8fb88521f11",           // teddy bear gift
   electronics: "1517336714731-489689fd1ca8", // neon laptop
   home: "1600210492486-724fe5c67fb0",        // sunlit living room
   beauty: "1541643600914-78b084683601",      // perfume
   accessories: "1584917865442-de89df76afd3", // red handbag
   gourmet: "1596040033229-a9821ebd058d",     // spices
 };
-const DEFAULT_STOCK = "1539109136881-3be0616acf4b"; // fashion: blue coat, city street
+const DEFAULT_STOCK = "1487222477894-8943e31ef7b2"; // men's fashion: leather jacket and tie
 const WIDTHS = [640, 1024, 1536, 2200] as const;
 const urlAt = (s: HeroSlide, w: number) => (s.image ? `${s.image}?w=${w}&auto=format&q=75` : `https://images.unsplash.com/photo-${STOCK[s.category ?? ""] ?? DEFAULT_STOCK}?auto=format&fit=crop&crop=entropy&w=${w}&h=${Math.round(w * 0.66)}&q=70`);
 /** src + srcSet so every screen downloads only the size it needs. */
