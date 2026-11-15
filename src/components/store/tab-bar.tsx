@@ -32,7 +32,7 @@ export function MobileTabBar() {
 
   return (
     <nav aria-label="Main" data-round className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 lg:hidden">
-      <ul className="relative mx-auto grid h-16 max-w-md grid-cols-5 rounded-[30px] border border-white/80 bg-white/65 p-1.5 backdrop-blur-3xl backdrop-saturate-[2] [box-shadow:inset_0_1px_0_rgb(255_255_255/0.9),inset_0_-1px_0_rgb(255_255_255/0.25),0_0_0_0.5px_rgb(0_0_0/0.08)]">
+      <ul className="relative mx-auto grid h-16 max-w-md grid-cols-5 rounded-[30px] border border-white/70 bg-white/40 p-1.5 backdrop-blur-3xl backdrop-saturate-[2] [box-shadow:inset_0_1px_0_rgb(255_255_255/0.9),inset_0_-1px_0_rgb(255_255_255/0.25),0_0_0_0.5px_rgb(0_0_0/0.08)]">
         {/* the sliding glass pill behind the active tab */}
         <span aria-hidden
           className={cn("tab-pill pointer-events-none absolute bottom-1.5 left-1.5 top-1.5 w-[calc((100%-0.75rem)/5)] rounded-[24px] transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.3,1.25,0.5,1)]", current < 0 && "opacity-0")}

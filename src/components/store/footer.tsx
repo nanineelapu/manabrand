@@ -3,6 +3,7 @@ import { Clock, Mail, Phone, Sparkles } from "lucide-react";
 import { InstagramIcon, YoutubeIcon } from "@/components/ui/brand-icons";
 import { Logo } from "@/components/brand/logo";
 import type { CmsNav, CmsSite } from "@/lib/cms/types";
+import { InstallButton } from "./install-app";
 import { NewsletterForm } from "./newsletter";
 
 const heading = "mb-2 flex items-center gap-2.5 text-[10px] font-extrabold uppercase tracking-[0.18em] sm:text-[11px] sm:tracking-[0.28em] text-white md:mb-3 md:gap-3 md:text-[12px] md:tracking-[0.35em]";
@@ -31,8 +32,9 @@ export function Footer({ site, nav }: { site: CmsSite; nav: CmsNav }) {
               </div>
             </div>
             <p className="mt-2 max-w-xs text-[13px] leading-relaxed text-white/60 md:mt-3 md:text-sm">{site.footerAbout}</p>
+            <InstallButton className="mt-3" label="Install the app" />
             <Link href="/seller/register" className="mt-3 inline-flex items-center gap-3 text-base font-semibold text-accent hover:text-white"><span aria-hidden className="h-px w-6 bg-accent" />Sell on ManaBrand</Link>
-            <div className="mt-5 hidden gap-2.5 lg:flex">
+            <div className="mt-5 hidden flex-wrap gap-2.5 lg:flex">
               {social.map(([Icon, l, href]) => (
                 <a key={l} href={href} aria-label={l} {...(href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})} className="grid size-10 place-items-center rounded-xl border border-white/10 bg-white/[0.03] transition-colors hover:border-accent hover:text-accent"><Icon className="size-5" /></a>
               ))}

@@ -7,10 +7,10 @@ import {
 import { AppShell, type ShellConfig } from "@/components/shared/app-shell";
 import type { AppNotification } from "@/types";
 
-export function AdminShell({ notifications, badges, children }: { notifications: AppNotification[]; badges: { orders: number; sellers: number; returns: number; reviews: number }; children: React.ReactNode }) {
+export function AdminShell({ notifications, badges, user, children }: { notifications: AppNotification[]; badges: { orders: number; sellers: number; returns: number; reviews: number }; user?: { name: string; role: string }; children: React.ReactNode }) {
   const cfg: ShellConfig = {
     surface: "admin", base: "/admin",
-    user: { name: "Aarav Kulkarni", role: "Super admin" },
+    user: user ?? { name: "Admin", role: "Administrator" },
     searchPlaceholder: "Search orders, customers, SKUs…", searchTarget: "/admin/orders",
     viewSite: { href: "/", label: "View storefront" },
     groups: [

@@ -14,7 +14,8 @@ export async function generateMetadata(): Promise<Metadata> {
   title: { default: site.defaultTitle, template: site.titleTemplate },
   description: site.description,
   applicationName: site.siteName,
-  manifest: "/favicon/site.webmanifest",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: { capable: true, title: "ManaBrand", statusBarStyle: "black-translucent" },
   icons: {
     icon: [
       { url: "/favicon/favicon.ico", sizes: "any" },
@@ -31,7 +32,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: [{ media: "(prefers-color-scheme: light)", color: "#000000" }],
+  themeColor: "#000000",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

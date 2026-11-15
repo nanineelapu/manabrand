@@ -23,6 +23,7 @@ export async function placeOrder(input: {
     if (!items.every((i) => isUuid(i.product_id))) return { ok: false, error: "Your bag contains items that are no longer available. Please remove them and try again." };
     const phone = normalizePhone(input.address.phone);
     if (!phone) return { ok: false, error: "Enter a valid delivery phone number." };
+    if (input.method !== "cod" && process.env.PAYMENT_MODE !== "live") return { ok: false, error: "Online payment isn’t available yet — please choose Cash on delivery." };
 
     const { data, error } = await supabase.rpc("place_order", {
       p_items: items, p_address: { ...input.address, phone }, p_payment_method: input.method,
@@ -31,13 +32,9 @@ export async function placeOrder(input: {
     if (error) throw new Error(error.message);
     const row = (Array.isArray(data) ? data[0] : data) as { order_id: string; order_number: string; total: number };
 
-    // PAYMENTS: with no gateway connected (PAYMENT_MODE != "live"), online methods are confirmed immediately — TEST MODE ONLY.
-    // Replace this block with the gateway's webhook calling confirm_payment(order, payment_id).
-    let paymentStatus: "paid" | "pending" = "pending";
-    if (input.method !== "cod" && process.env.PAYMENT_MODE !== "live") {
-      const { error: payErr } = await createAdminClient().rpc("confirm_payment", { p_order: row.order_id, p_ref: `TEST-${Date.now()}` });
-      if (!payErr) paymentStatus = "paid";
-    }
+    // PAYMENTS: cash on delivery is "pending" until delivery. Online methods only reach here when a gateway is live
+    // (PAYMENT_MODE=live) — the gateway's webhook then calls confirm_payment(order, payment_id).
+    const paymentStatus: "paid" | "pending" = "pending";
     const actor = await currentActor();
     if (actor?.email) {
       void sendEmail({ to: actor.email, subject: `Order ${row.order_number} confirmed`,

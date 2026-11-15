@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, Gift, Package, Wallet } from "lucide-react";
+import { ChevronRight, Package, Wallet } from "lucide-react";
 import { AccountMenuList } from "@/components/store/account-nav";
 import { OrderCard } from "@/components/store/order-card";
 import { Avatar, Badge } from "@/components/ui/display";
@@ -23,8 +23,8 @@ export default async function AccountPage() {
         <Badge tone="accent" className="hidden bg-gold-400 text-ink sm:inline-flex">{me.tier} member</Badge>
       </section>
 
-      <div className="grid grid-cols-3 gap-3">
-        {[[Package, "Orders", String(orders.length)], [Wallet, "Spent", formatINR(me.spent)], [Gift, "ManaBrand Cash", "₹250"]].map(([I, l, v]) => {
+      <div className="grid grid-cols-2 gap-3">
+        {[[Package, "Orders", String(orders.length)], [Wallet, "Spent", formatINR(me.spent)]].map(([I, l, v]) => {
           const Icon = I as typeof Package;
           return (
             <div key={l as string} className="rounded-card border border-line bg-card p-3.5 text-center shadow-card md:p-5">

@@ -9,7 +9,7 @@ export default async function ProfilePage() {
   return (
     <>
       <AccountPageHeader title="Profile & security" subtitle="Keep your details up to date" />
-      <ProfileForm initial={{ name: "Ananya Sharma", email: me.email, phone: me.phone }} />
+      <ProfileForm initial={{ name: me.name, email: me.email, phone: me.phone }} />
     </>
   );
 }

@@ -1,12 +1,13 @@
 "use client";
 
 import { createBrowserClient } from "@supabase/ssr";
+import { SESSION_COOKIE_OPTIONS } from "./cookies";
 import { isSupabaseConfigured, supabaseAnonKey, supabaseUrl } from "./env";
 
 let client: ReturnType<typeof createBrowserClient> | null = null;
 /** Browser client — used ONLY for file uploads straight to Storage (protected by the storage policies). */
 export function browserClient() {
-  if (!client) client = createBrowserClient(supabaseUrl, supabaseAnonKey);
+  if (!client) client = createBrowserClient(supabaseUrl, supabaseAnonKey, { cookieOptions: SESSION_COOKIE_OPTIONS });
   return client;
 }
 

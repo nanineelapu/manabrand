@@ -1,8 +1,11 @@
 import { CheckoutFlow } from "@/components/store/checkout-flow";
 import { getMyAddresses } from "@/lib/data";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 
 export const metadata = { title: "Checkout" };
 
 export default async function CheckoutPage() {
-  return <CheckoutFlow addresses={await getMyAddresses()} />;
+  // Real orders: cash on delivery only, until a payment gateway is connected (PAYMENT_MODE=live). The demo (no database) shows every method.
+  const onlinePayments = !isSupabaseConfigured() || process.env.PAYMENT_MODE === "live";
+  return <CheckoutFlow addresses={await getMyAddresses()} onlinePayments={onlinePayments} />;
 }

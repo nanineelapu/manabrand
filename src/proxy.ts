@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { SESSION_COOKIE_OPTIONS } from "@/lib/supabase/cookies";
 import { isSupabaseConfigured, supabaseAnonKey, supabaseUrl } from "@/lib/supabase/env";
 
 /**
@@ -12,6 +13,7 @@ export async function proxy(request: NextRequest) {
 
   let response = NextResponse.next({ request });
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookieOptions: SESSION_COOKIE_OPTIONS,
     cookies: {
       getAll: () => request.cookies.getAll(),
       setAll: (list) => {
@@ -29,7 +31,10 @@ export async function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = to; url.search = "";
     if (to.endsWith("/login")) url.searchParams.set("next", path);
-    return NextResponse.redirect(url);
+    const redirect = NextResponse.redirect(url);
+    // keep any session cookies that were just refreshed, so a redirect never drops the login
+    response.cookies.getAll().forEach((c) => redirect.cookies.set(c));
+    return redirect;
   };
 
   const staffPublic = ["/admin/login", "/seller/login", "/seller/register"];
@@ -37,12 +42,12 @@ export async function proxy(request: NextRequest) {
   const inArea = (area: string) => path === area || path.startsWith(area + "/");
   if (inArea("/admin") && !staffPublic.includes(path) && role !== "admin") return go("/admin/login");
   if (inArea("/seller") && !staffPublic.includes(path) && role !== "seller") return go("/seller/login");
-  if ((path.startsWith("/account") || path === "/reset-pin") && !user) return go(path === "/reset-pin" ? "/forgot-password" : "/login");
+  if ((path.startsWith("/account") || path === "/checkout" || path === "/reset-pin") && !user) return go(path === "/reset-pin" ? "/forgot-password" : "/login");
   if ((path === "/login" || path === "/register") && role === "customer") return go("/account");
 
   return response;
 }
 
 export const config = {
-  matcher: ["/((?!studio|api/revalidate|_next/static|_next/image|favicon/|logo\\.png|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|webmanifest)$).*)"],
+  matcher: ["/((?!studio|api/revalidate|sw\\.js|_next/static|_next/image|favicon/|logo\\.png|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|webmanifest)$).*)"],
 };

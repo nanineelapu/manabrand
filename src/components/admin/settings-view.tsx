@@ -12,10 +12,6 @@ import { useAct } from "@/lib/actions/use-act";
 import type { SettingsData } from "@/lib/data";
 import { toast } from "@/lib/stores";
 
-const team = [
-  { name: "Aarav Kulkarni", email: "aarav@manabrand.in", role: "Super admin" }, { name: "Ishita Rao", email: "ishita@manabrand.in", role: "Operations" },
-  { name: "Dev Malhotra", email: "dev@manabrand.in", role: "Support" }, { name: "Sana Qureshi", email: "sana@manabrand.in", role: "Marketing" },
-];
 
 function Row({ title, desc, children }: { title: string; desc?: string; children: React.ReactNode }) {
   return <div className="flex items-center justify-between gap-4 py-3.5"><div className="min-w-0"><p className="text-sm font-medium">{title}</p>{desc && <p className="text-xs text-muted">{desc}</p>}</div>{children}</div>;
@@ -40,7 +36,7 @@ export function SettingsView({ initial }: { initial: SettingsData }) {
 
   return (
     <>
-      <Tabs value={tab} onChange={setTab} className="mb-5" items={[{ value: "general", label: "General" }, { value: "payments", label: "Payments" }, { value: "shipping", label: "Shipping" }, { value: "commission", label: "Commission" }, { value: "team", label: "Team" }]} />
+      <Tabs value={tab} onChange={setTab} className="mb-5" items={[{ value: "general", label: "General" }, { value: "payments", label: "Payments" }, { value: "shipping", label: "Shipping" }, { value: "commission", label: "Commission" }]} />
 
       {tab === "general" && (
         <Panel title="Business profile"><form onSubmit={saveGeneral} noValidate className="max-w-2xl space-y-4">
@@ -75,20 +71,6 @@ export function SettingsView({ initial }: { initial: SettingsData }) {
           <p className="text-xs text-muted sm:col-span-2">Per-seller overrides live on each seller’s profile.</p>
           <div className="sm:col-span-2"><Button type="submit">Save rates</Button></div>
         </form></Panel>
-      )}
-
-      {tab === "team" && (
-        <Panel title="Team members" action={<Button size="sm" onClick={() => toast.info("Invite link copied (demo)")}><UserPlus className="size-4" /> Invite</Button>} padded={false}>
-          <ul className="divide-y divide-line">
-            {team.map((m) => (
-              <li key={m.email} className="flex items-center gap-3.5 px-4 py-3.5 md:px-5">
-                <Avatar name={m.name} size={40} /><div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{m.name}</p><p className="truncate text-xs text-muted">{m.email}</p></div>
-                <Select aria-label={`Role for ${m.name}`} defaultValue={m.role} className="h-10 w-36 text-[13px]" onChange={() => toast.success("Role updated")}>{["Super admin", "Operations", "Support", "Marketing"].map((r) => <option key={r}>{r}</option>)}</Select>
-              </li>
-            ))}
-            <li className="px-4 py-3 md:px-5"><button onClick={() => toast.info("Invite link copied (demo)")} className="inline-flex items-center gap-2 text-sm font-medium text-accent"><Plus className="size-4" /> Add team member</button> <Badge tone="neutral" className="ml-2">4 of 10 seats</Badge></li>
-          </ul>
-        </Panel>
       )}
     </>
   );

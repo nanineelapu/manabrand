@@ -1,6 +1,7 @@
 import { getNavContent, getSiteContent, resolveHeader } from "@/lib/cms";
 import { Preloader } from "@/components/store/preloader";
 import { CtaBand } from "@/components/store/cta-band";
+import { InstallBanner, RegisterServiceWorker } from "@/components/store/install-app";
 import { SmoothScroll } from "@/components/store/smooth-scroll";
 import { Footer } from "@/components/store/footer";
 import { MobileMenu, StoreHeader } from "@/components/store/header";
@@ -31,6 +32,8 @@ export default async function StoreLayout({ children }: LayoutProps<"/">) {
     <div data-surface="store" className="flex min-h-dvh flex-col overflow-x-clip bg-bg text-fg">
       <StoreDataProvider products={lite} coupons={couponLite}>
         <SmoothScroll />
+        <RegisterServiceWorker />
+        <InstallBanner />
         <Preloader />
         <StoreHeader items={headerItems} accountLabel={navContent.accountLabel} />
         <main id="main" className="flex-1">{children}</main>

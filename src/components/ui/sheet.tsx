@@ -23,6 +23,16 @@ const panel: Record<Side, string> = {
   dialog: "inset-x-0 bottom-0 max-h-[90dvh] rounded-t-3xl animate-sheet-up md:inset-auto md:left-1/2 md:top-1/2 md:w-full md:max-w-lg md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:animate-pop-in",
 };
 
+/** Exit animations (the mirror of `panel`): the sheet slides / fades back out before it unmounts. */
+const exitAnim: Record<Side, string> = {
+  bottom: "animate-sheet-down-out",
+  left: "animate-sheet-left-out",
+  right: "animate-sheet-right-out",
+  auto: "animate-sheet-down-out md:animate-sheet-right-out",
+  dialog: "animate-sheet-down-out md:animate-pop-out",
+};
+const EXIT_MS = 260;
+
 export function Sheet({
   open, onClose, title, description, side = "auto", children, footer, className, hideHeader,
 }: {
@@ -30,6 +40,16 @@ export function Sheet({
   children: React.ReactNode; footer?: React.ReactNode; className?: string; hideHeader?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  // keep the sheet mounted while its exit animation plays (shown → closing → unmounted)
+  const [shown, setShown] = useState(open);
+  const [closing, setClosing] = useState(false);
+  if (open && (!shown || closing)) { setShown(true); setClosing(false); }
+  else if (!open && shown && !closing) setClosing(true);
+  useEffect(() => {
+    if (!closing) return;
+    const t = setTimeout(() => { setShown(false); setClosing(false); }, EXIT_MS);
+    return () => clearTimeout(t);
+  }, [closing]);
   const lastFocus = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -65,14 +85,14 @@ export function Sheet({
     <span hidden ref={(el) => { if (el && !host) setHost(el.closest("[data-surface]") ?? document.body); }} />
   );
 
-  if (!open || !host) return marker;
+  if (!shown || !host) return marker;
 
   return <>{marker}{createPortal(
-    <div className="fixed inset-0 z-[70]">
-      <div className="absolute inset-0 animate-fade-in bg-ink/45 backdrop-blur-[2px]" onClick={onClose} aria-hidden />
+    <div className={cn("fixed inset-0 z-[70]", closing && "pointer-events-none")}>
+      <div className={cn("absolute inset-0 bg-ink/45 backdrop-blur-[2px]", closing ? "animate-fade-out" : "animate-fade-in")} onClick={onClose} aria-hidden />
       <div
         ref={ref} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1}
-        className={cn("absolute flex flex-col bg-panel text-fg shadow-pop outline-none", panel[side], className)}
+        className={cn("absolute flex flex-col bg-panel text-fg shadow-pop outline-none", closing ? panel[side].replace(/(md:)?animate-[\w-]+/g, "") + " " + exitAnim[side] : panel[side], className)}
       >
         {side !== "left" && side !== "right" && (
           <div className="flex justify-center pt-2.5 md:hidden" aria-hidden>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getSessionProfile } from "@/lib/auth/session";
 import { AlertTriangle, ArrowRight, Download, IndianRupee, Package, ShoppingCart, Store, Users, RotateCcw, MessageSquareWarning, Eye } from "lucide-react";
 import { Donut, HBars, Legend, AreaChart } from "@/components/shared/charts";
 import { DataTable } from "@/components/shared/data-table";
@@ -17,7 +18,11 @@ const delta = (a: number[]) => ((last(a, 7) - last(a, 7, 7)) / last(a, 7, 7)) * 
 const spark = (a: number[]) => a.slice(-14);
 
 export default async function AdminDashboard() {
-  const [d, an] = await Promise.all([getAdminDashboard(), getAnalytics()]);
+  const [d, an, me] = await Promise.all([getAdminDashboard(), getAnalytics(), getSessionProfile()]);
+  const now = new Date();
+  const hour = Number(new Intl.DateTimeFormat("en-IN", { hour: "numeric", hour12: false, timeZone: "Asia/Kolkata" }).format(now)) % 24;
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const today = new Intl.DateTimeFormat("en-IN", { weekday: "short", day: "numeric", month: "short", timeZone: "Asia/Kolkata" }).format(now);
   const statusColor: Record<string, string> = { placed: chart.series[4], confirmed: "#7fa6d1", packed: chart.series[2], shipped: chart.series[0], out_for_delivery: "#e08a76", delivered: chart.series[3], cancelled: "#9a8f85", returned: chart.series[5] };
 
   const attention = [
@@ -29,7 +34,7 @@ export default async function AdminDashboard() {
 
   return (
     <>
-      <PageHeader title="Good morning, Aarav" subtitle="Here’s what’s happening across ManaBrand today · Sun, 15 Nov"
+      <PageHeader title={`${greeting}${me ? `, ${me.name.split(" ")[0]}` : ""}`} subtitle={`Here’s what’s happening across ManaBrand today · ${today}`}
         actions={<><Button variant="outline" size="sm" href="/" ><Eye className="size-4" /> Storefront</Button><Button size="sm"><Download className="size-4" /> Export report</Button></>} />
 
       {/* Needs attention — first thing on mobile */}

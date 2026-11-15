@@ -111,6 +111,11 @@ scripts/          Database, auth and CMS tests; admin creation
 docs/             Setup guides
 ```
 
+## Installable app and staying signed in
+
+- **Install as an app:** the storefront is a PWA. On Chrome / Edge / Android a small "Get the ManaBrand app" card (and an "Install the app" button in the footer) lets visitors add it to their home screen. On iPhone / iPad it shows the Safari steps (Share → Add to Home Screen). It then opens full-screen like an app. The service worker (`public/sw.js`) only registers in production builds and never caches logins, accounts, checkout, admin or seller pages. Offline visits show a friendly `/offline` page.
+- **Stay signed in:** the login cookie lasts one year and is renewed silently on every visit (`src/lib/supabase/cookies.ts`), so customers are not signed out after a while. They are only signed out if they tap Sign out or clear browser data. In Supabase → Authentication → Sessions, leave "Time-box user sessions" and "Inactivity timeout" **off** (they are off by default).
+
 ## Good to know
 
 - This project uses Next.js 16, which has changes from earlier versions. Check `node_modules/next/dist/docs/` before relying on older habits.

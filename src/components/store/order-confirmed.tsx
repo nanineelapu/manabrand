@@ -26,7 +26,7 @@ export function OrderConfirmed({ number }: { number: string }) {
     <div className="container-page max-w-2xl py-10 text-center md:py-16">
       <span className="mx-auto grid size-20 animate-pop-in place-items-center rounded-full bg-success-bg"><CheckCircle2 className="size-11 text-success" /></span>
       <h1 className="mt-6 font-display text-[34px] font-semibold leading-tight md:text-5xl">Thank you{saved?.name ? `, ${saved.name.split(" ")[0]}` : ""}!</h1>
-      <p className="mt-2 text-muted">Your order <b className="text-fg">{number}</b> is confirmed. We’ve sent the details to your email.</p>
+      <p className="mt-2 text-muted">Your order <b className="text-fg">{number}</b> is confirmed. You can follow it from My orders.</p>
 
       <div className="mt-8 rounded-card border border-line bg-card p-5 text-left shadow-card md:p-6">
         <ol className="flex items-center" aria-label="Order progress">

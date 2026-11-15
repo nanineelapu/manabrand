@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Checks the CMS layer without a Sanity project:
  *  - every GROQ query parses and returns the shape the site expects, run against a sample dataset (same engine Sanity uses)

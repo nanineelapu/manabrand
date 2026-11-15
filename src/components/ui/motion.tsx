@@ -11,7 +11,7 @@ function useInView<T extends Element>(rootMargin = "0px 0px -8% 0px") {
   const [seen, setSeen] = useState(false);
   useEffect(() => {
     const el = ref.current; if (!el || seen) return;
-    if (typeof IntersectionObserver === "undefined" || reduced()) { setSeen(true); return; }
+    if (typeof IntersectionObserver === "undefined" || reduced()) { const t = setTimeout(() => setSeen(true), 0); return () => clearTimeout(t); }
     const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { setSeen(true); io.disconnect(); } }, { rootMargin, threshold: 0.05 });
     io.observe(el);
     return () => io.disconnect();
@@ -40,7 +40,7 @@ export function CountUp({ value, duration = 900, className }: { value: string; d
   useEffect(() => {
     if (!m || !seen) return;
     const target = Number(m[2].replace(/,/g, "") + (m[3] ?? ""));
-    if (reduced() || !Number.isFinite(target)) { setN(target); return; }
+    if (reduced() || !Number.isFinite(target)) { const t = setTimeout(() => setN(target), 0); return () => clearTimeout(t); }
     let raf = 0; const t0 = performance.now();
     const tick = (t: number) => {
       const p = Math.min(1, (t - t0) / duration);

@@ -23,7 +23,7 @@ import { ShoppingBag } from "lucide-react";
 type Pay = "upi" | "card" | "cod" | "netbanking";
 const STEPS = ["Address", "Delivery", "Payment"];
 
-export function CheckoutFlow({ addresses: initial }: { addresses: Address[] }) {
+export function CheckoutFlow({ addresses: initial, onlinePayments = true }: { addresses: Address[]; onlinePayments?: boolean }) {
   const router = useRouter();
   const mounted = useMounted();
   const cart = useCartPricing();
@@ -35,7 +35,7 @@ export function CheckoutFlow({ addresses: initial }: { addresses: Address[] }) {
   const [addrId, setAddrId] = useState(initial.find((a) => a.isDefault)?.id ?? initial[0]?.id ?? "");
   const [adding, setAdding] = useState(false);
   const express = false; // every order is delivered within 48 hours — there is no express tier
-  const [pay, setPay] = useState<Pay>("upi");
+  const [pay, setPay] = useState<Pay>(onlinePayments ? "upi" : "cod");
   const [f, setF] = useState({ vpa: "", card: "", name: "", exp: "", cvv: "", bank: "" });
   const [errs, setErrs] = useState<Record<string, string>>({});
   const [placing, setPlacing] = useState(false);
@@ -152,7 +152,8 @@ export function CheckoutFlow({ addresses: initial }: { addresses: Address[] }) {
 
           {panel(2, "Payment", null, (
             <div className="space-y-3">
-              {payOptions.map((o) => (
+              {!onlinePayments && <p className="rounded-ctl bg-bg-subtle px-4 py-3 text-[13px] text-muted">Pay when your order arrives — online payments are coming soon.</p>}
+              {payOptions.filter((o) => onlinePayments || o.id === "cod").map((o) => (
                 <div key={o.id}>
                   <Radio name="pay" value={o.id} checked={pay === o.id} onChange={(v) => { setPay(v as Pay); setErrs({}); }}>
                     <div className="flex items-center gap-3"><span className="text-muted">{o.icon}</span><span><span className="block text-sm font-semibold">{o.label}</span><span className="block text-xs text-muted">{o.sub}</span></span></div>

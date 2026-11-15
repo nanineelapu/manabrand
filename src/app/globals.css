@@ -336,6 +336,11 @@ select, input, textarea { color-scheme: light; }
 @keyframes sheet-right { from { transform: translateX(100%); } to { transform: translateX(0); } }
 @keyframes sheet-left { from { transform: translateX(-100%); } to { transform: translateX(0); } }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes sheet-down-out { from { transform: translateY(0); } to { transform: translateY(100%); } }
+@keyframes sheet-right-out { from { transform: translateX(0); } to { transform: translateX(100%); } }
+@keyframes sheet-left-out { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+@keyframes pop-out { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.96) translateY(8px); } }
 @keyframes pop-in { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes heart-pop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
 @keyframes shimmer { 100% { transform: translateX(100%); } }
@@ -345,6 +350,11 @@ select, input, textarea { color-scheme: light; }
 .animate-sheet-right { animation: sheet-right 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
 .animate-sheet-left { animation: sheet-left 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
 .animate-fade-in { animation: fade-in 0.2s ease-out; }
+.animate-fade-out { animation: fade-out 0.26s ease-in forwards; }
+.animate-sheet-down-out { animation: sheet-down-out 0.26s cubic-bezier(0.4, 0, 1, 1) forwards; }
+.animate-sheet-right-out { animation: sheet-right-out 0.26s cubic-bezier(0.4, 0, 1, 1) forwards; }
+.animate-sheet-left-out { animation: sheet-left-out 0.26s cubic-bezier(0.4, 0, 1, 1) forwards; }
+.animate-pop-out { animation: pop-out 0.2s ease-in forwards; }
 .animate-pop-in { animation: pop-in 0.22s cubic-bezier(0.22, 1, 0.36, 1); }
 .animate-heart { animation: heart-pop 0.35s ease-out; }
 .animate-toast { animation: toast-in 0.25s cubic-bezier(0.22, 1, 0.36, 1); }
@@ -480,3 +490,4 @@ html[data-preloaded] #preloader { display: none; }  /* repeat visit: set by the 
 /* rebuild 1794749073 */
 /* rebuild 1794749227 */
 /* rebuild 1794750769 */
+/* rebuild 1794755257 */
