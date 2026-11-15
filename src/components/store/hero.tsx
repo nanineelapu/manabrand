@@ -19,7 +19,7 @@ const STOCK: Record<string, string> = {
   accessories: "1584917865442-de89df76afd3", // red handbag
   gourmet: "1596040033229-a9821ebd058d",     // spices
 };
-const DEFAULT_STOCK = "1480429370139-e0132c086e2a"; // men's fashion: pinstripe blazer and tie
+const DEFAULT_STOCK = "1488161628813-04466f872be2"; // men's street style (desktop): jacket, orange trousers
 const WIDTHS = [640, 1024, 1536, 2200] as const;
 const urlAt = (s: HeroSlide, w: number) => (s.image ? `${s.image}?w=${w}&auto=format&q=75` : `https://images.unsplash.com/photo-${STOCK[s.category ?? ""] ?? DEFAULT_STOCK}?auto=format&fit=crop&crop=entropy&w=${w}&h=${Math.round(w * 0.66)}&q=70`);
 /** src + srcSet so every screen downloads only the size it needs. */
@@ -91,14 +91,17 @@ export function Hero({ c, slides, site }: {
             return (
               <div key={k} role="group" aria-roledescription="slide" aria-label={`${k + 1} of ${n}`} aria-hidden={!active} inert={!active} className="relative flex w-full shrink-0 flex-col overflow-hidden">
                 <div className="absolute inset-0 -z-20">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img {...photoProps(s)} alt="" decoding="async" className="size-full object-cover brightness-110 saturate-110" fetchPriority={k === 0 ? "high" : "auto"} loading={k === 0 ? "eager" : "lazy"} />
+                  <picture>
+                    {s.mobileImage && <source media="(max-width: 767px)" srcSet={s.mobileImage} />}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img {...photoProps(s)} alt="" decoding="async" className="size-full object-cover brightness-110 saturate-110" fetchPriority={k === 0 ? "high" : "auto"} loading={k === 0 ? "eager" : "lazy"} />
+                  </picture>
                 </div>
                 <div aria-hidden className="absolute inset-0 -z-10 bg-black/35" />
 
                 {/* first screen: the message, vertically centred between the header and the buttons */}
-                <div className="flex flex-1 items-center lg:h-[100svh] lg:flex-none">
-                  <div className="container-page w-full pb-[clamp(176px,24svh,220px)] pt-[clamp(84px,13svh,128px)] lg:pb-[clamp(110px,15svh,150px)] lg:pt-[clamp(96px,14svh,140px)]">
+                <div className="flex flex-1 items-center max-md:items-end lg:h-[100svh] lg:flex-none">
+                  <div className="container-page w-full pb-[clamp(176px,24svh,220px)] max-md:pb-[clamp(168px,22svh,200px)] pt-[clamp(84px,13svh,128px)] lg:pb-[clamp(110px,15svh,150px)] lg:pt-[clamp(96px,14svh,140px)]">
                     <div className={cn("flex max-w-4xl flex-col items-start gap-[clamp(10px,2.2svh,20px)]", active && "stagger")}>
                       <Title style={{ "--i": 0 } as React.CSSProperties} className="text-[clamp(32px,6svh,42px)] font-black leading-[1.08] tracking-[-0.04em] text-white sm:text-[clamp(40px,8svh,58px)] lg:text-[clamp(44px,min(4.8vw,9svh),72px)]">
                         <Headline text={s.headline} emphasis={s.headlineEmphasis} />

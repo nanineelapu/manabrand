@@ -30,6 +30,8 @@ export interface HeroSlide {
   category?: string;
   /** optional faint background photo for this slide */
   image?: string;
+  /** optional portrait photo used instead of `image` on phones (≤ 767px wide) */
+  mobileImage?: string;
 }
 
 export interface CmsHome {

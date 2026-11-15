@@ -25,6 +25,7 @@ export const homePage = defineType({
           defineField({ name: "subtitleShort", title: "Shorter sub-headline for phones", type: "string", description: "Optional — one short line shown on phones instead of the full sub-headline.", validation: (r) => r.max(90) }),
           defineField({ name: "subtitleHighlight", title: "Highlighted phrase in the sub-headline", type: "string", description: "Optional — words from the sub-headline shown bold and underlined." }),
           defineField({ name: "category", title: "Category", type: "string", description: "Optional — category slug (fashion, gift, home, beauty, accessories, gourmet, electronics). Used for the small label and to pick a matching stock photo when you don't upload one." }),
+          defineField({ name: "mobileImage", title: "Phone photo (portrait)", type: "image", options: { hotspot: true }, description: "Optional — a tall photo (e.g. 1080×1920) shown on phones instead of the main photo." }),
           defineField({ name: "image", title: "Slide photo", type: "image", options: { hotspot: true }, description: "The big full-width photo for this slide (landscape, about 2400×1400). Leave empty to use a stock photo that matches the category." }),
         ],
         preview: { select: { title: "headline", subtitle: "category" }, prepare: ({ title, subtitle }) => ({ title: String(title ?? "").replace(/\n/g, " "), subtitle: subtitle ? `Products: ${subtitle}` : "Products: trending" }) },
