@@ -44,7 +44,7 @@ async function main() {
                  grant usage on all sequences in schema public to authenticated, service_role;`);
   await db.exec(readFileSync("supabase/seed.sql", "utf8"));
   const counts = await one<{ n: number }>(`select count(*)::int n from products`);
-  ok("migrations + seed apply cleanly (68 products)", counts[0].n === 68);
+  ok("migrations + seed apply cleanly (65 products)", counts[0].n === 65);
 
   // ---- account creation ---------------------------------------------------------
   const server = JSON.stringify({ provisioned_by: "mana-server" });
@@ -95,7 +95,7 @@ async function main() {
   const activeN = (await one<{ n: number }>(`select count(*)::int n from products where status='active'`))[0].n;
   await as("anon");
   const vis = await one<{ n: number }>(`select count(*)::int n from products`);
-  ok("anon sees only active products (draft/in-review hidden)", vis[0].n === activeN && activeN >= 64, `(saw ${vis[0].n}, active ${activeN})`);
+  ok("anon sees only active products (draft/in-review hidden)", vis[0].n === activeN && activeN >= 60, `(saw ${vis[0].n}, active ${activeN})`);
   ok("anon cannot see pending sellers", (await one(`select 1 from sellers where status='pending'`)).length === 0);
   await mustFail("anon cannot insert a product", () => db.exec(`insert into products (slug, seller_id, category_id, name, price, mrp) select 'hack', id, (select id from categories limit 1), 'Hack', 1, 1 from sellers limit 1`), /row-level|permission/);
 

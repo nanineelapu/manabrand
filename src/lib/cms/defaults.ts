@@ -37,16 +37,19 @@ export const DEFAULT_HOME: CmsHome = {
     {
       headline: "Everything You Need,\nAll in One Place.", headlineEmphasis: "All in One Place.",
       subtitle: "Discover the best of Ichapuram with ManaBrand. Explore a wide range of products from local shops and trusted sellers, all in one convenient marketplace.",
+      subtitleShort: "Discover the best of Ichapuram, all in one place.",
       subtitleHighlight: "best of Ichapuram",
     },
     {
-      headline: "Bringing Local Businesses\nCloser to You.", headlineEmphasis: "Local Businesses", category: "gourmet",
+      headline: "Bringing Local Products\nCloser to You.", headlineEmphasis: "Local Products", category: "gift",
       subtitle: "Discover unique products, explore local favourites, and support the businesses that make Ichapuram special. Your community, your marketplace.",
+      subtitleShort: "Support local. Your community, your marketplace.",
       subtitleHighlight: "Your community, your marketplace.",
     },
     {
       headline: "Style That\nFeels Like You", headlineEmphasis: "You", category: "fashion",
       subtitle: "Handloom, ethnic and everyday fashion from trusted makers, delivered within 48 hours.",
+      subtitleShort: "Everyday fashion, delivered within 48 hours.",
       subtitleHighlight: "delivered within 48 hours",
     },
   ],
@@ -56,6 +59,6 @@ export const DEFAULT_HOME: CmsHome = {
   categoriesTitle: "Shop by category",
   trendingTitle: "Trending now",
   newArrivalsTitle: "New arrivals",
-  sellersTitle: "Top sellers",
-  sellersSubtitle: "Verified, rated and reviewed by shoppers",
+  sellersTitle: "Local sellers",
+  sellersSubtitle: "Shops from right here in Ichapuram — verified, and rated by your neighbours.",
 };

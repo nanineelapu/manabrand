@@ -11,14 +11,15 @@ export type HeroSlideData = HeroSlide;
 
 /** Bright stock photos (Unsplash) used when a slide has no uploaded photo — matched to the slide's category. */
 const STOCK: Record<string, string> = {
+  fashion: "1609357605129-26f69add5d6e",     // teal dress, flowing
+  gift: "1523293182086-7651a899d37f",        // perfume gift, blue
   electronics: "1517336714731-489689fd1ca8", // neon laptop
-  fashion: "1572804013309-59a88b7e92f1",     // red dress on mustard
   home: "1600210492486-724fe5c67fb0",        // sunlit living room
-  beauty: "1541643600914-78b084683601",      // perfume on blue
+  beauty: "1541643600914-78b084683601",      // perfume
   accessories: "1584917865442-de89df76afd3", // red handbag
   gourmet: "1596040033229-a9821ebd058d",     // spices
 };
-const DEFAULT_STOCK = "1618220179428-22790b461013"; // colourful living room
+const DEFAULT_STOCK = "1539109136881-3be0616acf4b"; // fashion: blue coat, city street
 const WIDTHS = [640, 1024, 1536, 2200] as const;
 const urlAt = (s: HeroSlide, w: number) => (s.image ? `${s.image}?w=${w}&auto=format&q=75` : `https://images.unsplash.com/photo-${STOCK[s.category ?? ""] ?? DEFAULT_STOCK}?auto=format&fit=crop&crop=entropy&w=${w}&h=${Math.round(w * 0.66)}&q=70`);
 /** src + srcSet so every screen downloads only the size it needs. */
@@ -91,9 +92,9 @@ export function Hero({ c, slides, site }: {
               <div key={k} role="group" aria-roledescription="slide" aria-label={`${k + 1} of ${n}`} aria-hidden={!active} inert={!active} className="relative flex w-full shrink-0 flex-col overflow-hidden">
                 <div className="absolute inset-0 -z-20">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img {...photoProps(s)} alt="" decoding="async" className="size-full object-cover" fetchPriority={k === 0 ? "high" : "auto"} loading={k === 0 ? "eager" : "lazy"} />
+                  <img {...photoProps(s)} alt="" decoding="async" className="size-full object-cover brightness-110 saturate-110" fetchPriority={k === 0 ? "high" : "auto"} loading={k === 0 ? "eager" : "lazy"} />
                 </div>
-                <div aria-hidden className="absolute inset-0 -z-10 bg-black/55" />
+                <div aria-hidden className="absolute inset-0 -z-10 bg-black/35" />
 
                 {/* first screen: the message, vertically centred between the header and the buttons */}
                 <div className="flex flex-1 items-center lg:h-[100svh] lg:flex-none">
@@ -102,7 +103,7 @@ export function Hero({ c, slides, site }: {
                       <Title style={{ "--i": 0 } as React.CSSProperties} className="text-[clamp(32px,6svh,42px)] font-black leading-[1.08] tracking-[-0.04em] text-white sm:text-[clamp(40px,8svh,58px)] lg:text-[clamp(44px,min(4.8vw,9svh),72px)]">
                         <Headline text={s.headline} emphasis={s.headlineEmphasis} />
                       </Title>
-                      <p style={{ "--i": 1 } as React.CSSProperties} className="max-w-lg text-[clamp(15px,2.3svh,17px)] leading-relaxed text-white/90 md:text-[clamp(16px,2.5svh,19px)]"><Subtitle text={s.subtitle} highlight={s.subtitleHighlight} /></p>
+                      <p style={{ "--i": 1 } as React.CSSProperties} className="max-w-lg text-[clamp(15px,2.3svh,17px)] leading-relaxed text-white/90 md:text-[clamp(16px,2.5svh,19px)]"><span className={s.subtitleShort ? "hidden sm:inline" : undefined}><Subtitle text={s.subtitle} highlight={s.subtitleHighlight} /></span>{s.subtitleShort && <span className="sm:hidden"><Subtitle text={s.subtitleShort} highlight={s.subtitleHighlight} /></span>}</p>
                     </div>
                   </div>
                 </div>

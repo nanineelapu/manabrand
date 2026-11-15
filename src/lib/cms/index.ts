@@ -33,7 +33,7 @@ export const NAV_Q = `*[_id == "navigation"][0]{
   mobileQuickLinks[]{label, "href": ${HREF}}
 }`;
 export const HOME_Q = `*[_id == "homePage"][0]{
-  "slides": heroSlides[]{headline, headlineEmphasis, subtitle, subtitleHighlight, category, "image": image.asset->url},
+  "slides": heroSlides[]{headline, headlineEmphasis, subtitle, subtitleShort, subtitleHighlight, category, "image": image.asset->url},
   primaryCta, secondaryCta, categoriesCardTitle, categoriesTitle, trendingTitle, newArrivalsTitle, sellersTitle, sellersSubtitle
 }`;
 export const PAGE_Q = `*[_type == "page" && slug.current == $slug][0]{

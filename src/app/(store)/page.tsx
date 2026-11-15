@@ -2,23 +2,34 @@ import Link from "next/link";
 import { Hero } from "@/components/store/hero";
 import { PopularCategories } from "@/components/store/popular-categories";
 import { WhySection } from "@/components/store/why-section";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, BadgeCheck, MapPin, Star } from "lucide-react";
 import { Reveal } from "@/components/ui/motion";
 import { ProductImage } from "@/components/brand/product-image";
 import { SectionHeader } from "@/components/ui/display";
 import { ProductRail } from "@/components/store/product-card";
 import { getHomeContent, getSiteContent } from "@/lib/cms";
-import { getActiveSellers, getCategories, getCollections, getNewArrivals, getTrending } from "@/lib/data";
+import { getActiveSellers, getCategories, getNewArrivals, getTrending } from "@/lib/data";
 
 /** Home tab title comes from the CMS (Site settings → Home page title). */
 export async function generateMetadata() {
   return { title: { absolute: (await getSiteContent()).defaultTitle } };
 }
 
+const PROMOS = [
+  { title: "Local Favourites", text: "Unique products from the shops around Ichapuram — tea, coffee, spices and more.", href: "/category/gourmet", photo: "coffee" },
+  { title: "Home, Made Easy", text: "Furniture, decor and kitchen picks, delivered within 48 hours.", href: "/category/home", photo: "sofa" },
+] as const;
+
 export default async function HomePage() {
-  const [cats, trending, fresh, collections, sellers, c, site] = await Promise.all([
-    getCategories(), getTrending(8), getNewArrivals(8), getCollections(), getActiveSellers(), getHomeContent(), getSiteContent(),
+  const [cats, trending, fresh, sellers, c, site] = await Promise.all([
+    getCategories(), getTrending(8), getNewArrivals(8), getActiveSellers(), getHomeContent(), getSiteContent(),
   ]);
+
+  // the one featured local seller: Shekar Studio & Gift Shop (falls back to the best-rated active shop if it isn't in the data)
+  const FEATURED_SELLER = "shekar-studio-gift-shop";
+  const active = sellers.filter((x) => x.status === "active");
+  const featured = active.find((x) => x.slug === FEATURED_SELLER) ?? [...active].sort((x, y) => y.rating - x.rating)[0];
+  const localSellers = featured ? [featured] : [];
 
   return (
     <>
@@ -31,19 +42,19 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* collections */}
+      {/* two promo cards — edit the text, photo and link here */}
       <section aria-labelledby="col-h" data-round className="bg-neutral-50">
         <div className="container-page py-12 md:py-16">
-          <Reveal><SectionHeader id="col-h" eyebrow="Curated" title="Featured collections" href="/collections" /></Reveal>
+          <Reveal><SectionHeader id="col-h" eyebrow="Shop local" title="Local favourites" href="/shop" /></Reveal>
           <Reveal className="mt-7 grid gap-4 md:grid-cols-2 md:gap-6">
-            {collections.slice(1, 3).map((col) => (
-              <Link key={col.id} href={`/collections/${col.slug}`} className="group relative isolate aspect-[16/10] overflow-hidden rounded-[28px] md:aspect-[16/9] md:rounded-[36px]">
-                <div className="size-full transition-transform duration-700 group-hover:scale-105"><ProductImage photo={col.photo} seed={col.slug} w={900} h={560} sizes="50vw" rounded={false} /></div>
+            {PROMOS.map((promo) => (
+              <Link key={promo.title} href={promo.href} className="group relative isolate aspect-[16/10] overflow-hidden rounded-[28px] md:aspect-[16/9] md:rounded-[36px]">
+                <div className="size-full transition-transform duration-700 group-hover:scale-105"><ProductImage photo={promo.photo} seed={promo.title} w={900} h={560} sizes="50vw" rounded={false} /></div>
                 <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
                 <div className="absolute inset-x-5 bottom-5 flex items-end justify-between gap-4 text-white md:inset-x-7 md:bottom-7">
                   <div className="min-w-0">
-                    <h3 className="text-xl font-black tracking-tight md:text-2xl">{col.name}</h3>
-                    <p className="mt-1 line-clamp-1 text-[13px] text-white/80">{col.story}</p>
+                    <h3 className="text-xl font-black tracking-tight md:text-2xl">{promo.title}</h3>
+                    <p className="mt-1 line-clamp-2 text-[13px] text-white/85">{promo.text}</p>
                   </div>
                   <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-black transition-colors group-hover:bg-primary group-hover:text-white"><ArrowUpRight className="size-[18px]" /></span>
                 </div>
@@ -60,18 +71,29 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* sellers */}
+      {/* sellers — all local to Ichapuram */}
       <section aria-labelledby="sl-h" data-round className="bg-neutral-50">
         <div className="container-page py-12 md:py-16">
-          <Reveal><SectionHeader id="sl-h" eyebrow="Trusted" title={c.sellersTitle} subtitle={c.sellersSubtitle} /></Reveal>
-          <div className="no-scrollbar snap-row -mx-4 mt-7 flex gap-3 overflow-x-auto px-4 md:mx-0 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:px-0 lg:grid-cols-4">
-            {sellers.filter((x) => x.rating >= 4.5).slice(0, 4).map((x) => (
-              <Link key={x.id} href={`/sellers/${x.slug}`} className="group flex w-[72vw] max-w-[300px] shrink-0 items-center gap-3.5 rounded-3xl border border-black/10 bg-white p-4 transition-all hover:-translate-y-0.5 hover:border-primary md:w-auto md:max-w-none">
-                <span className="grid size-12 shrink-0 place-items-center rounded-2xl text-lg font-bold text-white" style={{ background: x.tone[1] }}>{x.name[0]}</span>
-                <span className="min-w-0"><span className="block truncate text-sm font-bold">{x.name}</span><span className="block truncate text-xs text-muted">{x.city} · ★ {x.rating.toFixed(1)}</span></span>
-              </Link>
+          <Reveal><SectionHeader id="sl-h" eyebrow="Ichapuram" title={c.sellersTitle} subtitle={c.sellersSubtitle} /></Reveal>
+          <ul className="mt-7">
+            {localSellers.map((x) => (
+              <li key={x.id} className="max-w-xl">
+                <Link href={`/sellers/${x.slug}`} className="group flex h-full flex-col rounded-[26px] border border-black/10 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="grid size-14 shrink-0 place-items-center rounded-2xl text-xl font-black text-white" style={{ background: x.tone[1] }}>{x.name[0]}</span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-bold"><BadgeCheck className="size-3.5 text-primary" />Local seller</span>
+                  </div>
+                  <h3 className="mt-5 text-[17px] font-extrabold tracking-tight">{x.name}</h3>
+                  <p className="mt-1.5 flex items-start gap-1.5 text-[13px] font-medium text-fg"><MapPin className="mt-0.5 size-3.5 shrink-0 text-primary" />{x.pickupAddress?.replace(/, Andhra Pradesh$/, "") ?? x.city}</p>
+                  <p className="mb-5 mt-2 line-clamp-2 text-[13px] leading-relaxed text-muted">{x.blurb}</p>
+                  <div className="mt-auto flex items-center justify-between gap-2 border-t border-black/10 pt-4 text-xs font-medium text-muted">
+                    <span className="inline-flex items-center gap-1"><Star className="size-3.5 fill-primary text-primary" />{x.rating.toFixed(1)} · Owner: {x.owner}</span>
+                    <span className="inline-flex items-center gap-1 font-bold text-fg group-hover:text-primary">Visit shop <ArrowUpRight className="size-3.5" /></span>
+                  </div>
+                </Link>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </section>
 

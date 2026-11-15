@@ -24,6 +24,8 @@ export interface CmsNav {
 /** One hero slide (a "template" the client adds in Sanity → Home page → Hero slides). */
 export interface HeroSlide {
   headline: string; headlineEmphasis?: string; subtitle: string; subtitleHighlight?: string;
+  /** shorter sub-headline shown on phones (falls back to the full one) */
+  subtitleShort?: string;
   /** category slug — the product cards on the slide come from it; empty = trending products */
   category?: string;
   /** optional faint background photo for this slide */
