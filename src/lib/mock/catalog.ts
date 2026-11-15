@@ -1,4 +1,5 @@
 import type { Category, Collection, Product, ProductColor, Seller } from "@/types";
+import { DEFAULT_PERMISSIONS } from "@/lib/permissions";
 import type { PhotoKind } from "@/lib/images";
 import { mulberry32 } from "@/lib/utils";
 
@@ -22,7 +23,7 @@ export const subcategories: Record<string, string[]> = {
 };
 
 /* =============================================================== Sellers */
-const seller = (s: Omit<Seller, "productCount">): Seller => ({ ...s, productCount: 0 });
+const seller = (s: Omit<Seller, "productCount" | "permissions">): Seller => ({ ...s, productCount: 0, permissions: { ...DEFAULT_PERMISSIONS } });
 export const sellers: Seller[] = [
   seller({ id: "s1", slug: "kalamkari-co", name: "Kalamkari & Co.", owner: "Meera Reddy", city: "Ichapuram", state: "Andhra Pradesh", email: "hello@kalamkari.in", phone: "+91 98480 11223", joined: "2025-02-14", status: "active", rating: 4.7, followers: 12840, totalSales: 4820000, commissionPct: 12, tone: ["#fdecc6", "#e09a1f"], blurb: "Hand-block printed cottons and natural-dye ethnic wear from local Ichapuram artisans.", kyc: "verified", gstin: "36AAKFK1234A1Z5" }),
   seller({ id: "s2", slug: "shekar-studio-gift-shop", name: "Shekar Studio & Gift Shop", owner: "S Shekar", city: "Ichapuram", state: "Andhra Pradesh", pickupAddress: "Near Sri Laxmi Surya Lodge, Ichapuram, Andhra Pradesh", email: "shekar.studio@example.com", phone: "+91 98250 44871", joined: "2025-03-02", status: "active", rating: 4.5, followers: 8420, totalSales: 3120000, commissionPct: 12, tone: ["#fbeccd", "#c9852b"], blurb: "Studio and gift shop in Ichapuram, near Sri Laxmi Surya Lodge — thoughtful gifts for every occasion.", kyc: "verified", gstin: "24AABCI5521M1ZQ" }),

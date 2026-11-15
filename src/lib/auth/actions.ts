@@ -13,7 +13,8 @@ export type AuthResult =
   | { ok: false; error: string; fieldErrors?: Record<string, string> };
 
 const GENERIC_LOGIN_ERROR = "Incorrect mobile number or PIN.";
-const NOT_CONFIGURED = "Sign-in isn’t connected yet. Add your Supabase keys and PIN_PEPPER (see .env.example).";
+// shown to shoppers while the database isn't connected (owner: add the Supabase keys + PIN_PEPPER, see docs/SUPABASE_SETUP.md)
+const NOT_CONFIGURED = "Accounts aren’t switched on yet — the store is still being set up. Please check back soon.";
 const ready = () => isSupabaseConfigured() && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY) && Boolean(process.env.PIN_PEPPER);
 const lockedMsg = (m: number) => `Too many attempts. Try again in ${m} minute${m === 1 ? "" : "s"}, or reset your PIN by email.`;
 

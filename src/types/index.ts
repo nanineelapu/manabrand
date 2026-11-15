@@ -77,6 +77,11 @@ export interface Collection {
 
 export type SellerStatus = "active" | "pending" | "suspended" | "rejected";
 
+/** Set by the admin per seller; see src/lib/permissions.ts. */
+export interface SellerPermissions {
+  add_products: boolean; publish_directly: boolean; manage_inventory: boolean; run_promotions: boolean; view_earnings: boolean;
+}
+
 export interface Seller {
   id: string;
   slug: string;
@@ -102,6 +107,7 @@ export interface Seller {
   pickupAddress?: string;
   holidayMode?: boolean;
   bankLast4?: string;
+  permissions: SellerPermissions;
 }
 
 export interface Address {

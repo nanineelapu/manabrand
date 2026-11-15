@@ -56,7 +56,7 @@ Copy `.env.example` to `.env.local` and fill it in. Never commit `.env.local` (i
 ## Connecting the backend
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. In the SQL Editor run the files in `supabase/migrations/` **in order** (`…0001` to `…0007`), then `supabase/seed.sql`.
+2. In the SQL Editor run the files in `supabase/migrations/` **in order** (`…0001` to `…0008`), then `supabase/seed.sql`.
 3. Fill in `.env.local`, then restart `npm run dev`.
 4. Create your admin account:
    ```bash

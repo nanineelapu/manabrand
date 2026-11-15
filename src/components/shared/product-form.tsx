@@ -29,8 +29,8 @@ type NewPhoto = { key: string; file: File; preview: string };
 const SWATCHES: ProductColor[] = [{ name: "Vermilion", hex: "#cc4a33" }, { name: "Indigo", hex: "#34478f" }, { name: "Marigold", hex: "#e09a1f" }, { name: "Forest", hex: "#2f6b4f" }, { name: "Ink Black", hex: "#2a2420" }, { name: "Ivory", hex: "#eee3d0" }, { name: "Dusty Rose", hex: "#c98a8a" }, { name: "Teal", hex: "#2a7f84" }];
 
 export function ProductForm({
-  product, categories, subcategories, base, role, sellers, sellerId,
-}: { product?: Product; categories: Category[]; subcategories: Record<string, string[]>; base: string; role: "admin" | "seller"; sellers?: { id: string; name: string }[]; sellerId?: string }) {
+  product, categories, subcategories, base, role, sellers, sellerId, canPublish = false,
+}: { product?: Product; categories: Category[]; subcategories: Record<string, string[]>; base: string; role: "admin" | "seller"; sellers?: { id: string; name: string }[]; sellerId?: string; canPublish?: boolean }) {
   const router = useRouter();
   const [v, setV] = useState({
     name: product?.name ?? "", cat: product?.categorySlug ?? "", sub: product?.subcategory ?? "", description: product?.description ?? "", fabric: product?.fabric ?? "",
@@ -84,7 +84,7 @@ export function ProductForm({
     setErrs(er);
     if (Object.keys(er).length) { toast.error("Please fix the highlighted fields"); document.querySelector("[aria-invalid=true]")?.scrollIntoView({ behavior: "smooth", block: "center" }); return; }
     setSaving(true);
-    const done = () => { toast.success(publish ? (role === "seller" ? "Submitted for review — we’ll approve within 24h" : "Product published") : "Draft saved"); router.push(`${base}/products`); router.refresh(); };
+    const done = () => { toast.success(publish ? (role === "seller" && !canPublish ? "Submitted for review — we’ll approve within 24h" : "Product published") : "Draft saved"); router.push(`${base}/products`); router.refresh(); };
     if (!isSupabaseConfigured()) { await new Promise((r) => setTimeout(r, 600)); done(); return; } // demo mode keeps the old behaviour
     try {
       const res = await saveProduct({
@@ -214,7 +214,7 @@ export function ProductForm({
         <div className="sticky bottom-[calc(var(--tabbar-h)+10px+env(safe-area-inset-bottom))] z-10 flex items-center gap-3 rounded-card border border-line bg-card/95 p-3 shadow-pop backdrop-blur lg:bottom-4">
           <label className="mr-auto flex items-center gap-2.5 pl-1 text-sm font-medium"><Switch label="Publish" checked={v.live} onChange={(b) => set("live", b)} /><span className="hidden sm:inline">{v.live ? "Publish on save" : "Save as draft"}</span></label>
           <Button type="button" variant="outline" onClick={() => router.push(`${base}/products`)}>Cancel</Button>
-          <Button type="submit" loading={saving}>{product ? "Save changes" : role === "seller" ? "Submit for review" : "Create product"}</Button>
+          <Button type="submit" loading={saving}>{product ? "Save changes" : role === "seller" ? (canPublish ? "Publish product" : "Submit for review") : "Create product"}</Button>
         </div>
       </div>
 

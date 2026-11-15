@@ -5,8 +5,19 @@ import { passwordError, normalizeEmail, normalizePhone, nameError } from "@/lib/
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { clampStr, demoResult, fail, guarded, isUuid, live, slugify, type Result } from "./common";
 import { lockoutStatus, recordAttempt, clientIp } from "@/lib/auth/throttle";
+import { DEFAULT_PERMISSIONS, mergePermissions } from "@/lib/permissions";
+import type { SellerPermissions } from "@/types";
 
 const bust = (...paths: string[]) => paths.forEach((p) => revalidatePath(p, "layout"));
+
+/** The signed-in seller's store + what the admin allows them to do. Works even before the permissions column exists (defaults). */
+async function mySeller(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
+  let r = await supabase.from("sellers").select("id, status, permissions").eq("owner_id", userId).maybeSingle();
+  if (r.error) r = (await supabase.from("sellers").select("id, status").eq("owner_id", userId).maybeSingle()) as typeof r;
+  const row = r.data as { id: string; status: string; permissions?: unknown } | null;
+  return row ? { id: row.id, status: row.status, perms: mergePermissions(row.permissions) } : null;
+}
+const DENIED = (what: string) => ({ ok: false as const, error: `${what} isn’t enabled for your store. Ask the ManaBrand team to switch it on.` });
 
 /* ============================================================ order flow */
 /** Shared by admin and seller. The database decides who may make which step (set_order_status). */
@@ -55,11 +66,13 @@ export async function saveProduct(input: ProductInput): Promise<Result<{ id: str
 
     // who owns it
     let sellerId = input.sellerId;
+    let sellerPerms: SellerPermissions = DEFAULT_PERMISSIONS;
     if (actor.role === "seller") {
-      const { data: s } = await supabase.from("sellers").select("id, status").eq("owner_id", actor.id).maybeSingle();
-      if (!s) return { ok: false, error: "Seller account not found." };
-      if ((s as { status: string }).status !== "active") return { ok: false, error: "Your store is awaiting approval — you can list products once it’s approved." };
-      sellerId = (s as { id: string }).id;
+      const me = await mySeller(supabase, actor.id);
+      if (!me) return { ok: false, error: "Seller account not found." };
+      if (me.status !== "active") return { ok: false, error: "Your store is awaiting approval — you can list products once it’s approved." };
+      if (!me.perms.add_products) return DENIED("Adding and editing products");
+      sellerId = me.id; sellerPerms = me.perms;
     }
     if (!isUuid(sellerId)) return { ok: false, error: "Choose a seller." };
 
@@ -73,7 +86,8 @@ export async function saveProduct(input: ProductInput): Promise<Result<{ id: str
     }
 
     const isAdmin = actor.role === "admin";
-    const status = isAdmin ? (input.publish ? "active" : "draft") : input.publish ? "pending_review" : "draft";
+    // admin: publishes directly. seller: goes live only if the admin allowed "publish without review", otherwise waits for review
+    const status = isAdmin ? (input.publish ? "active" : "draft") : input.publish ? (sellerPerms.publish_directly ? "active" : "pending_review") : "draft";
     const fields = {
       name, description: clampStr(input.description, 600), material: clampStr(input.material, 200), price: Math.round(input.price), mrp: Math.round(input.mrp),
       option_label: clampStr(input.optionLabel, 20) || "Standard", category_id: catRow.id, subcategory_id: subId, photo_kind: catRow.photo_kind, status,
@@ -124,9 +138,15 @@ export async function removeProduct(id: string): Promise<Result<{ archived: bool
 
 export async function setProductStatus(id: string, status: "active" | "draft"): Promise<Result> {
   return guarded(["admin", "seller"], async (actor) => {
-    // sellers may only pause (→ draft) or submit (→ review); only admins publish
-    const next = actor.role === "admin" ? status : status === "active" ? "pending_review" : "draft";
-    const { error } = await (await createClient()).from("products").update({ status: next }).eq("id", id);
+    // a seller may always pause (→ draft). Putting a product live: straight away only if the admin allowed "publish without review", otherwise it goes to review
+    const supabase = await createClient();
+    let next: "active" | "draft" | "pending_review" = status;
+    if (actor.role === "seller") {
+      const me = await mySeller(supabase, actor.id);
+      if (!me || me.status !== "active") return { ok: false, error: "Your store isn’t active." };
+      if (status === "active") { if (!me.perms.add_products) return DENIED("Publishing products"); next = me.perms.publish_directly ? "active" : "pending_review"; }
+    }
+    const { error } = await supabase.from("products").update({ status: next }).eq("id", id);
     if (error) throw new Error(error.message);
     bust("/admin", "/seller", "/shop");
     return { ok: true };
@@ -156,8 +176,9 @@ export async function removeProductImage(imageId: string): Promise<Result> {
 
 /* ========================================================== seller inventory */
 export async function updateInventory(updates: { productId: string; value: string; stock: number }[]): Promise<Result<{ updated: number }>> {
-  return guarded(["admin", "seller"], async () => {
+  return guarded(["admin", "seller"], async (actor) => {
     const supabase = await createClient();
+    if (actor.role === "seller") { const me = await mySeller(supabase, actor.id); if (!me || me.status !== "active") return { ok: false, error: "Your store isn’t active." }; if (!me.perms.manage_inventory) return DENIED("Stock management"); }
     let n = 0;
     for (const u of updates.slice(0, 500)) {
       if (!isUuid(u.productId)) continue;
@@ -325,6 +346,16 @@ export async function setSellerStatus(sellerId: string, status: "active" | "susp
     bust("/admin", "/seller"); return { ok: true };
   });
 }
+/** Admin: choose what this seller may do in their dashboard. */
+export async function setSellerPermissions(sellerId: string, perms: SellerPermissions): Promise<Result> {
+  return guarded(["admin"], async () => {
+    if (!isUuid(sellerId)) return { ok: false, error: "Seller not found." };
+    const clean = mergePermissions(perms);
+    const { error } = await (await createClient()).from("sellers").update({ permissions: clean }).eq("id", sellerId);
+    if (error) return { ok: false, error: /permissions/.test(error.message) ? "Run the latest database migration (…0008_seller_permissions.sql) first." : error.message };
+    bust("/admin", "/seller"); return { ok: true };
+  });
+}
 export async function setSellerCommission(sellerId: string, pct: number): Promise<Result> {
   return guarded(["admin"], async () => {
     if (!(pct >= 0 && pct <= 40)) return { ok: false, error: "Enter a rate between 0 and 40%." };
@@ -397,8 +428,11 @@ export async function savePromotion(input: { id?: string; name: string; percent:
     if (clampStr(input.name, 60).length < 3) return { ok: false, error: "Give your promotion a name." };
     if (!(input.percent >= 5 && input.percent <= 70)) return { ok: false, error: "Choose between 5% and 70%." };
     const supabase = await createClient();
-    const { data: s } = await supabase.from("sellers").select("id").eq("owner_id", actor.id).maybeSingle();
-    if (!s) return { ok: false, error: "Seller account not found." };
+    const me = await mySeller(supabase, actor.id);
+    if (!me) return { ok: false, error: "Seller account not found." };
+    if (me.status !== "active") return { ok: false, error: "Your store isn’t active." };
+    if (!me.perms.run_promotions) return DENIED("Promotions");
+    const s = { id: me.id };
     const row = { seller_id: (s as { id: string }).id, name: clampStr(input.name, 60), percent: Math.round(input.percent), scope: { all: input.scope === "all", label: input.scope }, ends_on: input.endsOn || null };
     const q = input.id && isUuid(input.id) ? supabase.from("promotions").update(row).eq("id", input.id).select("id").single() : supabase.from("promotions").insert(row).select("id").single();
     const { data, error } = await q;
@@ -407,7 +441,9 @@ export async function savePromotion(input: { id?: string; name: string; percent:
   });
 }
 export async function setPromotionActive(id: string, active: boolean): Promise<Result> {
-  return guarded(["seller"], async () => {
+  return guarded(["seller"], async (actor) => {
+    const me = await mySeller(await createClient(), actor.id);
+    if (!me || !me.perms.run_promotions) return DENIED("Promotions");
     const { error } = await (await createClient()).from("promotions").update({ active }).eq("id", id);
     if (error) throw new Error(error.message);
     bust("/seller"); return { ok: true };

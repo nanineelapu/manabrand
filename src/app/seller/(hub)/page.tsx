@@ -26,8 +26,8 @@ export default async function SellerHome() {
   return (
     <>
       <header className="mb-5 md:mb-7">
-        <p className="text-sm font-medium text-muted">Sunday, 15 November</p>
-        <h1 className="font-display text-[30px] font-semibold leading-tight tracking-tight md:text-4xl">Namaste, Meera 👋</h1>
+        <p className="text-sm font-medium text-muted">{new Intl.DateTimeFormat("en-IN", { weekday: "long", day: "numeric", month: "long", timeZone: "Asia/Kolkata" }).format(new Date())}</p>
+        <h1 className="font-display text-[30px] font-semibold leading-tight tracking-tight md:text-4xl">Namaste, {d.seller.owner.split(" ")[0]} 👋</h1>
         <p className="mt-1 text-[15px] text-muted">{d.toConfirm + d.toPack + d.toShip > 0 ? <>You have <b className="text-fg">{d.toConfirm + d.toPack + d.toShip} orders</b> that need you today.</> : "You’re all caught up — nice work!"}</p>
       </header>
 

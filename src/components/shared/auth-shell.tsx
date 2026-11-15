@@ -8,12 +8,12 @@ const variants: Record<"customer" | "seller" | "admin", { photo: string; lead: s
   customer: {
     photo: "1572804013309-59a88b7e92f1", lead: "Everything you love,", hot: "one login.",
     items: [{ icon: Truck, text: "Free shipping above ₹1,499" }, { icon: Clock, text: "Delivery within 48 hours" }, { icon: BadgeCheck, text: "Verified sellers across India" }],
-    quote: "“Arrived within two days, exactly as shown. Delivery was super quick.”", by: "Ananya, Mumbai", back: { href: "/", label: "Back to store" },
+    quote: "“Arrived within two days, exactly as shown. Delivery was super quick.”", by: "A ManaBrand shopper, Ichapuram", back: { href: "/", label: "Back to store" },
   },
   seller: {
     photo: "1618220179428-22790b461013", lead: "Sell to all of India,", hot: "from one place.",
     items: [{ icon: Boxes, text: "List products and manage stock" }, { icon: BarChart3, text: "Track orders and sales live" }, { icon: Wallet, text: "Clear, simple payouts" }],
-    quote: "“I went from Instagram DMs to 400 orders a month in one season.”", by: "Meera R., Kalamkari & Co.", back: { href: "/", label: "Back to store" },
+    quote: "“I went from Instagram DMs to 400 orders a month in one season.”", by: "A local ManaBrand seller", back: { href: "/", label: "Back to store" },
   },
   admin: {
     photo: "1517336714731-489689fd1ca8", lead: "Run the marketplace,", hot: "every order.",

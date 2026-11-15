@@ -300,6 +300,31 @@ async function main() {
   await as("authenticated", shopper);
   await mustFail("customer cannot upload to banners", () => db.query(`insert into storage.objects (bucket_id, name) values ('banners','x.jpg')`), /row-level/);
 
+  // ---- seller permissions: the admin decides what each seller may do ------------------
+  const insProd = (slug: string, status: string) => db.query(`insert into products (slug, seller_id, category_id, name, price, mrp, status) select $1, $2, (select id from categories limit 1), 'Perm test', 100, 100, $3`, [slug, prod.seller_id, status]);
+  // (an earlier flow test moved this store to a different owner account, so look the current owner up)
+  await as("postgres");
+  const permOwner = (await one<{ owner_id: string }>(`select owner_id from sellers where id = $1`, [prod.seller_id]))[0].owner_id;
+  await as("authenticated", permOwner);
+  await insProd("perm-review", "pending_review");
+  ok("default seller can submit a product for review", true);
+  await mustFail("default seller cannot publish directly", () => insProd("perm-live-1", "active"), /row-level/);
+  await mustFail("a seller cannot grant themselves permissions", () => db.query(`update sellers set permissions = '{"add_products":true,"publish_directly":true}'::jsonb where id = $1`, [prod.seller_id]), /protected seller fields/);
+  await as("authenticated", admin);
+  await db.query(`update sellers set permissions = permissions || '{"publish_directly":true}'::jsonb where id = $1`, [prod.seller_id]);
+  await as("authenticated", permOwner);
+  await insProd("perm-live-2", "active");
+  ok("admin can allow a seller to publish directly", true);
+  await as("authenticated", admin);
+  await db.query(`update sellers set permissions = permissions || '{"add_products":false}'::jsonb where id = $1`, [prod.seller_id]);
+  await as("authenticated", permOwner);
+  await mustFail("admin can switch product access off for a seller", () => insProd("perm-off", "draft"), /row-level/);
+  await mustFail("…and they cannot edit existing products either", async () => { const r = await db.query(`update products set price = 1 where slug = 'perm-review' returning id`); if (!r.rows.length) throw new Error("row-level: nothing updated"); }, /row-level/);
+  await as("postgres");
+  ok("seller_can is false for a seller who is not approved", (await one<{ c: boolean }>(`select seller_can((select id from sellers where status='pending' limit 1), 'add_products') c`))[0].c === false);
+  await as("authenticated", admin);
+  await db.query(`update sellers set permissions = '{"add_products":true,"publish_directly":false,"manage_inventory":true,"run_promotions":true,"view_earnings":true}'::jsonb where id = $1`, [prod.seller_id]);
+
   // ---- collections: only an admin can create / change / delete them; everyone can read them
   await as("authenticated", shopper);
   await mustFail("customer cannot create a collection", () => db.query(`insert into collections (slug, name) values ('hack', 'Hack')`), /row-level/);

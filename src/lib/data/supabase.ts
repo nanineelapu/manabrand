@@ -6,6 +6,7 @@
  *  - pub()  → cookie-less client for public catalogue reads (cache/static friendly)
  *  - sb()   → client bound to the signed-in user's session; Row-Level Security decides what comes back
  */
+import { mergePermissions } from "@/lib/permissions";
 import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
 import { analytics as mockAnalytics } from "@/lib/mock/ops";
@@ -55,6 +56,7 @@ function mapSeller(r: any, extra: { productCount?: number; rating?: number; tota
     totalSales: extra.totalSales ?? 0, commissionPct: Number(r.commission_pct), tone: [r.tone_from ?? sellerToneDefault[0], r.tone_to ?? sellerToneDefault[1]],
     blurb: r.blurb ?? "", kyc: r.kyc, gstin: r.gstin ?? "", logoUrl: r.logo_url ?? undefined, bannerUrl: r.banner_url ?? undefined,
     pickupAddress: r.pickup_address ?? undefined, holidayMode: r.holiday_mode, bankLast4: r.bank_account_last4 ?? undefined,
+    permissions: mergePermissions(r.permissions),
   };
 }
 

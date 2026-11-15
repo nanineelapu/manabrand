@@ -3,12 +3,15 @@ import { BarChart } from "@/components/shared/charts";
 import { PageHeader, Panel } from "@/components/shared/blocks";
 import { PayoutsView } from "@/components/shared/payouts-view";
 import { DetailRow } from "@/components/ui/display";
-import { getAnalytics, getSellerDashboard, getSellerPayouts } from "@/lib/data";
+import { LockedFeature } from "@/components/seller/locked-feature";
+import { getAnalytics, getCurrentSeller, getSellerDashboard, getSellerPayouts } from "@/lib/data";
 import { formatCompactINR, formatINR } from "@/lib/utils";
 
 export const metadata = { title: "Earnings" };
 
 export default async function EarningsPage() {
+  const me = await getCurrentSeller();
+  if (me && !me.permissions.view_earnings) return <LockedFeature feature="Earnings and payouts" />;
   const [payouts, d, an] = await Promise.all([getSellerPayouts(), getSellerDashboard(), getAnalytics()]);
   const gross = payouts.reduce((a, b) => a + b.gross, 0), fee = payouts.reduce((a, b) => a + b.commission, 0);
   return (

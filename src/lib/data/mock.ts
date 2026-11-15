@@ -105,10 +105,11 @@ export async function ratingBreakdown(productId: string) {
 
 /* --------------------------------------------------------------- Account */
 export const getCurrentCustomer = async () => currentCustomer;
-export const getMyOrders = async () => orders.filter((o) => o.customerId === currentCustomer.id);
+// Demo mode has no signed-in shopper, so the customer-facing lists are empty (no invented orders or addresses).
+export const getMyOrders = async () => [] as typeof orders;
 export const getOrderByIdOrNumber = async (key: string) => orders.find((o) => o.id === key || o.number === key);
-export const getMyAddresses = async () => addresses;
-export const getMyReturns = async () => returns.filter((r) => orders.find((o) => o.id === r.orderId)?.customerId === currentCustomer.id);
+export const getMyAddresses = async () => [] as typeof addresses;
+export const getMyReturns = async () => [] as typeof returns;
 
 /* ----------------------------------------------------------------- Admin */
 export async function getAdminDashboard() {

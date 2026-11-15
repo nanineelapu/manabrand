@@ -1,24 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { BadgeCheck, Check, FileCheck2, Mail, MapPin, Percent, Phone, ShieldAlert, X } from "lucide-react";
+import { BadgeCheck, Check, FileCheck2, KeyRound, Mail, MapPin, Percent, Phone, ShieldAlert, X } from "lucide-react";
 import { Panel, StatCard } from "@/components/shared/blocks";
 import { StatusBadge } from "@/components/shared/status";
 import { Button } from "@/components/ui/button";
 import { DetailRow } from "@/components/ui/display";
-import { Field, Input } from "@/components/ui/form";
+import { Field, Input, Switch } from "@/components/ui/form";
 import { Sheet } from "@/components/ui/sheet";
-import { setSellerCommission, setSellerStatus } from "@/lib/actions/manage";
+import { setSellerCommission, setSellerPermissions, setSellerStatus } from "@/lib/actions/manage";
+import { PERMISSION_DEFS } from "@/lib/permissions";
 import { useAct } from "@/lib/actions/use-act";
 import { toast } from "@/lib/stores";
 import { formatCompactINR, formatDate, formatNumber } from "@/lib/utils";
-import type { Seller, SellerStatus } from "@/types";
+import type { Seller, SellerPermissions, SellerStatus } from "@/types";
 
 export function SellerDetail({ seller, children }: { seller: Seller; children?: React.ReactNode }) {
   const [status, setStatus] = useState<SellerStatus>(seller.status);
   const [kyc, setKyc] = useState(seller.kyc);
   const [commission, setCommission] = useState(String(seller.commissionPct));
   const [confirm, setConfirm] = useState<null | "suspend" | "reject">(null);
+  const [perms, setPerms] = useState<SellerPermissions>(seller.permissions);
+  const [savedPerms, setSavedPerms] = useState<SellerPermissions>(seller.permissions);
+  const permsDirty = PERMISSION_DEFS.some((d) => perms[d.key] !== savedPerms[d.key]);
   const { act: run } = useAct();
 
   const act = (to: SellerStatus, msg: string) =>
@@ -59,6 +63,22 @@ export function SellerDetail({ seller, children }: { seller: Seller; children?: 
           </ul>
         </Panel>
       </div>
+
+      <Panel title="Seller access" action={<KeyRound className="size-4 text-muted" />}>
+        <p className="mb-3 text-sm text-muted">Choose what {seller.name} can do in their seller dashboard. You always have full access to everything; sellers only get what you switch on here.{status !== "active" && " These take effect once the store is approved."}</p>
+        <ul className="divide-y divide-line">
+          {PERMISSION_DEFS.map((d) => (
+            <li key={d.key} className="flex items-center justify-between gap-4 py-3">
+              <div className="min-w-0"><p className="text-sm font-medium">{d.label}</p><p className="text-xs text-muted">{d.desc}</p></div>
+              <Switch label={d.label} checked={perms[d.key]} onChange={(v) => setPerms((p) => ({ ...p, [d.key]: v }))} />
+            </li>
+          ))}
+        </ul>
+        <div className="mt-4 flex items-center gap-3">
+          <Button disabled={!permsDirty} onClick={() => run(() => setSellerPermissions(seller.id, perms), { success: "Seller access updated", refresh: false, onOk: () => setSavedPerms(perms) })}>Save access</Button>
+          {permsDirty && <button type="button" onClick={() => setPerms(savedPerms)} className="text-sm font-medium text-muted underline underline-offset-4">Undo changes</button>}
+        </div>
+      </Panel>
 
       <Panel title="Commission" action={<Percent className="size-4 text-muted" />}>
         <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); const n = Number(commission); if (!(n >= 0 && n <= 40)) { toast.error("Enter a rate between 0 and 40%"); return; } run(() => setSellerCommission(seller.id, n), { success: `Commission set to ${n}% for ${seller.name}`, refresh: false }); }}>

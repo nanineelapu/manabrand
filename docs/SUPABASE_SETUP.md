@@ -12,7 +12,8 @@ Everything is already written. You only need to connect a Supabase project.
    5. `supabase/migrations/20261115000005_functions.sql`  (order / stock / coupon / payout logic as Postgres functions)
    6. `supabase/migrations/20261115000006_storage.sql`  (buckets `product-images`, `seller-assets`, `banners` public; `seller-kyc` private)
    7. `supabase/migrations/20261115000007_app_support.sql`  (follows, review author names, order-item colours, seller views)
-   8. `supabase/seed.sql`  (68 products, 6 categories, 11 sellers, 4 collections)
+   8. `supabase/migrations/20261115000008_seller_permissions.sql`  (per-seller access that the admin controls)
+   9. `supabase/seed.sql`  (68 products, 6 categories, 11 sellers, 4 collections)
    *(Or with the CLI: `supabase link` then `supabase db push`.)*
 
 ## 2. Environment
@@ -43,6 +44,11 @@ Then sign in at `/admin/login`. Sellers don't need the command any more: they re
 - `/register` → name, mobile, **email**, 6-digit PIN → you're signed in; a welcome email goes to the address given.
 - `/login` → mobile + PIN. 5 wrong PINs in 15 min locks that number for the rest of the window.
 - `/forgot-password` → enter email → link → `/reset-pin`.
+
+## Who can do what (the three roles)
+- **Customer** — browses, orders (cash on delivery until a payment gateway is connected), tracks their own orders. Must register / sign in to order.
+- **Seller** — registers, then waits for approval. Once approved they run their own shop. **What each seller may do is set by the admin** in Admin → Sellers → *Seller access*: add & edit products, publish without review, manage stock, run promotions, see earnings. A normal seller can add products (which an admin reviews before they go live), update stock, run promotions and see earnings; the admin can switch any of these off, or allow a trusted seller to publish directly. Rules are enforced in the database, not just the screens.
+- **Admin** — full access to everything.
 
 ## How the PIN is protected
 1. **Never stored.** The PIN is turned into `HMAC-SHA256(PIN_PEPPER, "<phone>:<pin>")` and only that goes to Supabase Auth, which bcrypt-hashes it. A stolen database cannot be brute-forced (1,000,000 possible PINs would otherwise take seconds) without the server-only pepper.
