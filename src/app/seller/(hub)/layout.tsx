@@ -8,7 +8,7 @@ export default async function SellerLayout({ children }: LayoutProps<"/seller">)
   if (!seller) redirect("/seller/login");
   const [notifications, d] = await Promise.all([getNotifications(), getSellerDashboard(seller.id)]);
   return (
-    <SellerShell seller={{ name: seller.name, owner: seller.owner, slug: seller.slug, status: seller.status }} notifications={notifications.filter((n) => n.kind !== "seller").slice(0, 5)} badges={{ orders: d.toConfirm + d.toPack, returns: d.returnsOpen }}>
+    <SellerShell seller={{ name: seller.name, owner: seller.owner, slug: seller.slug, status: seller.status, kyc: seller.kyc }} notifications={notifications.filter((n) => n.kind !== "seller").slice(0, 5)} badges={{ orders: d.toConfirm + d.toPack, returns: d.returnsOpen }}>
       {children}
     </SellerShell>
   );
