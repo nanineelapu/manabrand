@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { AnnouncementBar } from "@/components/store/announcement-bar";
+import { HeroBrandFlow } from "@/components/store/hero-brand-flow";
 import type { CmsHome, CmsSite, HeroSlide } from "@/lib/cms/types";
 import { cn } from "@/lib/utils";
 
@@ -90,23 +91,51 @@ export function Hero({ c, slides, site }: {
             const Title = k === 0 ? "h1" : "h2";
             return (
               <div key={k} role="group" aria-roledescription="slide" aria-label={`${k + 1} of ${n}`} aria-hidden={!active} inert={!active} className="relative flex w-full shrink-0 flex-col overflow-hidden">
-                <div className="absolute inset-0 -z-20">
-                  <picture>
-                    {s.mobileImage && <source media="(max-width: 767px)" srcSet={s.mobileImage} />}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img {...photoProps(s)} alt="" decoding="async" className="size-full object-cover brightness-110 saturate-110" fetchPriority={k === 0 ? "high" : "auto"} loading={k === 0 ? "eager" : "lazy"} />
-                  </picture>
-                </div>
-                <div aria-hidden className="absolute inset-0 -z-10 bg-black/35" />
+                {k === 0 ? (
+                  /* Slide 1: Highlighting the ManaBrand logo with continuous 3D flow animation */
+                  <HeroBrandFlow active={active} />
+                ) : (
+                  <>
+                    <div className="absolute inset-0 -z-20">
+                      <picture>
+                        {s.mobileImage && <source media="(max-width: 767px)" srcSet={s.mobileImage} />}
+                        <img {...photoProps(s)} alt="" decoding="async" className="size-full object-cover brightness-110 saturate-110" fetchPriority="auto" loading="lazy" />
+                      </picture>
+                    </div>
+                    <div aria-hidden className="absolute inset-0 -z-10 bg-black/35" />
+                  </>
+                )}
 
                 {/* first screen: the message, vertically centred between the header and the buttons */}
                 <div className="flex flex-1 items-center max-md:items-end lg:h-[100svh] lg:flex-none">
                   <div className="container-page w-full pb-[clamp(176px,24svh,220px)] max-md:pb-[clamp(168px,22svh,200px)] pt-[clamp(84px,13svh,128px)] lg:pb-[clamp(110px,15svh,150px)] lg:pt-[clamp(96px,14svh,140px)]">
                     <div className={cn("flex max-w-4xl flex-col items-start gap-[clamp(10px,2.2svh,20px)]", active && "stagger")}>
-                      <Title style={{ "--i": 0 } as React.CSSProperties} className="text-[clamp(32px,6svh,42px)] font-black leading-[1.08] tracking-[-0.04em] text-white sm:text-[clamp(40px,8svh,58px)] lg:text-[clamp(44px,min(4.8vw,9svh),72px)]">
+                      {k === 0 && (
+                        <div style={{ "--i": 0 } as React.CSSProperties} className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-[11px] font-bold tracking-[0.18em] text-[#ff6ea7] uppercase backdrop-blur-md shadow-sm">
+                          <span className="size-1.5 rounded-full bg-[#ff2a85] animate-ping" />
+                          ManaBrand Official Marketplace
+                        </div>
+                      )}
+                      <Title style={{ "--i": k === 0 ? 1 : 0 } as React.CSSProperties} className="text-[clamp(32px,6svh,42px)] font-black leading-[1.08] tracking-[-0.04em] text-white sm:text-[clamp(40px,8svh,58px)] lg:text-[clamp(44px,min(4.8vw,9svh),72px)]">
                         <Headline text={s.headline} emphasis={s.headlineEmphasis} />
                       </Title>
-                      <p style={{ "--i": 1 } as React.CSSProperties} className="max-w-lg text-[clamp(15px,2.3svh,17px)] leading-relaxed text-white/90 md:text-[clamp(16px,2.5svh,19px)]"><span className={s.subtitleShort ? "hidden sm:inline" : undefined}><Subtitle text={s.subtitle} highlight={s.subtitleHighlight} /></span>{s.subtitleShort && <span className="sm:hidden"><Subtitle text={s.subtitleShort} highlight={s.subtitleHighlight} /></span>}</p>
+                      <p style={{ "--i": k === 0 ? 2 : 1 } as React.CSSProperties} className="max-w-xl text-[clamp(15px,2.3svh,17px)] leading-relaxed text-white/90 md:text-[clamp(16px,2.5svh,19px)]">
+                        {k === 0 ? (
+                          <Subtitle text={s.subtitle} highlight={s.subtitleHighlight} />
+                        ) : (
+                          <>
+                            <span className={s.subtitleShort ? "hidden sm:inline" : undefined}><Subtitle text={s.subtitle} highlight={s.subtitleHighlight} /></span>
+                            {s.subtitleShort && <span className="sm:hidden"><Subtitle text={s.subtitleShort} highlight={s.subtitleHighlight} /></span>}
+                          </>
+                        )}
+                      </p>
+                      {k === 0 && (
+                        <div style={{ "--i": 3 } as React.CSSProperties} className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1 text-xs font-semibold text-white/80">
+                          <span className="inline-flex items-center gap-1.5"><span className="text-[#ff2a85]">✓</span> 48h Fast Delivery</span>
+                          <span className="inline-flex items-center gap-1.5"><span className="text-[#ff2a85]">✓</span> Verified Local Shops</span>
+                          <span className="inline-flex items-center gap-1.5"><span className="text-[#ff2a85]">✓</span> 100% Authentic Quality</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

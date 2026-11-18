@@ -12,7 +12,7 @@ export default function OfflinePage() {
         <p className="mt-3 text-white/70">Check your internet connection and try again — ManaBrand will be right here.</p>
         {/* plain link on purpose: a full reload is what we want after the connection comes back */}
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-        <a href="/" className="mt-7 inline-flex h-12 items-center rounded-2xl bg-[#c8102e] px-8 font-bold text-white">Try again</a>
+        <a href="/" className="mt-7 inline-flex h-12 items-center rounded-2xl bg-[#e0247a] hover:bg-[#b51a5c] px-8 font-bold text-white transition-colors">Try again</a>
       </div>
     </main>
   );

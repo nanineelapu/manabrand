@@ -54,10 +54,11 @@ export function Preloader() {
       <div className="pl-half pl-bottom" />
       <div className="pl-center">
         <div className="pl-mark">
-          <span aria-hidden className="pl-ring" />
-          <LogoImage size="xl" priority className="pl-logo h-28 sm:h-36" />
+          <div className="pl-logo-wrapper">
+            <LogoImage size="3xl" priority className="pl-logo h-44 sm:h-56 md:h-64 lg:h-72 w-auto max-w-[85vw] sm:max-w-[420px]" />
+            <div aria-hidden className="pl-sheen" />
+          </div>
         </div>
-        <div aria-hidden className="pl-bar"><span /></div>
       </div>
     </div>
   );

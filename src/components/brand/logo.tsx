@@ -3,8 +3,8 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 /** The official ManaBrand logo (public/logo.png, transparent PNG, 1122×1402). */
-const HEIGHT = { xs: 36, sm: 44, md: 56, lg: 96, xl: 140 } as const;
-const HCLASS = { xs: "h-9", sm: "h-11", md: "h-14", lg: "h-24", xl: "h-36" } as const;
+const HEIGHT = { xs: 36, sm: 44, md: 56, lg: 96, xl: 140, "2xl": 224, "3xl": 288 } as const;
+const HCLASS = { xs: "h-9", sm: "h-11", md: "h-14", lg: "h-24", xl: "h-36", "2xl": "h-56", "3xl": "h-72" } as const;
 export type LogoSize = keyof typeof HEIGHT;
 
 export function LogoImage({ size = "md", className, priority }: { size?: LogoSize; className?: string; priority?: boolean }) {
