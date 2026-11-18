@@ -26,19 +26,19 @@ const urlAt = (s: HeroSlide, w: number) => (s.image ? `${s.image}?w=${w}&auto=fo
 /** src + srcSet so every screen downloads only the size it needs. */
 const photoProps = (s: HeroSlide) => ({ src: urlAt(s, 1024), srcSet: WIDTHS.map((w) => `${urlAt(s, w)} ${w}w`).join(", "), sizes: "100vw" });
 
-/** White headline; the optional "special word(s)" are set in the mid red. */
+/** White headline; the optional "special word(s)" are set in vivid Majestic Pink. */
 function Headline({ text, emphasis }: { text: string; emphasis?: string }) {
   return text.split(/\r?\n/).map((line, i) => {
     const at = emphasis ? line.indexOf(emphasis) : -1;
-    return <span key={i} className="block">{at < 0 ? line : <>{line.slice(0, at)}<span className="text-[var(--red-mid)]">{emphasis}</span>{line.slice(at + emphasis!.length)}</>}</span>;
+    return <span key={i} className="block">{at < 0 ? line : <>{line.slice(0, at)}<span className="text-[#ff2a85] font-black">{emphasis}</span>{line.slice(at + emphasis!.length)}</>}</span>;
   });
 }
 
-/** Sub-headline with one phrase picked out in bold mid red. */
+/** Sub-headline with one phrase picked out in bold vivid Majestic Pink. */
 function Subtitle({ text, highlight }: { text: string; highlight?: string }) {
   const at = highlight ? text.indexOf(highlight) : -1;
   if (at < 0) return <>{text}</>;
-  return <>{text.slice(0, at)}<span className="font-bold text-[var(--red-mid)]">{highlight}</span>{text.slice(at + highlight!.length)}</>;
+  return <>{text.slice(0, at)}<span className="font-bold text-[#ff2a85]">{highlight}</span>{text.slice(at + highlight!.length)}</>;
 }
 
 /** On phones a "Browse …" label drops the verb ("Browse collections" → "Collections") so it fits on one line. */
@@ -109,33 +109,14 @@ export function Hero({ c, slides, site }: {
                 {/* first screen: the message, vertically centred between the header and the buttons */}
                 <div className="flex flex-1 items-center max-md:items-end lg:h-[100svh] lg:flex-none">
                   <div className="container-page w-full pb-[clamp(176px,24svh,220px)] max-md:pb-[clamp(168px,22svh,200px)] pt-[clamp(84px,13svh,128px)] lg:pb-[clamp(110px,15svh,150px)] lg:pt-[clamp(96px,14svh,140px)]">
-                    <div className={cn("flex max-w-4xl flex-col items-start gap-[clamp(10px,2.2svh,20px)]", active && "stagger")}>
-                      {k === 0 && (
-                        <div style={{ "--i": 0 } as React.CSSProperties} className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-[11px] font-bold tracking-[0.18em] text-[#ff6ea7] uppercase backdrop-blur-md shadow-sm">
-                          <span className="size-1.5 rounded-full bg-[#ff2a85] animate-ping" />
-                          ManaBrand Official Marketplace
-                        </div>
-                      )}
-                      <Title style={{ "--i": k === 0 ? 1 : 0 } as React.CSSProperties} className="text-[clamp(32px,6svh,42px)] font-black leading-[1.08] tracking-[-0.04em] text-white sm:text-[clamp(40px,8svh,58px)] lg:text-[clamp(44px,min(4.8vw,9svh),72px)]">
+                    <div className={cn("flex max-w-3xl flex-col items-start gap-[clamp(12px,2.2svh,20px)]", active && "stagger")}>
+                      <Title style={{ "--i": 0 } as React.CSSProperties} className="text-[clamp(34px,6svh,44px)] font-black leading-[1.08] tracking-[-0.04em] text-white sm:text-[clamp(42px,8svh,58px)] lg:text-[clamp(44px,min(4.8vw,9svh),72px)]">
                         <Headline text={s.headline} emphasis={s.headlineEmphasis} />
                       </Title>
-                      <p style={{ "--i": k === 0 ? 2 : 1 } as React.CSSProperties} className="max-w-xl text-[clamp(15px,2.3svh,17px)] leading-relaxed text-white/90 md:text-[clamp(16px,2.5svh,19px)]">
-                        {k === 0 ? (
-                          <Subtitle text={s.subtitle} highlight={s.subtitleHighlight} />
-                        ) : (
-                          <>
-                            <span className={s.subtitleShort ? "hidden sm:inline" : undefined}><Subtitle text={s.subtitle} highlight={s.subtitleHighlight} /></span>
-                            {s.subtitleShort && <span className="sm:hidden"><Subtitle text={s.subtitleShort} highlight={s.subtitleHighlight} /></span>}
-                          </>
-                        )}
+                      <p style={{ "--i": 1 } as React.CSSProperties} className="max-w-xl text-[clamp(15px,2.3svh,17px)] leading-relaxed text-white/90 md:text-[clamp(16px,2.5svh,19px)]">
+                        <span className={s.subtitleShort ? "hidden sm:inline" : undefined}><Subtitle text={s.subtitle} highlight={s.subtitleHighlight} /></span>
+                        {s.subtitleShort && <span className="sm:hidden"><Subtitle text={s.subtitleShort} highlight={s.subtitleHighlight} /></span>}
                       </p>
-                      {k === 0 && (
-                        <div style={{ "--i": 3 } as React.CSSProperties} className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1 text-xs font-semibold text-white/80">
-                          <span className="inline-flex items-center gap-1.5"><span className="text-[#ff2a85]">✓</span> 48h Fast Delivery</span>
-                          <span className="inline-flex items-center gap-1.5"><span className="text-[#ff2a85]">✓</span> Verified Local Shops</span>
-                          <span className="inline-flex items-center gap-1.5"><span className="text-[#ff2a85]">✓</span> 100% Authentic Quality</span>
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>

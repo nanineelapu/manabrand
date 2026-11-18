@@ -36,7 +36,8 @@ export const DEFAULT_HOME: CmsHome = {
   slides: [
     {
       headline: "Everything You Need,\nAll in One Place.", headlineEmphasis: "All in One Place.",
-      subtitle: "Discover the best of Ichapuram with ManaBrand. Explore a wide range of products from local shops and trusted sellers, all in one convenient marketplace.",
+      subtitle: "Discover the best of Ichapuram with ManaBrand — trusted local shops, all in one marketplace.",
+      subtitleShort: "The best of Ichapuram, delivered to your door.",
       subtitleHighlight: "best of Ichapuram",
     },
     {

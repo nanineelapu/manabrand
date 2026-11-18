@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { Hero } from "@/components/store/hero";
 import { PopularCategories } from "@/components/store/popular-categories";
+import { ManaDealBox } from "@/components/store/mana-deal-box";
 import { WhySection } from "@/components/store/why-section";
-import { ArrowUpRight, BadgeCheck, MapPin, Star } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { Reveal } from "@/components/ui/motion";
 import { ProductImage } from "@/components/brand/product-image";
 import { SectionHeader } from "@/components/ui/display";
 import { ProductRail } from "@/components/store/product-card";
 import { getHomeContent, getSiteContent } from "@/lib/cms";
-import { getActiveSellers, getCategories, getNewArrivals, getTrending } from "@/lib/data";
+import { getCategories, getNewArrivals, getTrending } from "@/lib/data";
 
 /** Home tab title comes from the CMS (Site settings → Home page title). */
 export async function generateMetadata() {
@@ -21,15 +22,9 @@ const PROMOS = [
 ] as const;
 
 export default async function HomePage() {
-  const [cats, trending, fresh, sellers, c, site] = await Promise.all([
-    getCategories(), getTrending(8), getNewArrivals(8), getActiveSellers(), getHomeContent(), getSiteContent(),
+  const [cats, trending, fresh, c, site] = await Promise.all([
+    getCategories(), getTrending(8), getNewArrivals(8), getHomeContent(), getSiteContent(),
   ]);
-
-  // the one featured local seller: Shekar Studio & Gift Shop (falls back to the best-rated active shop if it isn't in the data)
-  const FEATURED_SELLER = "shekar-studio-gift-shop";
-  const active = sellers.filter((x) => x.status === "active");
-  const featured = active.find((x) => x.slug === FEATURED_SELLER) ?? [...active].sort((x, y) => y.rating - x.rating)[0];
-  const localSellers = featured ? [featured] : [];
 
   return (
     <>
@@ -71,31 +66,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* sellers — all local to Ichapuram */}
-      <section aria-labelledby="sl-h" data-round className="bg-neutral-50">
-        <div className="container-page py-12 md:py-16">
-          <Reveal><SectionHeader id="sl-h" eyebrow="Ichapuram" title={c.sellersTitle} subtitle={c.sellersSubtitle} /></Reveal>
-          <ul className="mt-7">
-            {localSellers.map((x) => (
-              <li key={x.id} className="max-w-xl">
-                <Link href={`/sellers/${x.slug}`} className="group flex h-full flex-col rounded-[26px] border border-black/10 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary">
-                  <div className="flex items-start justify-between gap-3">
-                    <span className="grid size-14 shrink-0 place-items-center rounded-2xl text-xl font-black text-white" style={{ background: x.tone[1] }}>{x.name[0]}</span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-bold"><BadgeCheck className="size-3.5 text-primary" />Local seller</span>
-                  </div>
-                  <h3 className="mt-5 text-[17px] font-extrabold tracking-tight">{x.name}</h3>
-                  <p className="mt-1.5 flex items-start gap-1.5 text-[13px] font-medium text-fg"><MapPin className="mt-0.5 size-3.5 shrink-0 text-primary" />{x.pickupAddress?.replace(/, Andhra Pradesh$/, "") ?? x.city}</p>
-                  <p className="mb-5 mt-2 line-clamp-2 text-[13px] leading-relaxed text-muted">{x.blurb}</p>
-                  <div className="mt-auto flex items-center justify-between gap-2 border-t border-black/10 pt-4 text-xs font-medium text-muted">
-                    <span className="inline-flex items-center gap-1"><Star className="size-3.5 fill-primary text-primary" />{x.rating.toFixed(1)} · Owner: {x.owner}</span>
-                    <span className="inline-flex items-center gap-1 font-bold text-fg group-hover:text-primary">Visit shop <ArrowUpRight className="size-3.5" /></span>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      {/* Mana Deal Box: Exclusive VIP membership club */}
+      <ManaDealBox />
 
       {/* sits right above the big "Find your next pick" card (rendered by the layout) */}
       <WhySection />
