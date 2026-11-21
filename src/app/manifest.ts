@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/",
     name: "ManaBrand",
     short_name: "ManaBrand",
-    description: "Shop local fashion — clothing, footwear and accessories from trusted sellers in Ichapuram.",
+    description: "Shop local fashion — men's, women's and ethnic wear from trusted sellers in Ichapuram.",
     start_url: "/?source=app",
     scope: "/",
     display: "standalone",

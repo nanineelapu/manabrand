@@ -12,8 +12,8 @@ export type HeroSlideData = HeroSlide;
 
 /** Bright stock photos (Unsplash) used when a slide has no uploaded photo — matched to the slide's category. */
 const STOCK: Record<string, string> = {
-  fashion: "1609357605129-26f69add5d6e",     // teal dress, flowing
-  accessories: "1584917865442-de89df76afd3", // red handbag
+  women: "1609357605129-26f69add5d6e", // teal dress, flowing
+  men: "1488161628813-04466f872be2",   // street style: jacket, orange trousers
 };
 const DEFAULT_STOCK = "1488161628813-04466f872be2"; // men's street style (desktop): jacket, orange trousers
 const WIDTHS = [640, 1024, 1536, 2200] as const;
@@ -22,18 +22,18 @@ const urlAt = (s: HeroSlide, w: number) => (s.image ? `${s.image}?w=${w}&auto=fo
 const photoProps = (s: HeroSlide) => ({ src: urlAt(s, 1024), srcSet: WIDTHS.map((w) => `${urlAt(s, w)} ${w}w`).join(", "), sizes: "100vw" });
 
 /** White headline; the optional "special word(s)" are set in vivid Majestic Pink. */
-function Headline({ text, emphasis }: { text: string; emphasis?: string }) {
+function Headline({ text, emphasis, plain }: { text: string; emphasis?: string; plain?: boolean }) {
   return text.split(/\r?\n/).map((line, i) => {
     const at = emphasis ? line.indexOf(emphasis) : -1;
-    return <span key={i} className="block">{at < 0 ? line : <>{line.slice(0, at)}<span className="text-[#ff2a85] font-black">{emphasis}</span>{line.slice(at + emphasis!.length)}</>}</span>;
+    return <span key={i} className="block">{at < 0 ? line : <>{line.slice(0, at)}<span className={plain ? "font-black text-white" : "text-[#ff2a85] font-black"}>{emphasis}</span>{line.slice(at + emphasis!.length)}</>}</span>;
   });
 }
 
 /** Sub-headline with one phrase picked out in bold vivid Majestic Pink. */
-function Subtitle({ text, highlight }: { text: string; highlight?: string }) {
+function Subtitle({ text, highlight, plain }: { text: string; highlight?: string; plain?: boolean }) {
   const at = highlight ? text.indexOf(highlight) : -1;
   if (at < 0) return <>{text}</>;
-  return <>{text.slice(0, at)}<span className="font-bold text-[#ff2a85]">{highlight}</span>{text.slice(at + highlight!.length)}</>;
+  return <>{text.slice(0, at)}<span className={plain ? "font-bold text-white" : "font-bold text-[#ff2a85]"}>{highlight}</span>{text.slice(at + highlight!.length)}</>;
 }
 
 /** On phones a "Browse …" label drops the verb ("Browse collections" → "Collections") so it fits on one line. */
@@ -109,11 +109,11 @@ export function Hero({ c, slides, site }: {
                         k === 0
                           ? "text-[clamp(27px,4.4svh,34px)] leading-[1.12] sm:text-[clamp(34px,6svh,48px)] lg:text-[clamp(40px,min(4.1vw,8.2svh),60px)] lg:leading-[1.06]"
                           : "text-[clamp(34px,6svh,44px)] leading-[1.08] sm:text-[clamp(42px,8svh,58px)] lg:text-[clamp(44px,min(4.8vw,9svh),72px)]")}>
-                        <Headline text={s.headline} emphasis={s.headlineEmphasis} />
+                        <Headline text={s.headline} emphasis={s.headlineEmphasis} plain={k === 0} />
                       </Title>
                       <p style={{ "--i": 1 } as React.CSSProperties} className="max-w-xl text-[clamp(15px,2.3svh,17px)] leading-relaxed text-white/90 md:text-[clamp(16px,2.5svh,19px)]">
-                        <span className={s.subtitleShort ? "hidden sm:inline" : undefined}><Subtitle text={s.subtitle} highlight={s.subtitleHighlight} /></span>
-                        {s.subtitleShort && <span className="sm:hidden"><Subtitle text={s.subtitleShort} highlight={s.subtitleHighlight} /></span>}
+                        <span className={s.subtitleShort ? "hidden sm:inline" : undefined}><Subtitle text={s.subtitle} highlight={s.subtitleHighlight} plain={k === 0} /></span>
+                        {s.subtitleShort && <span className="sm:hidden"><Subtitle text={s.subtitleShort} highlight={s.subtitleHighlight} plain={k === 0} /></span>}
                       </p>
                     </div>
                   </div>
@@ -128,7 +128,7 @@ export function Hero({ c, slides, site }: {
           <div className="container-page">
             <div className="flex flex-col-reverse gap-5 lg:flex-row lg:items-center lg:justify-between">
               <div className="pointer-events-auto flex w-full gap-3 sm:w-auto sm:gap-4">
-                <Link href={c.primaryCta.href} className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl bg-primary px-5 text-[15px] font-bold text-white transition-colors hover:bg-primary-hover sm:h-14 sm:flex-none sm:px-9 sm:text-[16px]">
+                <Link href={c.primaryCta.href} className={cn("inline-flex h-12 flex-1 items-center justify-center rounded-2xl px-5 text-[15px] font-bold transition-colors sm:h-14 sm:flex-none sm:px-9 sm:text-[16px]", i === 0 ? "bg-white text-black hover:bg-white/85" : "bg-primary text-white hover:bg-primary-hover")}>
                   {c.primaryCta.label}
                 </Link>
                 <Link href={c.secondaryCta.href} className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-white/80 bg-black/20 px-4 text-[15px] font-bold text-white backdrop-blur-sm transition-colors hover:bg-white hover:text-black sm:h-14 sm:flex-none sm:gap-3 sm:px-9 sm:text-[16px]">

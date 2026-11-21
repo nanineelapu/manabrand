@@ -1,6 +1,9 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ListingView } from "@/components/store/listing-view";
+import { Breadcrumb } from "@/components/ui/display";
 import { getCategories, getCategory, getSubcategories } from "@/lib/data";
+import { GROUPS, catTitle, groupOf } from "@/lib/fashion";
 import { parseListingParams } from "@/lib/listing";
 
 export async function generateStaticParams() {
@@ -8,8 +11,9 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PageProps<"/category/[slug]">) {
-  const c = await getCategory((await params).slug);
-  return { title: c ? `${c.name} — ${c.tagline}` : "Category" };
+  const { slug } = await params;
+  const c = await getCategory(slug);
+  return { title: c ? catTitle(c.slug, c.name) : "Category" };
 }
 
 export default async function CategoryPage({ params, searchParams }: PageProps<"/category/[slug]">) {
@@ -17,9 +21,28 @@ export default async function CategoryPage({ params, searchParams }: PageProps<"
   const sp = await searchParams;
   const cat = await getCategory(slug);
   if (!cat) notFound();
+  const group = GROUPS.find((g) => g.id === groupOf(slug));
+  const title = catTitle(cat.slug, cat.name);
+  const crumbs = [{ label: "Home", href: "/" }, ...(group ? [{ label: group.name, href: `/${group.id}` }] : [{ label: "Shop", href: "/shop" }]), { label: cat.name }];
+
+  // a category with no products that isn't part of Men / Women (Footwear) is "launching soon"
+  if (!group && cat.productCount === 0) {
+    return (
+      <div className="container-page pb-16 pt-4 md:pt-6">
+        <Breadcrumb items={crumbs} />
+        <div className="mx-auto mt-10 max-w-xl text-center md:mt-16">
+          <span className="inline-block rounded-full bg-black px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">Coming soon</span>
+          <h1 className="mt-4 text-4xl font-black tracking-tight md:text-5xl">{title}</h1>
+          <p className="mt-3 text-muted">We are lining up local footwear makers. Sneakers, casual shoes and sandals will land here shortly.</p>
+          <div className="mt-7 flex flex-wrap justify-center gap-3">
+            {GROUPS.map((g) => <Link key={g.id} href={`/${g.id}`} className="inline-flex h-12 items-center rounded-2xl bg-primary px-6 text-[15px] font-bold text-white transition-colors hover:bg-primary-hover">Shop {g.name}</Link>)}
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
-    <ListingView title={cat.name} subtitle={cat.tagline} basePath={`/category/${slug}`}
-      crumbs={[{ label: "Home", href: "/" }, { label: "Shop", href: "/shop" }, { label: cat.name }]}
+    <ListingView title={title} subtitle={cat.tagline} basePath={`/category/${slug}`} crumbs={crumbs}
       subs={await getSubcategories(slug)} query={{ ...parseListingParams(sp), category: slug }} searchParams={sp} />
   );
 }

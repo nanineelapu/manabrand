@@ -192,13 +192,13 @@ export async function updateInventory(updates: { productId: string; value: strin
 }
 
 /* ================================================================= catalogue */
-export async function saveCategory(input: { id?: string; name: string; tagline: string }): Promise<Result> {
+export async function saveCategory(input: { id?: string; name: string; tagline: string; group?: string }): Promise<Result> {
   return guarded(["admin"], async () => {
     const name = clampStr(input.name, 40); if (!name) return { ok: false, error: "Category name is required." };
     const supabase = await createClient();
     const row = { name, tagline: clampStr(input.tagline, 80) };
     const { error } = input.id && isUuid(input.id) ? await supabase.from("categories").update(row).eq("id", input.id)
-                                                   : await supabase.from("categories").insert({ ...row, slug: slugify(name) });
+                                                   : await supabase.from("categories").insert({ ...row, slug: input.group === "men" || input.group === "women" ? `${input.group}-${slugify(name)}` : slugify(name) });
     if (error) throw new Error(error.message);
     bust("/admin", "/shop"); return { ok: true };
   });

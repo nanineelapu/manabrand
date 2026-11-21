@@ -21,7 +21,7 @@ const dataset = [
   { _id: "navigation", _type: "navigation", accountLabel: "My Mana",
     headerLinks: [
       { _key: "1", label: "Gifts", kind: "page", page: { _ref: "p-gift" } },
-      { _key: "2", label: "Phones", kind: "custom", url: "/category/electronics", dropdownCategory: "electronics", accent: true },
+      { _key: "2", label: "Phones", kind: "custom", url: "/category/men-shirts", dropdownCategory: "men-shirts", accent: true },
     ],
     footerColumns: [{ _key: "c", title: "Help", links: [{ _key: "l", label: "About", kind: "page", page: { _ref: "p-about" } }, { _key: "m", label: "Blog", kind: "custom", url: "https://blog.mana.in" }] }] },
   { _id: "homePage", _type: "homePage", heroSlides: [{ _key: "s1", headline: "Big sale\nthis week", subtitle: "Up to 40% off", category: "fashion", image: { asset: { _ref: "image-1" } } }, { _key: "s2", headline: "New tech", subtitle: "Gadgets" }], primaryCta: { label: "Go", href: "/sale" } },
@@ -37,7 +37,7 @@ const dataset = [
 
   const nav = await q(NAV_Q, dataset);
   ok("nav: page link resolves to /slug", nav.headerLinks[0].href === "/gift-cards", nav.headerLinks);
-  ok("nav: custom link keeps its path", nav.headerLinks[1].href === "/category/electronics");
+  ok("nav: custom link keeps its path", nav.headerLinks[1].href === "/category/men-shirts");
   ok("nav: footer links resolve (page + external)", nav.footerColumns[0].links[0].href === "/about" && nav.footerColumns[0].links[1].href === "https://blog.mana.in");
   const mergedNav = overlay(DEFAULT_NAV, nav);
   ok("nav: footer replaced by editor's columns", mergedNav.footerColumns.length === 1 && mergedNav.accountLabel === "My Mana");
@@ -56,13 +56,13 @@ const dataset = [
   ok("unknown slug → null (site falls back / 404)", (await q(PAGE_Q, dataset, { slug: "nope" })) === null);
 
   // header menu
-  const cats = [{ slug: "fashion", name: "Fashion", photo: "fashion" }, { slug: "electronics", name: "Electronics", photo: "tech" }] as any;
-  const subs = { fashion: ["Women"], electronics: ["Phones", "Audio"] };
+  const cats = [{ slug: "men-shirts", name: "Shirts", photo: "shirt" }, { slug: "men-jeans", name: "Jeans", photo: "jeans" }, { slug: "women-sarees", name: "Sarees", photo: "saree" }, { slug: "footwear", name: "Footwear", photo: "sneaker", productCount: 0 }] as any;
+  const subs = { "men-shirts": ["Casual", "Formal"], "men-jeans": ["Slim Fit"], "women-sarees": ["Silk"] };
   const auto = resolveHeader(DEFAULT_NAV, cats, subs);
-  ok("auto menu: every category given (hiding retired ones happens in the data layer) · Collections(mobile) · Sale", auto.map((i) => i.label).join("|") === "Fashion|Electronics|Collections|Sale" && auto[0].dropdown?.subs[0] === "Women" && auto.find((i) => i.label === "Collections")?.showOn === "mobile");
+  ok("auto menu: Men · Women (mega menus) · Footwear (soon) · Collections(mobile) · Sale", auto.map((i) => i.label).join("|") === "Men|Women|Footwear|Collections|Sale" && auto[0].dropdown?.columns.length === 2 && auto[0].dropdown.columns[0].subs[0].label === "Casual" && auto[2].soon === true && auto.find((i) => i.label === "Collections")?.showOn === "mobile");
   const custom = resolveHeader(mergedNav, cats, subs);
   ok("editor menu replaces the auto one", custom.length === 2 && custom[0].href === "/gift-cards");
-  ok("editor menu: dropdown pulls the category's sub-categories", custom[1].dropdown?.subs.join() === "Phones,Audio" && custom[1].accent === true);
+  ok("editor menu: dropdown pulls the category's sub-categories", custom[1].dropdown?.columns[0].subs.map((x) => x.label).join() === "Casual,Formal" && custom[1].accent === true);
   ok("editor menu: unknown category slug → no dropdown, no crash", resolveHeader({ ...DEFAULT_NAV, headerLinks: [{ label: "X", href: "/x", dropdownCategory: "ghost" }] }, cats, subs)[0].dropdown === undefined);
   ok("no Sanity data at all → exact built-in content", JSON.stringify(overlay(DEFAULT_SITE, null)) === JSON.stringify(DEFAULT_SITE));
 

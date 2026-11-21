@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Heart, Home, LayoutGrid, ShoppingBag, User } from "lucide-react";
+import { useState } from "react";
+import { Download, Heart, Home, LayoutGrid, ShoppingBag, User } from "lucide-react";
+import { InstallSteps, useInstallApp } from "@/components/store/install-app";
 import { useCart, useWishlist } from "@/lib/stores";
 import { useMounted } from "@/lib/stores/hydrate";
 import { cn } from "@/lib/utils";
@@ -27,10 +29,15 @@ export function MobileTabBar() {
   const mounted = useMounted();
   const bag = useCart((s) => s.lines.reduce((a, l) => a + l.qty, 0));
   const wish = useWishlist((s) => s.ids.length);
+  const app = useInstallApp();
+  const [help, setHelp] = useState(false);
+  // the 4th slot is "Install" until the app is installed, then it becomes the Bag again (the header always has a Bag button too)
+  const showInstall = mounted ? !app.installed : true;
   if (hideOn.some((r) => r.test(pathname))) return null;
   const current = tabs.findIndex((t) => t.match(pathname));
 
   return (
+    <>
     <nav aria-label="Main" data-round className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 lg:hidden">
       <ul className="relative mx-auto grid h-16 max-w-md grid-cols-5 rounded-[30px] border border-white/70 bg-white/40 p-1.5 backdrop-blur-3xl backdrop-saturate-[2] [box-shadow:inset_0_1px_0_rgb(255_255_255/0.9),inset_0_-1px_0_rgb(255_255_255/0.25),0_0_0_0.5px_rgb(0_0_0/0.08)]">
         {/* the sliding glass pill behind the active tab */}
@@ -38,6 +45,17 @@ export function MobileTabBar() {
           className={cn("tab-pill pointer-events-none absolute bottom-1.5 left-1.5 top-1.5 w-[calc((100%-0.75rem)/5)] rounded-[24px] transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.3,1.25,0.5,1)]", current < 0 && "opacity-0")}
           style={{ transform: `translateX(${Math.max(current, 0) * 100}%)` }} />
         {tabs.map(({ href, label, icon: Icon, match }) => {
+          if (label === "Bag" && showInstall) {
+            return (
+              <li key="install" className="relative">
+                <button type="button" aria-label="Install the ManaBrand app" onClick={() => (app.canPrompt ? app.install() : setHelp(true))}
+                  className="flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-[24px] text-[10.5px] font-semibold tracking-tight text-black/70 transition-colors active:scale-95">
+                  <Download className="size-[22px]" strokeWidth={1.9} />
+                  Install
+                </button>
+              </li>
+            );
+          }
           const active = match(pathname);
           const n = label === "Bag" ? bag : label === "Wishlist" ? wish : 0;
           return (
@@ -55,5 +73,7 @@ export function MobileTabBar() {
         })}
       </ul>
     </nav>
+    {help && <InstallSteps onClose={() => setHelp(false)} />}
+    </>
   );
 }

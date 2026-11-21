@@ -99,8 +99,8 @@ export function SearchOverlay({ trending }: { trending: string[] }) {
               <section>
                 <h3 className="mb-3 text-sm font-semibold">Browse</h3>
                 <div className="grid grid-cols-2 gap-2.5">
-                  {["fashion", "accessories"].map((c) => (
-                    <Link key={c} href={`/category/${c}`} onClick={() => setOpen(false)} className="rounded-ctl border border-line bg-card px-4 py-3.5 text-sm font-medium capitalize hover:bg-bg-subtle">{c}</Link>
+                  {[["Men", "/men"], ["Women", "/women"], ["Footwear", "/category/footwear"]].map(([c, href]) => (
+                    <Link key={c} href={href} onClick={() => setOpen(false)} className="rounded-ctl border border-line bg-card px-4 py-3.5 text-sm font-medium capitalize hover:bg-bg-subtle">{c}</Link>
                   ))}
                 </div>
               </section>

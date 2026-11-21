@@ -9,8 +9,8 @@ import { ProductImage } from "@/components/brand/product-image";
 import { SectionHeader } from "@/components/ui/display";
 import { ProductRail } from "@/components/store/product-card";
 import { getHomeContent, getSiteContent } from "@/lib/cms";
-import { getNewArrivals, getSubcategoryMap, getTrending } from "@/lib/data";
-import { SUB_PHOTO } from "@/lib/fashion";
+import { getCategories, getNewArrivals, getTrending } from "@/lib/data";
+import { GROUPS, groupOf } from "@/lib/fashion";
 
 /** Home tab title comes from the CMS (Site settings → Home page title). */
 export async function generateMetadata() {
@@ -23,17 +23,19 @@ const PROMOS = [
 ] as const;
 
 export default async function HomePage() {
-  const [subs, trending, fresh, c, site] = await Promise.all([
-    getSubcategoryMap(), getTrending(8), getNewArrivals(8), getHomeContent(), getSiteContent(),
+  const [cats, trending, fresh, c, site] = await Promise.all([
+    getCategories(), getTrending(8), getNewArrivals(8), getHomeContent(), getSiteContent(),
   ]);
-  const tiles = Object.entries(subs).flatMap(([cat, list]) => list.map((name) => ({
-    name, href: `/category/${cat}?sub=${encodeURIComponent(name)}`, photo: SUB_PHOTO[name as keyof typeof SUB_PHOTO] ?? "dress",
-  })));
+  const tile = (k: (typeof cats)[number]) => ({ name: k.name, slug: k.slug, photo: k.photo, count: k.productCount, soon: !groupOf(k.slug) && k.productCount === 0 });
+  const groups = [
+    ...GROUPS.map((g) => ({ title: g.title, href: `/${g.id}`, tiles: cats.filter((k) => groupOf(k.slug) === g.id).map(tile) })),
+    ...cats.filter((k) => !groupOf(k.slug)).map((k) => ({ title: k.name, tiles: [tile(k)] })),
+  ].filter((g) => g.tiles.length);
 
   return (
     <>
       <Hero c={c} slides={c.slides} site={site} />
-      <PopularCategories title={c.categoriesCardTitle} eyebrow={c.categoriesTitle} tiles={tiles} />
+      <PopularCategories title={c.categoriesCardTitle} eyebrow={c.categoriesTitle} groups={groups} />
       <section aria-labelledby="tr-h" data-round className="bg-white">
         <div className="container-page py-12 md:py-16">
           <Reveal><SectionHeader id="tr-h" eyebrow="Handpicked" title={c.trendingTitle} href="/shop" /></Reveal>

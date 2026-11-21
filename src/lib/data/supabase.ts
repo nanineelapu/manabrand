@@ -130,6 +130,11 @@ export async function queryProducts(qy: ProductQuery = {}) {
   if (qy.colors?.length) intersect((ok(await db.from("product_colors").select("product_id").in("name", qy.colors), []) as any[]).map((x) => x.product_id));
   if (idSet && idSet.length === 0) return empty;
 
+  let groupIds: string[] | undefined;
+  if (qy.group) {
+    groupIds = (ok(await db.from("categories").select("id").like("slug", `${qy.group}-%`), []) as any[]).map((r) => r.id);
+    if (!groupIds.length) return empty;
+  }
   const catId = qy.category ? await categoryId(qy.category) : undefined;
   if (qy.category && !catId) return empty;
   let subId: string | undefined;
@@ -139,6 +144,7 @@ export async function queryProducts(qy: ProductQuery = {}) {
   const base = (q: any) => {
     q = q.eq("status", "active");
     if (catId) q = q.eq("category_id", catId);
+    if (groupIds) q = q.in("category_id", groupIds);
     if (subId) q = q.eq("subcategory_id", subId);
     if (qy.badge) q = q.contains("badges", [qy.badge]);
     for (const t of terms) { const s = t.replace(/[%,()]/g, ""); q = q.or(`name.ilike.%${s}%,description.ilike.%${s}%,tags.cs.{${s}}`); }
@@ -179,9 +185,9 @@ export async function queryProducts(qy: ProductQuery = {}) {
   return {
     items: (data ?? []).map(mapProduct), total, page, pages: Math.max(1, Math.ceil(total / pageSize)),
     facets: {
-      sizes: qy.category || qy.q ? [...new Set(f.flatMap((x) => (x.product_options ?? []).map((o: any) => o.value)))] as string[] : [],
+      sizes: qy.category || qy.group || qy.q ? [...new Set(f.flatMap((x) => (x.product_options ?? []).map((o: any) => o.value)))] as string[] : [],
       optionLabel: labels.length === 1 ? (labels[0] as string) : "Options",
-      colors: qy.category || qy.q ? [...new Map(f.flatMap((x) => x.product_colors ?? []).map((c: any) => [c.name, { name: c.name, hex: c.hex }])).values()] : [],
+      colors: qy.category || qy.group || qy.q ? [...new Map(f.flatMap((x) => x.product_colors ?? []).map((c: any) => [c.name, { name: c.name, hex: c.hex }])).values()] : [],
       sellers: sellerRows.map((s) => ({ id: s.id, name: s.name })),
       priceMin: f.length ? Math.min(...f.map((x) => x.price)) : 0, priceMax: f.length ? Math.max(...f.map((x) => x.price)) : 0,
     },
@@ -289,7 +295,7 @@ export async function getCoupon(code: string) {
   const r = ok(await pub().from("coupons").select("*").ilike("code", code.trim()).maybeSingle());
   return r ? mapCoupon(r) : undefined;
 }
-export const getTrendingSearches = async () => ["Silk saree", "Sneakers", "Kurta", "Denim jacket", "Handbag", "Watch"];
+export const getTrendingSearches = async () => ["Silk saree", "Kurta", "Oversized tee", "Cargo pants", "Lehenga", "Mom jeans"];
 
 export async function getFollowState(sellerId: string) {
   const db = await sb(); const me = await uid();

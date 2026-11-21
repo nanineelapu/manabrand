@@ -1,8 +1,4 @@
-/** ManaBrand is a fashion marketplace. These category slugs came from the earlier general-store catalogue and are never shown. */
-export const HIDDEN_CATEGORY_SLUGS = new Set(["electronics", "home", "beauty", "gourmet"]);
+/** Category slugs from earlier versions of the catalogue (general store, then "fashion / accessories") — never shown. */
+export const HIDDEN_CATEGORY_SLUGS = new Set(["electronics", "home", "beauty", "gourmet", "fashion", "accessories"]);
 
-/** Cover photo for each fashion sub-category (used by the "Shop by category" tiles). */
-export const SUB_PHOTO = {
-  "Women's wear": "dress", "Men's wear": "shirt", "Ethnic wear": "saree", "Footwear": "sneaker",
-  "Bags": "bag", "Jewellery": "jewellery", "Watches": "watch", "Eyewear": "sunglasses",
-} as const;
+export { TAXONOMY, GROUPS, COMING_SOON, groupOf, catTitle } from "@/lib/taxonomy";

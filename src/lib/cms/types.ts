@@ -1,5 +1,4 @@
 import type { PortableTextBlock } from "next-sanity";
-import type { PhotoKind } from "@/lib/images";
 
 export interface CmsLink { label: string; href: string }
 
@@ -53,6 +52,7 @@ export interface CmsPage {
 
 /** What the header & mobile menu render — already merged with the shop's categories. */
 export interface HeaderItem {
-  label: string; href: string; accent?: boolean; showOn: "all" | "desktop" | "mobile";
-  dropdown?: { slug: string; name: string; photo: PhotoKind; subs: string[] };
+  label: string; href: string; accent?: boolean; soon?: boolean; showOn: "all" | "desktop" | "mobile";
+  /** a mega menu: columns of categories, each with its sub-categories */
+  dropdown?: { title: string; href: string; columns: { name: string; href: string; subs: { label: string; href: string }[] }[] };
 }

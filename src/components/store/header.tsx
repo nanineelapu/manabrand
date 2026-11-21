@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ChevronDown, Heart, Menu, Search, ShoppingBag, User } from "lucide-react";
 import { Logo, LogoImage } from "@/components/brand/logo";
-import { ProductImage } from "@/components/brand/product-image";
 import { IconButton } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/sheet";
 import { useCart, useUi, useWishlist } from "@/lib/stores";
@@ -55,27 +54,26 @@ export function StoreHeader({ items, accountLabel = "Account" }: Props) {
         <div className={cn(capsule, "min-w-0 gap-1 pl-2 pr-1.5 sm:gap-1.5 lg:pl-3 lg:pr-2")}>
           <nav aria-label="Primary" className="hidden min-w-0 items-center lg:flex">
             {items.filter((it) => it.showOn !== "mobile").map((it) => it.dropdown ? (
-              <div key={it.href + it.label} className="group/nav relative">
+              <div key={it.href + it.label} className="group/nav">
                 <NavLink href={it.href} active={pathname === it.href} accent={it.accent} chevron>{it.label}</NavLink>
-                <div className="invisible absolute left-1/2 top-full z-50 w-[540px] -translate-x-1/2 pt-4 opacity-0 transition-all duration-150 group-focus-within/nav:visible group-focus-within/nav:opacity-100 group-hover/nav:visible group-hover/nav:opacity-100">
-                  <div className="grid grid-cols-[1fr_180px] gap-6 rounded-3xl border border-white/10 bg-black/95 p-5 text-white">
-                    <div>
-                      <p className="mb-3 text-xs font-medium uppercase tracking-[0.14em] text-white/50">Shop {it.dropdown.name}</p>
-                      <ul className="grid grid-cols-2 gap-x-6">
-                        <li><Link href={`/category/${it.dropdown.slug}`} className="block py-2 text-sm font-semibold text-accent">All {it.dropdown.name}</Link></li>
-                        {it.dropdown.subs.map((sub) => (
-                          <li key={sub}><Link href={`/category/${it.dropdown!.slug}?sub=${encodeURIComponent(sub)}`} className="block py-2 text-sm text-white/75 hover:text-white">{sub}</Link></li>
-                        ))}
-                      </ul>
+                <div className="invisible absolute left-1/2 top-full z-50 w-[920px] max-w-[94vw] -translate-x-1/2 pt-4 opacity-0 transition-all duration-150 group-focus-within/nav:visible group-focus-within/nav:opacity-100 group-hover/nav:visible group-hover/nav:opacity-100">
+                  <div className="rounded-3xl border border-white/10 bg-black/95 p-6 text-white">
+                    <div className="mb-4 flex items-baseline justify-between"><p className="text-xs font-medium uppercase tracking-[0.14em] text-white/50">{it.dropdown.title}</p><Link href={it.dropdown.href} className="text-sm font-semibold text-accent">Shop all</Link></div>
+                    <div className="grid grid-cols-4 gap-x-8 gap-y-6">
+                      {it.dropdown.columns.map((col) => (
+                        <div key={col.href}>
+                          <Link href={col.href} className="block text-sm font-bold text-white hover:text-accent">{col.name}</Link>
+                          <ul className="mt-2">
+                            {col.subs.map((sub) => <li key={sub.href}><Link href={sub.href} className="block py-1 text-[13px] text-white/65 hover:text-white">{sub.label}</Link></li>)}
+                          </ul>
+                        </div>
+                      ))}
                     </div>
-                    <Link href={it.href} className="relative block aspect-[4/5] overflow-hidden rounded-2xl">
-                      <ProductImage photo={it.dropdown.photo} seed={it.dropdown.slug} sizes="180px" />
-                    </Link>
                   </div>
                 </div>
               </div>
             ) : (
-              <NavLink key={it.href + it.label} href={it.href} active={pathname === it.href} accent={it.accent}>{it.label}</NavLink>
+              <NavLink key={it.href + it.label} href={it.href} active={pathname === it.href} accent={it.accent}>{it.label}{it.soon && <span className="ml-1.5 rounded-full bg-white/15 px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase tracking-wide">Soon</span>}</NavLink>
             ))}
           </nav>
 
@@ -136,13 +134,13 @@ export function MobileMenu({ items, quickLinks = [] }: Props) {
               {it.label}<ChevronDown className="chev size-5 text-muted transition-transform" />
             </summary>
             <ul className="pb-3 pl-1">
-              <li><Link onClick={close} href={it.href} className="block py-2.5 text-sm font-semibold text-accent">Shop all {it.dropdown.name}</Link></li>
-              {it.dropdown.subs.map((s) => (
-                <li key={s}><Link onClick={close} href={`/category/${it.dropdown!.slug}?sub=${encodeURIComponent(s)}`} className="block py-2.5 text-sm text-muted">{s}</Link></li>
+              <li><Link onClick={close} href={it.dropdown.href} className="block py-2.5 text-sm font-semibold text-accent">Shop all {it.dropdown.title}</Link></li>
+              {it.dropdown.columns.map((col) => (
+                <li key={col.href}><Link onClick={close} href={col.href} className="block py-2.5 text-sm text-muted">{col.name}</Link></li>
               ))}
             </ul>
           </details>
-        ) : <MenuRow key={it.href + it.label} href={it.href} onClick={close} accent={it.accent}>{it.label}</MenuRow>)}
+        ) : <MenuRow key={it.href + it.label} href={it.href} onClick={close} accent={it.accent}>{it.label}{it.soon && <span className="ml-1.5 rounded-full bg-black/10 px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase tracking-wide">Soon</span>}</MenuRow>)}
       </nav>
       <div className="mt-4 grid grid-cols-2 gap-2.5 text-sm">
         {quickLinks.map((q) => (

@@ -1,5 +1,6 @@
 "use client";
 
+import { groupOf } from "@/lib/fashion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useRef, useState } from "react";
@@ -105,7 +106,7 @@ export function BuyBox({ product, sellerName, sellerSlug }: { product: Product; 
   const low = size ? product.stock[size] : undefined;
   const optLabel = product.optionLabel === "Standard" ? "option" : product.optionLabel.toLowerCase();
   const hasChoice = !(product.sizes.length === 1);
-  const showGuide = product.categorySlug === "fashion" && product.optionLabel === "Size" && product.sizes.length > 1 && product.photo !== "sneaker";
+  const showGuide = groupOf(product.categorySlug) !== null && product.optionLabel === "Size" && product.sizes.length > 1 && product.photo !== "sneaker";
 
   return (
     <div className="space-y-6">

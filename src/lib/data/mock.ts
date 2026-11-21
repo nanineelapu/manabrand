@@ -27,7 +27,7 @@ export const SORTS = [
 ] as const;
 
 export interface ProductQuery {
-  category?: string; sub?: string; q?: string; sort?: string; min?: number; max?: number;
+  category?: string; group?: string; sub?: string; q?: string; sort?: string; min?: number; max?: number;
   sizes?: string[]; colors?: string[]; sellers?: string[]; rating?: number; discount?: number;
   collection?: string; badge?: string; page?: number; pageSize?: number; ids?: string[];
 }
@@ -38,6 +38,7 @@ export async function queryProducts(qy: ProductQuery = {}) {
   let list = live();
   if (qy.ids) list = list.filter((p) => qy.ids!.includes(p.id));
   if (qy.category) list = list.filter((p) => p.categorySlug === qy.category);
+  if (qy.group) list = list.filter((p) => p.categorySlug.startsWith(`${qy.group}-`));
   if (qy.sub) list = list.filter((p) => p.subcategory.toLowerCase() === qy.sub!.toLowerCase());
   if (qy.collection) { const c = collections.find((x) => x.slug === qy.collection); list = list.filter((p) => c?.productIds.includes(p.id)); }
   if (qy.badge) list = list.filter((p) => p.badges.includes(qy.badge as never));
@@ -67,9 +68,9 @@ export async function queryProducts(qy: ProductQuery = {}) {
   const total = sorted.length;
   const facets = {
     // option chips (size / storage / volume…) only make sense inside one category
-    sizes: qy.category || qy.q ? [...new Set(facetBase.flatMap((p) => p.sizes))] : [],
+    sizes: qy.category || qy.group || qy.q ? [...new Set(facetBase.flatMap((p) => p.sizes))] : [],
     optionLabel: (() => { const l = [...new Set(facetBase.map((p) => p.optionLabel))].filter((x) => x !== "Standard"); return l.length === 1 ? l[0] : "Options"; })(),
-    colors: qy.category || qy.q ? [...new Map(facetBase.flatMap((p) => p.colors).map((c) => [c.name, c])).values()] : [],
+    colors: qy.category || qy.group || qy.q ? [...new Map(facetBase.flatMap((p) => p.colors).map((c) => [c.name, c])).values()] : [],
     sellers: [...new Set(facetBase.map((p) => p.sellerId))].map((id) => sellerById(id)!).filter(Boolean).map((s) => ({ id: s.id, name: s.name })),
     priceMin: Math.min(...facetBase.map((p) => p.price), 0),
     priceMax: Math.max(...facetBase.map((p) => p.price), 0),
@@ -97,7 +98,7 @@ export const getProductReviews = async (productId: string) => reviews.filter((r)
 export const getHomeBanners = async () => banners.filter((b) => b.placement === "home-hero" && b.status === "live");
 export const getStripBanner = async () => banners.find((b) => b.placement === "home-strip" && b.status === "live");
 export const getCoupon = async (code: string) => coupons.find((c) => c.code.toLowerCase() === code.trim().toLowerCase());
-export const getTrendingSearches = async () => ["Silk saree", "Sneakers", "Kurta", "Denim jacket", "Handbag", "Watch"];
+export const getTrendingSearches = async () => ["Silk saree", "Kurta", "Oversized tee", "Cargo pants", "Lehenga", "Mom jeans"];
 
 export async function ratingBreakdown(productId: string) {
   const r = reviews.filter((x) => x.productId === productId);

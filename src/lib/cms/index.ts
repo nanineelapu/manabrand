@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { COMING_SOON, GROUPS, catTitle, groupOf } from "@/lib/fashion";
 import { cmsFetch } from "@/sanity/lib/client";
 import { HREF } from "@/sanity/href";
 import type { Category } from "@/types";
@@ -54,17 +55,26 @@ export const getHomeContent = cache(async (): Promise<CmsHome> => overlay(DEFAUL
 /** A page written in the CMS, or null (→ the caller falls back to the built-in page / 404). */
 export const getCmsPage = cache(async (slug: string): Promise<CmsPage | null> => cmsFetch<CmsPage>(PAGE_Q, ["sanity:page"], { slug }));
 
-/** Header menu: the editor's own list if they made one, otherwise the categories (with dropdowns) · Collections (phones) · Sale. */
+/** Header menu: the editor's own list if they made one, otherwise Men · Women (mega menus) · Footwear · Collections (phones) · Sale. */
 export function resolveHeader(nav: CmsNav, categories: Category[], subs: Record<string, string[]>): HeaderItem[] {
-  const drop = (slug?: string) => {
+  const columns = (cats: Category[]) => cats.map((c) => ({
+    name: c.name, href: `/category/${c.slug}`,
+    subs: (subs[c.slug] ?? []).map((label) => ({ label, href: `/category/${c.slug}?sub=${encodeURIComponent(label)}` })),
+  }));
+  // `slug` is a group ("men" / "women") or a single category slug
+  const drop = (slug?: string): HeaderItem["dropdown"] => {
+    if (!slug) return undefined;
+    const g = GROUPS.find((x) => x.id === slug);
+    if (g) { const cs = categories.filter((c) => groupOf(c.slug) === g.id); return cs.length ? { title: g.title, href: `/${g.id}`, columns: columns(cs) } : undefined; }
     const c = categories.find((x) => x.slug === slug);
-    return c ? { slug: c.slug, name: c.name, photo: c.photo, subs: subs[c.slug] ?? [] } : undefined;
+    return c ? { title: catTitle(c.slug, c.name), href: `/category/${c.slug}`, columns: columns([c]) } : undefined;
   };
   if (nav.headerLinks?.length) {
     return nav.headerLinks.map((l) => ({ label: l.label, href: l.href, accent: l.accent, showOn: l.showOn ?? "all", dropdown: drop(l.dropdownCategory) }));
   }
   return [
-    ...categories.map((c): HeaderItem => ({ label: c.name, href: `/category/${c.slug}`, showOn: "all", dropdown: drop(c.slug) })),
+    ...GROUPS.filter((g) => drop(g.id)).map((g): HeaderItem => ({ label: g.name, href: `/${g.id}`, showOn: "all", dropdown: drop(g.id) })),
+    ...categories.filter((c) => !groupOf(c.slug)).map((c): HeaderItem => ({ label: c.name, href: `/category/${c.slug}`, showOn: "all", soon: COMING_SOON.has(c.slug) && !c.productCount })),
     { label: "Collections", href: "/collections", showOn: "mobile" },
     { label: "Sale", href: "/sale", accent: true, showOn: "all" },
   ];

@@ -19,7 +19,7 @@ export const navigation = defineType({
         type: "object", name: "headerLink", title: "Menu item",
         fields: [
           label, ...linkFields,
-          defineField({ name: "dropdownCategory", title: "Show a category dropdown", type: "string", description: "Category slug (fashion or accessories). The dropdown lists that category's sub-categories automatically." }),
+          defineField({ name: "dropdownCategory", title: "Show a category dropdown", type: "string", description: "Category slug (men or women), or one category such as men-shirts. The dropdown lists that category's sub-categories automatically." }),
           defineField({ name: "accent", title: "Highlight in gold", type: "boolean", initialValue: false }),
           defineField({ name: "showOn", title: "Show on", type: "string", initialValue: "all", options: { list: [{ title: "Everywhere", value: "all" }, { title: "Desktop only", value: "desktop" }, { title: "Phones only", value: "mobile" }] } }),
         ],

@@ -31,6 +31,8 @@ export function useInstallApp() {
   const canPrompt = !!deferred && !standalone && !installed;
   return {
     canPrompt,
+    /** already running as an installed app (home-screen icon / app drawer) */
+    installed: standalone || installed,
     needsIOSSteps: ios && !standalone && !installed && !deferred,
     available: !standalone && !installed && (canPrompt || ios),
     async install() {
@@ -64,21 +66,31 @@ export function InstallButton({ className, label = "Install app" }: { className?
         className={cn("inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-4 py-2.5 text-sm font-semibold transition-colors hover:border-white/40", className)}>
         <Download className="size-4" />{label}
       </button>
-      {help && <IOSSteps onClose={() => setHelp(false)} />}
+      {help && <InstallSteps onClose={() => setHelp(false)} />}
     </>
   );
 }
 
-function IOSSteps({ onClose }: { onClose: () => void }) {
+/** Step-by-step help for browsers that cannot show the install prompt themselves (iPhone Safari, Firefox, in-app browsers). */
+export function InstallSteps({ onClose }: { onClose: () => void }) {
+  const ios = isIOS();
   return (
-    <div role="dialog" aria-label="Install ManaBrand" className="fixed inset-x-3 bottom-[calc(var(--tabbar-h)+8px)] z-[60] rounded-3xl border border-black/10 bg-white p-5 text-neutral-900 shadow-[0_16px_48px_rgba(0,0,0,0.18)] lg:bottom-6 lg:left-auto lg:right-6 lg:w-[360px]">
+    <div role="dialog" aria-label="Install ManaBrand" data-round className="fixed inset-x-3 bottom-[calc(var(--tabbar-h)+8px)] z-[60] rounded-3xl border border-black/10 bg-white p-5 text-neutral-900 shadow-[0_16px_48px_rgba(0,0,0,0.18)] lg:bottom-6 lg:left-auto lg:right-6 lg:w-[360px]">
       <button type="button" aria-label="Close" onClick={onClose} className="absolute right-3 top-3 grid size-8 place-items-center rounded-full bg-neutral-100 text-neutral-600 hover:bg-neutral-200"><X className="size-4" /></button>
       <p className="font-bold text-neutral-900">Add ManaBrand to your Home Screen</p>
-      <ol className="mt-3 space-y-2 text-sm text-neutral-700">
-        <li>1. Tap the <Share className="mx-0.5 inline size-4 align-text-bottom" /> <b>Share</b> button in Safari.</li>
-        <li>2. Scroll down and tap <b>Add to Home Screen</b>.</li>
-        <li>3. Tap <b>Add</b> — the ManaBrand icon appears on your phone.</li>
-      </ol>
+      {ios ? (
+        <ol className="mt-3 space-y-2 text-sm text-neutral-700">
+          <li>1. Tap the <Share className="mx-0.5 inline size-4 align-text-bottom" /> <b>Share</b> button in Safari.</li>
+          <li>2. Scroll down and tap <b>Add to Home Screen</b>.</li>
+          <li>3. Tap <b>Add</b> — the ManaBrand icon appears on your phone.</li>
+        </ol>
+      ) : (
+        <ol className="mt-3 space-y-2 text-sm text-neutral-700">
+          <li>1. Open your browser menu (<b>⋮</b> or <b>⋯</b>).</li>
+          <li>2. Tap <b>Install app</b> or <b>Add to Home screen</b>.</li>
+          <li>3. Confirm — ManaBrand appears on your home screen and in your app drawer.</li>
+        </ol>
+      )}
     </div>
   );
 }
@@ -100,7 +112,7 @@ export function InstallBanner() {
 
   const close = () => { setShow(false); try { localStorage.setItem(KEY, String(Date.now())); } catch { /* ignore */ } };
   if (!show || !app.available) return null;
-  if (help) return <IOSSteps onClose={() => { setHelp(false); close(); }} />;
+  if (help) return <InstallSteps onClose={() => { setHelp(false); close(); }} />;
 
   return (
     <div role="region" aria-label="Install the app" data-round className="animate-pop-in fixed inset-x-3 bottom-[calc(var(--tabbar-h)+8px)] z-[55] mx-auto flex max-w-md items-center gap-3 rounded-3xl border border-black/10 bg-white p-3 pr-2 text-neutral-900 shadow-[0_12px_40px_rgba(0,0,0,0.14)] lg:inset-x-auto lg:bottom-6 lg:right-6 lg:w-[380px]">

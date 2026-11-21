@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { catTitle } from "@/lib/fashion";
 import { notFound } from "next/navigation";
 import { BadgeCheck, FileText, Scissors, Shirt, Truck } from "lucide-react";
 import { Accordion, AccordionItem } from "@/components/ui/accordion";
@@ -25,7 +26,7 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
 
   return (
     <div className="container-page pb-28 pt-3 md:pb-6 md:pt-6">
-      <Breadcrumb items={[{ label: "Home", href: "/" }, { label: cat?.name ?? "Shop", href: `/category/${product.categorySlug}` }, { label: product.subcategory, href: `/category/${product.categorySlug}?sub=${encodeURIComponent(product.subcategory)}` }, { label: product.name }]} className="hidden md:block" />
+      <Breadcrumb items={[{ label: "Home", href: "/" }, { label: catTitle(product.categorySlug, cat?.name), href: `/category/${product.categorySlug}` }, { label: product.subcategory, href: `/category/${product.categorySlug}?sub=${encodeURIComponent(product.subcategory)}` }, { label: product.name }]} className="hidden md:block" />
 
       <ProductSelection product={product}>
         <div className="md:mt-6 lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-14">
@@ -38,7 +39,7 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
                 <p>{product.description}</p>
                 <ul className="mt-3 list-disc space-y-1 pl-5">{product.details.map((d) => <li key={d}>{d}</li>)}</ul>
               </AccordionItem>
-              <AccordionItem title={product.categorySlug === "fashion" ? "Fabric & care" : "Specifications & care"} icon={<Shirt className="size-[18px]" />} name="pd">
+              <AccordionItem title={"Fabric & care"} icon={<Shirt className="size-[18px]" />} name="pd">
                 <p className="font-medium text-fg">{product.fabric}</p>
                 <ul className="mt-2 list-disc space-y-1 pl-5">{product.care.map((d) => <li key={d}>{d}</li>)}</ul>
               </AccordionItem>

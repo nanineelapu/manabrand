@@ -1,3 +1,4 @@
+import { catTitle } from "@/lib/fashion";
 import type { Customer, Order, Product, ReturnRequest, Seller } from "@/types";
 
 export type Range = "7" | "30" | "90" | "all";
@@ -125,7 +126,7 @@ export function analyse(input: { orders: Order[]; products: Product[]; sellers: 
     cancelRate, codShare, returnRate, repeatRate, buyers, repeat, newCustomers: newInRange, avgDeliveryDays, discountDepth, returnsCount: rets.length,
     daily: { labels: days.map((d) => fmt.format(new Date(d))), revenue: days.map((d) => dayRev.get(d) ?? 0), orders: days.map((d) => dayOrd.get(d) ?? 0) },
     topProducts: top(byProduct, (v) => v.revenue, 6).map(([id, v]) => ({ id, ...v })),
-    categories: [...byCategory.entries()].sort((a, b) => b[1] - a[1]).map(([slug, value]) => ({ label: slug.charAt(0).toUpperCase() + slug.slice(1), value })),
+    categories: [...byCategory.entries()].sort((a, b) => b[1] - a[1]).map(([slug, value]) => ({ label: catTitle(slug), value })),
     subcategories: [...bySub.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([label, value]) => ({ label, value })),
     sellers: top(bySeller, (v) => v.revenue, 6).map(([id, v]) => ({ id, name: sellerById.get(id)?.name ?? "Seller", revenue: v.revenue, orders: v.orders.size, commission: v.commission })),
     payments: [...pay.entries()].sort((a, b) => b[1] - a[1]).map(([label, value]) => ({ label: label === "cod" ? "Cash on delivery" : label.toUpperCase() === "UPI" ? "UPI" : label.charAt(0).toUpperCase() + label.slice(1), value })),

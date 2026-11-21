@@ -12,7 +12,7 @@ import { passwordError } from "@/lib/auth/validation";
 import { toast } from "@/lib/stores";
 import { cn } from "@/lib/utils";
 
-const cats = ["Women's wear", "Men's wear", "Ethnic wear", "Footwear", "Bags", "Jewellery", "Watches", "Eyewear"];
+const cats = ["Men's Fashion", "Women's Fashion", "Footwear (coming soon)"];
 const STEPS = ["Business", "Verify", "Store"];
 type V = Record<string, string>;
 

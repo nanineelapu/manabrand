@@ -2,6 +2,7 @@
 
 /* Local blob: previews of just-picked files can't go through next/image. */
 /* eslint-disable @next/next/no-img-element */
+import { catTitle } from "@/lib/fashion";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import { ImagePlus, Plus, Star, Trash2, X } from "lucide-react";
@@ -124,7 +125,7 @@ export function ProductForm({
           <div className="space-y-4">
             <Field label="Product name" htmlFor="pn" error={errs.name}><Input id="pn" value={v.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g. Cotton Block-print Kurta" invalid={!!errs.name} /></Field>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Category" htmlFor="pc" error={errs.cat}><Select id="pc" value={v.cat} onChange={(e) => { set("cat", e.target.value); set("sub", ""); }} invalid={!!errs.cat}><option value="">Select category</option>{categories.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}</Select></Field>
+              <Field label="Category" htmlFor="pc" error={errs.cat}><Select id="pc" value={v.cat} onChange={(e) => { set("cat", e.target.value); set("sub", ""); }} invalid={!!errs.cat}><option value="">Select category</option>{categories.map((c) => <option key={c.slug} value={c.slug}>{catTitle(c.slug, c.name)}</option>)}</Select></Field>
               <Field label="Sub-category" htmlFor="ps" optional><Select id="ps" value={v.sub} onChange={(e) => set("sub", e.target.value)} disabled={!subs.length}><option value="">Select</option>{subs.map((s) => <option key={s}>{s}</option>)}</Select></Field>
             </div>
             <Field label="Description" htmlFor="pd" error={errs.description} hint={`${v.description.length}/600 characters`}><Textarea id="pd" rows={4} maxLength={600} value={v.description} onChange={(e) => set("description", e.target.value)} invalid={!!errs.description} placeholder="Fit, feel, occasion, what makes it special…" /></Field>
