@@ -71,10 +71,10 @@ export function InstallButton({ className, label = "Install app" }: { className?
 
 function IOSSteps({ onClose }: { onClose: () => void }) {
   return (
-    <div role="dialog" aria-label="Install ManaBrand" className="fixed inset-x-3 bottom-[calc(var(--tabbar-h)+8px)] z-[60] rounded-3xl bg-black p-5 text-white lg:bottom-6 lg:left-auto lg:right-6 lg:w-[360px]">
-      <button type="button" aria-label="Close" onClick={onClose} className="absolute right-3 top-3 grid size-8 place-items-center rounded-full bg-white/10"><X className="size-4" /></button>
-      <p className="font-bold">Add ManaBrand to your Home Screen</p>
-      <ol className="mt-3 space-y-2 text-sm text-white/80">
+    <div role="dialog" aria-label="Install ManaBrand" className="fixed inset-x-3 bottom-[calc(var(--tabbar-h)+8px)] z-[60] rounded-3xl border border-black/10 bg-white p-5 text-neutral-900 shadow-[0_16px_48px_rgba(0,0,0,0.18)] lg:bottom-6 lg:left-auto lg:right-6 lg:w-[360px]">
+      <button type="button" aria-label="Close" onClick={onClose} className="absolute right-3 top-3 grid size-8 place-items-center rounded-full bg-neutral-100 text-neutral-600 hover:bg-neutral-200"><X className="size-4" /></button>
+      <p className="font-bold text-neutral-900">Add ManaBrand to your Home Screen</p>
+      <ol className="mt-3 space-y-2 text-sm text-neutral-700">
         <li>1. Tap the <Share className="mx-0.5 inline size-4 align-text-bottom" /> <b>Share</b> button in Safari.</li>
         <li>2. Scroll down and tap <b>Add to Home Screen</b>.</li>
         <li>3. Tap <b>Add</b> — the ManaBrand icon appears on your phone.</li>
@@ -103,14 +103,14 @@ export function InstallBanner() {
   if (help) return <IOSSteps onClose={() => { setHelp(false); close(); }} />;
 
   return (
-    <div role="region" aria-label="Install the app" data-round className="animate-pop-in fixed inset-x-3 bottom-[calc(var(--tabbar-h)+8px)] z-[55] mx-auto flex max-w-md items-center gap-3 rounded-3xl border border-white/10 bg-black p-3 pr-2 text-white lg:inset-x-auto lg:bottom-6 lg:right-6 lg:w-[380px]">
+    <div role="region" aria-label="Install the app" data-round className="animate-pop-in fixed inset-x-3 bottom-[calc(var(--tabbar-h)+8px)] z-[55] mx-auto flex max-w-md items-center gap-3 rounded-3xl border border-black/10 bg-white p-3 pr-2 text-neutral-900 shadow-[0_12px_40px_rgba(0,0,0,0.14)] lg:inset-x-auto lg:bottom-6 lg:right-6 lg:w-[380px]">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/favicon/android-chrome-192x192.png" alt="" className="size-12 shrink-0 rounded-2xl bg-white/5" />
+      <img src="/favicon/android-chrome-192x192.png" alt="" className="size-12 shrink-0 rounded-2xl bg-neutral-100 p-1 object-contain" />
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-bold leading-tight">Get the ManaBrand app</p>
+        <p className="text-sm font-bold leading-tight text-neutral-900">Get the ManaBrand app</p>
       </div>
-      <button type="button" onClick={() => (app.canPrompt ? app.install().then(close) : setHelp(true))} className="h-10 shrink-0 rounded-full bg-[#e0247a] hover:bg-[#b51a5c] px-4 text-sm font-bold text-white transition-colors">Install</button>
-      <button type="button" aria-label="Not now" onClick={close} className="grid size-8 shrink-0 place-items-center rounded-full text-white/60 hover:bg-white/10"><X className="size-4" /></button>
+      <button type="button" onClick={() => (app.canPrompt ? app.install().then(close) : setHelp(true))} className="h-10 shrink-0 rounded-full bg-[#e0247a] hover:bg-[#b51a5c] px-4 text-sm font-bold text-white shadow-sm transition-colors">Install</button>
+      <button type="button" aria-label="Not now" onClick={close} className="grid size-8 shrink-0 place-items-center rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"><X className="size-4" /></button>
     </div>
   );
 }
