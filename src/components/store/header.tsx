@@ -48,7 +48,7 @@ export function StoreHeader({ items, accountLabel = "Account" }: Props) {
         <div className={cn(capsule, "shrink-0 gap-1 pl-1.5 pr-3 lg:px-5")}>
           <IconButton label="Open menu" className="text-white hover:bg-white/10 lg:hidden" onClick={() => setMenu(true)}><Menu className="size-[22px]" /></IconButton>
           <Link href="/" aria-label="ManaBrand home" className="flex shrink-0 items-center">
-            <LogoImage size="sm" priority className="h-[42px] lg:h-[50px]" />
+            <LogoImage size="sm" priority invert className="h-[42px] lg:h-[50px]" />
           </Link>
         </div>
 

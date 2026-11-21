@@ -55,7 +55,7 @@ export function Preloader() {
       <div className="pl-center">
         <div className="pl-mark">
           <div className="pl-logo-wrapper">
-            <LogoImage size="3xl" priority className="pl-logo h-44 sm:h-56 md:h-64 lg:h-72 w-auto max-w-[85vw] sm:max-w-[420px]" />
+            <LogoImage size="3xl" priority invert className="pl-logo h-44 sm:h-56 md:h-64 lg:h-72 w-auto max-w-[85vw] sm:max-w-[420px]" />
             <div aria-hidden className="pl-sheen" />
           </div>
         </div>

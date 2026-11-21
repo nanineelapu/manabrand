@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ],
     apple: [{ url: "/favicon/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
-  openGraph: { title: site.defaultTitle, description: site.description, siteName: site.siteName, images: [site.ogImage ? { url: site.ogImage } : { url: "/logo.png", width: 1122, height: 1402 }] },
+  openGraph: { title: site.defaultTitle, description: site.description, siteName: site.siteName, images: [site.ogImage ? { url: site.ogImage } : { url: "/logo.png", width: 819, height: 1024 }] },
   };
 }
 

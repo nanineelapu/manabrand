@@ -45,10 +45,10 @@ export function HeroBrandFlow({ active }: { active: boolean }) {
             {/* Luminous backlight aura */}
             <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(224,36,122,0.45)_0%,transparent_70%)] blur-2xl scale-125" />
             <Image
-              src="/logo.png"
+              src="/logo-dark.png"
               alt="ManaBrand"
-              width={1122}
-              height={1402}
+              width={819}
+              height={1024}
               priority={active}
               className="relative z-10 h-80 xl:h-96 w-auto object-contain filter drop-shadow-[0_16px_40px_rgba(224,36,122,0.45)]"
             />
@@ -63,10 +63,10 @@ export function HeroBrandFlow({ active }: { active: boolean }) {
         <div className="relative size-72">
           <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(224,36,122,0.4)_0%,transparent_70%)] blur-2xl animate-pulse" />
           <Image
-            src="/logo.png"
+            src="/logo-dark.png"
             alt="ManaBrand"
-            width={1122}
-            height={1402}
+            width={819}
+            height={1024}
             className="size-full object-contain filter drop-shadow-[0_0_35px_rgba(224,36,122,0.6)]"
           />
         </div>

@@ -7,7 +7,7 @@ export default function OfflinePage() {
   return (
     <main className="grid min-h-dvh place-items-center bg-black px-6 text-center text-white">
       <div className="max-w-sm">
-        <LogoImage size="lg" className="mx-auto" />
+        <LogoImage size="lg" invert className="mx-auto" />
         <h1 className="mt-6 text-3xl font-black tracking-tight">You’re offline</h1>
         <p className="mt-3 text-white/70">Check your internet connection and try again — ManaBrand will be right here.</p>
         {/* plain link on purpose: a full reload is what we want after the connection comes back */}
