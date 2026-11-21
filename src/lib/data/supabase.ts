@@ -484,7 +484,7 @@ export async function getSettings() {
     shipping: { freeAbove: 1499, standardFee: 99, expressFee: 149, codFee: 40, ...(m.shipping ?? {}) },
     payments: { upi: true, card: true, netbanking: true, cod: true, wallet: false, ...(m.payments ?? {}) },
     commission: { default: 12, ...(m.commission ?? {}) },
-    business: { name: "ManaBrand Pvt. Ltd.", supportEmail: "care@manabrand.in", supportPhone: "1800-120-6262", ...(m.business ?? {}) },
+    business: { name: "ManaBrand Pvt. Ltd.", supportEmail: "care@manabrand.in", supportPhone: "+91 831 765 8309", ...(m.business ?? {}) },
   };
 }
 export async function getSellerPromotions() {

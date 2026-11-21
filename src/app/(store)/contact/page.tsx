@@ -5,7 +5,7 @@ import { InfoPage } from "@/components/store/info-page";
 export const metadata = { title: "Contact us" };
 
 const channels = [
-  { icon: Phone, t: "Call us", d: "1800-120-6262 (toll free)" },
+  { icon: Phone, t: "Call & WhatsApp", d: "+91 831 765 8309" },
   { icon: Mail, t: "Email", d: "care@manabrand.in" },
   { icon: Clock, t: "Hours", d: "Mon–Sat, 9am – 8pm IST" },
   { icon: MapPin, t: "Studio", d: "Bandra Kurla Complex, Mumbai 400051" },

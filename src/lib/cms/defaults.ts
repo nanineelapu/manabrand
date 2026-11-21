@@ -16,7 +16,7 @@ export const DEFAULT_SITE: CmsSite = {
   newsletterTitle: "Get 10% off your first order",
   copyright: "© 2026 ManaBrand Pvt. Ltd. All rights reserved.",
   madeIn: "Made in India",
-  supportPhone: "1800-120-6262",
+  supportPhone: "+91 831 765 8309",
 };
 
 export const DEFAULT_NAV: CmsNav = {

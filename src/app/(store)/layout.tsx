@@ -10,6 +10,7 @@ import { SearchOverlay } from "@/components/store/search-overlay";
 import { StoreDataProvider, type CouponLite, type ProductLite } from "@/components/store/store-data";
 import { MobileTabBar } from "@/components/store/tab-bar";
 import { ShopperSync } from "@/components/store/shopper-sync";
+import { WhatsAppButton } from "@/components/store/whatsapp-button";
 import { getSessionProfile } from "@/lib/auth/session";
 import { Toaster } from "@/components/ui/toaster";
 import { getAllCoupons, getCategories, getSubcategories, getTrendingSearches, queryProducts, getSellerNames } from "@/lib/data";
@@ -44,6 +45,7 @@ export default async function StoreLayout({ children }: LayoutProps<"/">) {
         <MobileMenu items={headerItems} quickLinks={navContent.mobileQuickLinks} />
         <SearchOverlay trending={trending} />
         <MiniCart />
+        <WhatsAppButton />
         <Toaster offsetBottom />
       </StoreDataProvider>
     </div>

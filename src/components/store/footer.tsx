@@ -54,6 +54,16 @@ export function Footer({ site, nav }: { site: CmsSite; nav: CmsNav }) {
             <h3 className={heading}><span aria-hidden className="h-px w-5 bg-accent" />Find us</h3>
             <ul className="space-y-2.5 text-sm md:space-y-3">
               {site.supportPhone && <li className="flex items-center gap-3.5"><Phone className="size-5 shrink-0 text-accent" /><a href={`tel:${site.supportPhone.replace(/[^\d+]/g, "")}`} className="font-semibold tracking-wide hover:text-accent">{site.supportPhone}</a></li>}
+              <li className="flex items-center gap-3.5">
+                <span className="grid size-5 place-items-center text-[#25D366]">
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="size-4.5" aria-hidden="true">
+                    <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.41a8.21 8.21 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.53c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43s-.56-1.34-.76-1.84c-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.84-.86 2.06s.88 2.39 1 2.56c.12.17 1.73 2.64 4.19 3.7.59.25 1.04.41 1.4.52.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.17-.48-.3" />
+                  </svg>
+                </span>
+                <a href="https://wa.me/918317658309?text=Hi%20ManaBrand!%20I%20have%20an%20inquiry." target="_blank" rel="noopener noreferrer" className="font-semibold text-white/90 hover:text-[#25D366]">
+                  WhatsApp Us
+                </a>
+              </li>
               <li className="flex items-center gap-3.5"><Mail className="size-5 shrink-0 text-accent" /><a href={`mailto:${email}`} className="break-all text-white/70 hover:text-accent">{email}</a></li>
               <li className="flex items-center gap-3.5"><Clock className="size-5 shrink-0 text-accent" /><span className="text-white/70">Mon–Sat · 9am–8pm</span></li>
             </ul>
