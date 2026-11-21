@@ -6,6 +6,7 @@
  *  - pub()  → cookie-less client for public catalogue reads (cache/static friendly)
  *  - sb()   → client bound to the signed-in user's session; Row-Level Security decides what comes back
  */
+import { normalizeDealBox } from "@/lib/magic-hours";
 import { HIDDEN_CATEGORY_SLUGS } from "@/lib/fashion";
 import { mergePermissions } from "@/lib/permissions";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -44,7 +45,7 @@ function mapProduct(r: any): Product {
     price: r.price, mrp: r.mrp, colors: colors.length ? colors : [{ name: "Standard", hex: "#d9d3c7" }],
     optionLabel: r.option_label, sizes: opts.map((o: any) => o.value), stock: Object.fromEntries(opts.map((o: any) => [o.value, o.stock])),
     rating: Number(r.rating_avg), reviewCount: r.review_count, sold: r.sold_count, badges: r.badges ?? [],
-    description: r.description, fabric: r.material, care: r.care ?? [], details: r.details ?? [], createdAt: r.created_at,
+    description: r.description, seoTitle: r.seo_title ?? undefined, seoDescription: r.seo_description ?? undefined, fabric: r.material, care: r.care ?? [], details: r.details ?? [], createdAt: r.created_at,
     status: r.status as ProductStatus, tags: r.tags ?? [], images, imageIds: imgRows.map((i: any) => i.id as string),
   };
 }
@@ -102,7 +103,7 @@ function mapBanner(r: any): Banner {
 }
 function mapReview(r: any): Review {
   return { id: r.id, productId: r.product_id, author: r.author_name ?? "Customer", city: r.author_city ?? "", rating: r.rating, title: r.title, body: r.body,
-    date: r.created_at, verified: r.verified, helpful: r.helpful, status: r.status };
+    date: r.created_at, verified: r.verified, helpful: r.helpful, images: r.images ?? [], status: r.status };
 }
 
 /* ================================================================ catalogue */
@@ -484,6 +485,10 @@ export async function getSellerDashboard(sellerId?: string) {
   };
 }
 
+export async function getDealBox() {
+  const row = ok(await pub().from("settings").select("value").eq("key", "dealbox").maybeSingle()) as { value: Record<string, unknown> } | null;
+  return normalizeDealBox(row?.value as never);
+}
 export async function getSettings() {
   const rows = ok(await (await sb()).from("settings").select("key, value"), []) as { key: string; value: any }[];
   const m = Object.fromEntries(rows.map((r) => [r.key, r.value]));

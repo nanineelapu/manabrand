@@ -99,7 +99,7 @@ insert into public.settings (key, value) values
   ('shipping',   '{"freeAbove":9999999,"standardFee":99,"expressFee":149,"codFee":40}'),
   ('payments',   '{"upi":true,"card":true,"netbanking":true,"cod":true,"wallet":false}'),
   ('commission', '{"default":12}'),
-  ('business',   '{"name":"ManaBrand Pvt. Ltd.","supportEmail":"care@manabrand.in","supportPhone":"1800-120-6262"}');
+  ('business',   '{"name":"ManaBrand Pvt. Ltd.","supportEmail":"care@manabrand.in","supportPhone":"+91 831 765 8309"}');
 
 create table public.audit_log (
   id         bigint generated always as identity primary key,

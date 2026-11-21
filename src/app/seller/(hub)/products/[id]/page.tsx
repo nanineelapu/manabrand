@@ -5,6 +5,8 @@ import { StatusBadge } from "@/components/shared/status";
 import { LockedFeature } from "@/components/seller/locked-feature";
 import { getCategories, getCurrentSeller, getProductById, getSubcategoryMap, resolveSellerId } from "@/lib/data";
 
+export const metadata = { title: "Edit product" };
+
 export default async function SellerEditProductPage({ params }: PageProps<"/seller/products/[id]">) {
   const p = await getProductById((await params).id);
   const sellerId = await resolveSellerId();

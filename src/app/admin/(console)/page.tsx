@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { getSessionProfile } from "@/lib/auth/session";
-import { AlertTriangle, ArrowRight, Download, IndianRupee, Package, ShoppingCart, Store, Users, RotateCcw, MessageSquareWarning, Eye } from "lucide-react";
+import { AlertTriangle, ArrowRight, Boxes, Download, IndianRupee, Package, ShoppingCart, Store, Users, RotateCcw, MessageSquareWarning, Eye } from "lucide-react";
 import { Donut, HBars, Legend, AreaChart } from "@/components/shared/charts";
 import { DataTable } from "@/components/shared/data-table";
 import { PageHeader, Panel, StatCard } from "@/components/shared/blocks";
 import { StatusBadge, statusLabel } from "@/components/shared/status";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/brand/product-image";
-import { getAdminDashboard, getAnalytics } from "@/lib/data";
+import { getAdminDashboard, getAllProducts, getAnalytics, getNotifications } from "@/lib/data";
 import { chart } from "@/lib/design/tokens";
 import { formatCompactINR, formatINR, formatNumber, timeAgo } from "@/lib/utils";
 
@@ -18,7 +18,9 @@ const delta = (a: number[]) => ((last(a, 7) - last(a, 7, 7)) / last(a, 7, 7)) * 
 const spark = (a: number[]) => a.slice(-14);
 
 export default async function AdminDashboard() {
-  const [d, an, me] = await Promise.all([getAdminDashboard(), getAnalytics(), getSessionProfile()]);
+  const [d, an, me, products, feed] = await Promise.all([getAdminDashboard(), getAnalytics(), getSessionProfile(), getAllProducts(), getNotifications()]);
+  const toShip = d.statusCounts.filter((s) => s.status === "confirmed" || s.status === "packed").reduce((a, s) => a + s.count, 0);
+  const toReview = products.filter((p) => p.status === "pending_review").length;
   const now = new Date();
   const hour = Number(new Intl.DateTimeFormat("en-IN", { hour: "numeric", hour12: false, timeZone: "Asia/Kolkata" }).format(now)) % 24;
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
@@ -27,6 +29,9 @@ export default async function AdminDashboard() {
 
   const attention = [
     { href: "/admin/orders?status=placed", icon: ShoppingCart, n: d.pendingOrders, label: "Orders to confirm", tone: "text-info bg-info-bg" },
+    { href: "/admin/orders?status=processing", icon: Package, n: toShip, label: "Orders to pack & ship", tone: "text-info bg-info-bg" },
+    { href: "/admin/products?status=pending_review", icon: Package, n: toReview, label: "Products to review", tone: "text-warning bg-warning-bg" },
+    { href: "/admin/inventory", icon: Boxes, n: d.lowStock.length, label: "Low-stock products", tone: "text-danger bg-danger-bg" },
     { href: "/admin/sellers?status=pending", icon: Store, n: d.pendingSellers, label: "Seller applications", tone: "text-warning bg-warning-bg" },
     { href: "/admin/returns", icon: RotateCcw, n: d.openReturns, label: "Return requests", tone: "text-accent-soft-fg bg-accent-soft" },
     { href: "/admin/reviews", icon: MessageSquareWarning, n: d.flaggedReviews, label: "Reviews to moderate", tone: "text-danger bg-danger-bg" },
@@ -35,10 +40,10 @@ export default async function AdminDashboard() {
   return (
     <>
       <PageHeader title={`${greeting}${me ? `, ${me.name.split(" ")[0]}` : ""}`} subtitle={`Here’s what’s happening across ManaBrand today · ${today}`}
-        actions={<><Button variant="outline" size="sm" href="/" ><Eye className="size-4" /> Storefront</Button><Button size="sm"><Download className="size-4" /> Export report</Button></>} />
+        actions={<><Button variant="outline" size="sm" href="/" ><Eye className="size-4" /> Storefront</Button><Button size="sm" href="/admin/business"><Download className="size-4" /> Business report</Button></>} />
 
       {/* Needs attention — first thing on mobile */}
-      <section aria-label="Needs attention" className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <section aria-label="Needs attention" className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4 2xl:grid-cols-7">
         {attention.map((a) => (
           <Link key={a.label} href={a.href} className="group flex items-center gap-3 rounded-card border border-line bg-card p-3.5 shadow-card transition-colors hover:border-line-strong md:p-4">
             <span className={`grid size-10 shrink-0 place-items-center rounded-ctl ${a.tone}`}><a.icon className="size-5" /></span>
@@ -79,6 +84,12 @@ export default async function AdminDashboard() {
           ]} />
         </div>
         <div className="space-y-5">
+          <Panel title="Recent activity" padded={false}>
+            <ul className="divide-y divide-line">
+              {feed.slice(0, 6).map((n) => <li key={n.id} className="px-4 py-3 md:px-5"><p className="text-sm font-medium">{n.title}</p><p className="mt-0.5 line-clamp-2 text-[13px] text-muted">{n.body}</p><p className="mt-1 text-xs text-subtle">{timeAgo(n.at)}</p></li>)}
+              {feed.length === 0 && <li className="px-5 py-6 text-center text-sm text-muted">Nothing yet.</li>}
+            </ul>
+          </Panel>
           <Panel title="Top products" action={<Link href="/admin/products" className="text-sm font-medium text-accent">All</Link>}><HBars rows={d.topProducts} format={formatCompactINR} /></Panel>
           <Panel title="Top sellers" action={<Link href="/admin/sellers" className="text-sm font-medium text-accent">All</Link>}><HBars rows={d.topSellers} format={formatCompactINR} /></Panel>
         </div>

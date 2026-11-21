@@ -130,6 +130,30 @@ export const contactInboxEmail = (o: { name: string; email: string; phone?: stri
     p(`<span style="color:${BRAND.muted};font-size:13px">Press Reply to answer ${esc(o.name)} directly.</span>`),
 }));
 
+/** A personal message written by the ManaBrand team in the admin panel. */
+export const adminMessageEmail = (o: { name: string; subject: string; message: string; siteUrl: string }): Mail => mail(o.subject, layout({
+  title: o.subject, preheader: o.message.slice(0, 90), siteUrl: o.siteUrl, reason: "You are receiving this message from the ManaBrand team.",
+  body: p(`Hi ${esc(o.name.split(" ")[0])},`) + `<div style="margin:0 0 14px">${esc(o.message).replace(/\n/g, "<br>")}</div>` + p("Warm regards,<br>Team ManaBrand"),
+}));
+
+export const backInStockEmail = (o: { name: string; size?: string; slug: string; siteUrl: string }): Mail => mail(`Back in stock: ${o.name}`, layout({
+  title: "Back in stock", preheader: `${o.name}${o.size ? ` (${o.size})` : ""} is available again.`, siteUrl: o.siteUrl,
+  reason: "You asked us to email you when this came back in stock.",
+  body: h("It’s back! 🎉") + p(`<b>${esc(o.name)}</b>${o.size ? ` in size <b>${esc(o.size)}</b>` : ""} is available again. Popular pieces go fast, so grab yours while it lasts.`) +
+    button(`${o.siteUrl}/product/${o.slug}`, "Shop now"),
+}));
+
+export const abandonedCartEmail = (o: { name: string; items: { name: string; price: number }[]; siteUrl: string }): Mail => {
+  const rows = o.items.slice(0, 4).map((i) => `<tr><td style="padding:8px 0;border-bottom:1px solid ${BRAND.line}">${esc(i.name)}</td><td align="right" style="padding:8px 0;border-bottom:1px solid ${BRAND.line};white-space:nowrap">${inr(i.price)}</td></tr>`).join("");
+  return mail("You left something in your bag", layout({
+    title: "Your bag is waiting", preheader: "Your picks are still in your bag.", siteUrl: o.siteUrl,
+    reason: "You are receiving this because you have items in your ManaBrand bag. You can turn offers off in your account.",
+    body: h("Still thinking it over?") + p(`Hi ${esc(o.name.split(" ")[0])}, you left these in your bag:`) +
+      `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 12px">${rows}</table>` +
+      (o.items.length > 4 ? p(`…and ${o.items.length - 4} more.`) : "") + p("Delivery within 48 hours, and cash on delivery is available.") + button(`${o.siteUrl}/cart`, "Return to your bag"),
+  }));
+};
+
 /* -------------------------------------------------------------------- sellers */
 export const sellerAppliedEmail = (o: { store: string; owner: string; siteUrl: string }): Mail => mail("We received your seller application", layout({
   title: "Seller application received", preheader: `${o.store} is waiting for review.`, siteUrl: o.siteUrl,

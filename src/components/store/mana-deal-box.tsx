@@ -4,25 +4,27 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Check, Clock, Gift, Truck, X, Zap } from "lucide-react";
 import { SectionHeader } from "@/components/ui/display";
 import { Reveal } from "@/components/ui/motion";
-import { MAGIC_LABEL, clock, magicState } from "@/lib/magic-hours";
+import { clock, magicLabel, magicState, type DealBoxConfig } from "@/lib/magic-hours";
+import { ProductRail } from "@/components/store/product-card";
+import type { Product } from "@/types";
 
-const PERKS = [
-  { icon: Gift, title: "Daily magic-hour deal", desc: `A fresh members-only fashion deal box opens every day, ${MAGIC_LABEL}.` },
+const perks = (label: string) => [
+  { icon: Gift, title: "Daily magic-hour deal", desc: `A fresh members-only fashion deal box opens every day, ${label}.` },
   { icon: Truck, title: "Free delivery", desc: "No delivery fee on any order, all year." },
   { icon: Zap, title: "Early access", desc: "First look at new styles and festive drops." },
 ] as const;
 
-const PASS = { price: 699, unit: "year" } as const;
 
 /** Live status of the daily magic hours: "Live now · ends in …" or "Opens in …". Client-only so it never mismatches on hydration. */
-function MagicClock() {
+function MagicClock({ cfg }: { cfg: DealBoxConfig }) {
   const [st, setSt] = useState<{ live: boolean; msLeft: number } | null>(null);
   useEffect(() => {
-    const tick = () => setSt(magicState());
+    const tick = () => setSt(magicState(cfg));
     tick();
     const t = setInterval(tick, 1000);
     return () => clearInterval(t);
-  }, []);
+  }, [cfg]);
+  const MAGIC_LABEL = magicLabel(cfg);
   return (
     <div className="flex items-center gap-4 rounded-[22px] bg-black p-4 text-white md:p-5" role="timer" aria-live="off">
       <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-white/10"><Clock className="size-[22px]" strokeWidth={1.8} /></span>
@@ -39,23 +41,26 @@ function MagicClock() {
 }
 
 /** Members-only pass: white section, three short perks, one pricing card. */
-export function ManaDealBox() {
+export function ManaDealBox({ config, picks = [] }: { config: DealBoxConfig; picks?: Product[] }) {
+  const label = magicLabel(config);
+  const PASS = { price: config.price, unit: "year" } as const;
   const [open, setOpen] = useState(false);
   const [contact, setContact] = useState("");
   const [done, setDone] = useState(false);
   const p = PASS;
+  if (!config.enabled) return null; // (after the hooks, so their order never changes)
 
   return (
     <section aria-labelledby="dealbox-heading" data-round className="bg-white text-black">
       <div className="container-page py-12 md:py-16">
-        <Reveal><SectionHeader id="dealbox-heading" eyebrow="Members only · Daily" title="Mana Deal Box" subtitle={`Opens every day in the magic hours, ${MAGIC_LABEL}.`} /></Reveal>
+        <Reveal><SectionHeader id="dealbox-heading" eyebrow="Members only · Daily" title="Mana Deal Box" subtitle={`Opens every day in the magic hours, ${label}.`} /></Reveal>
 
         <div className="mt-7 grid gap-5 md:mt-9 lg:grid-cols-[1.15fr_1fr] lg:items-stretch lg:gap-8">
           {/* perks */}
           <div className="grid gap-3">
-          <MagicClock />
+          <MagicClock cfg={config} />
           <ul className="grid gap-3">
-            {PERKS.map((k, i) => (
+            {perks(label).map((k, i) => (
               <li key={k.title}>
                 <Reveal delay={i * 70}>
                   <div className="flex items-center gap-4 rounded-[22px] border border-black/10 bg-white p-4 transition-colors hover:border-primary md:p-5">
@@ -80,7 +85,7 @@ export function ManaDealBox() {
               <p className="mt-1 text-[13px] font-medium text-primary">That’s about ₹{Math.round(p.price / 12)} a month.</p>
 
               <ul className="mt-5 space-y-2 text-[14px] text-black/75">
-                {[`Daily deal box, ${MAGIC_LABEL}`, "Free delivery on every order", "Early access to limited drops"].map((t) => (
+                {[`Daily deal box, ${label}`, "Free delivery on every order", "Early access to limited drops"].map((t) => (
                   <li key={t} className="flex items-center gap-2.5"><Check className="size-4 shrink-0 text-primary" strokeWidth={3} />{t}</li>
                 ))}
               </ul>
@@ -96,6 +101,10 @@ export function ManaDealBox() {
           </Reveal>
         </div>
       </div>
+
+      {picks.length > 0 && (
+        <div className="container-page pb-12 md:pb-16"><h3 className="mb-4 text-lg font-black tracking-tight">Today’s picks for members</h3><ProductRail products={picks} /></div>
+      )}
 
       {open && (
         <div role="dialog" aria-modal="true" aria-label="Join the Mana Deal Box" className="fixed inset-0 z-[70] grid place-items-center bg-black/55 p-4 backdrop-blur-sm" onClick={() => setOpen(false)}>

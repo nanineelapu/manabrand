@@ -72,6 +72,7 @@ export const getSellerReturns = pick("getSellerReturns");
 export const getSellerReviews = pick("getSellerReviews");
 
 export const getSettings = pick("getSettings");
+export const getDealBox = pick("getDealBox");
 export const getSellerPromotions = pick("getSellerPromotions");
 export const getSellerTickets = pick("getSellerTickets");
 export type { SettingsData, PromoRow, TicketRow } from "./mock";

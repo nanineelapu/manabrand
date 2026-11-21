@@ -2,11 +2,14 @@ import Link from "next/link";
 import { Star } from "lucide-react";
 import { ProductImage } from "@/components/brand/product-image";
 import { WishlistButton } from "./wishlist-button";
+import { QuickView } from "./quick-view";
 import { cn, discountPct, formatINR } from "@/lib/utils";
 import type { Product } from "@/types";
 
 export function ProductCard({ product: p, className, priority, style }: { product: Product; className?: string; priority?: boolean; style?: React.CSSProperties }) {
   const off = discountPct(p.price, p.mrp);
+  const left = Object.values(p.stock).reduce((a, b) => a + b, 0);
+  const soldOut = left === 0;
   const tag = p.badges.includes("new") ? "New" : off >= 20 ? `${off}% off` : null;
   return (
     <article style={style} data-round className={cn("group relative", className)}>
@@ -15,7 +18,9 @@ export function ProductCard({ product: p, className, priority, style }: { produc
           <div className="size-full transition-transform duration-500 ease-out group-hover:scale-[1.05]">
             <ProductImage photo={p.photo} seed={p.id} color={p.colors[0].hex} src={p.images?.[0]} rounded={false} title={p.name} priority={priority} />
           </div>
-          {tag && <span className="absolute left-2.5 top-2.5 rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold text-white">{tag}</span>}
+          {soldOut && <span className="absolute inset-0 grid place-items-center bg-white/65"><span className="rounded-full bg-black px-3.5 py-1.5 text-xs font-bold uppercase tracking-wide text-white">Sold out</span></span>}
+          {!soldOut && left <= 3 && <span className="absolute bottom-2.5 left-2.5 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold text-warning shadow-sm">Only {left} left</span>}
+          {tag && !soldOut && <span className="absolute left-2.5 top-2.5 rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold text-white">{tag}</span>}
         </div>
         <div className="px-1 pt-3">
           <h3 className="line-clamp-1 text-[14px] font-semibold leading-snug">{p.name}</h3>
@@ -29,6 +34,7 @@ export function ProductCard({ product: p, className, priority, style }: { produc
         </div>
       </Link>
       <WishlistButton productId={p.id} className="absolute right-2 top-2" />
+      {!soldOut && <QuickView product={p} />}
     </article>
   );
 }

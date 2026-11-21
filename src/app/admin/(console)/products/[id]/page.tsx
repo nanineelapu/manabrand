@@ -4,6 +4,8 @@ import { StatusBadge } from "@/components/shared/status";
 import { ProductForm } from "@/components/shared/product-form";
 import { getActiveSellers, getCategories, getProductById, getSubcategoryMap } from "@/lib/data";
 
+export const metadata = { title: "Edit product" };
+
 export default async function EditProductPage({ params }: PageProps<"/admin/products/[id]">) {
   const p = await getProductById((await params).id);
   if (!p) notFound();

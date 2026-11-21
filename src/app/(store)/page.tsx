@@ -9,7 +9,7 @@ import { ProductImage } from "@/components/brand/product-image";
 import { SectionHeader } from "@/components/ui/display";
 import { ProductRail } from "@/components/store/product-card";
 import { getHomeContent, getSiteContent } from "@/lib/cms";
-import { getCategories, getNewArrivals, getTrending } from "@/lib/data";
+import { getCategories, getDealBox, getNewArrivals, getTrending, queryProducts } from "@/lib/data";
 import { GROUPS, groupOf } from "@/lib/fashion";
 
 /** Home tab title comes from the CMS (Site settings → Home page title). */
@@ -23,9 +23,10 @@ const PROMOS = [
 ] as const;
 
 export default async function HomePage() {
-  const [cats, trending, fresh, c, site] = await Promise.all([
-    getCategories(), getTrending(8), getNewArrivals(8), getHomeContent(), getSiteContent(),
+  const [cats, trending, fresh, c, site, deal] = await Promise.all([
+    getCategories(), getTrending(8), getNewArrivals(8), getHomeContent(), getSiteContent(), getDealBox(),
   ]);
+  const picks = deal.productIds.length ? (await queryProducts({ ids: deal.productIds, pageSize: 12 })).items : [];
   const tile = (k: (typeof cats)[number]) => ({ name: k.name, slug: k.slug, photo: k.photo, count: k.productCount, soon: !groupOf(k.slug) && k.productCount === 0 });
   const groups = [
     ...GROUPS.map((g) => ({ title: g.title, href: `/${g.id}`, tiles: cats.filter((k) => groupOf(k.slug) === g.id).map(tile) })),
@@ -73,7 +74,7 @@ export default async function HomePage() {
       </section>
 
       {/* Mana Deal Box: Exclusive VIP membership club */}
-      <ManaDealBox />
+      <ManaDealBox config={deal} picks={picks} />
 
       {/* sits right above the big "Find your next look" card (rendered by the layout) */}
       <WhySection />

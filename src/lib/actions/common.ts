@@ -10,6 +10,8 @@ export const live = () => isSupabaseConfigured() && Boolean(process.env.SUPABASE
 
 /** Turn Postgres / PostgREST errors into something a person can read. */
 export function friendly(message: string): string {
+  if (/Not enough stock for/i.test(message)) return `Sorry — ${message.replace(/^.*Not enough stock for\s*/i, "").trim() || "an item"} just sold out or has fewer pieces left than in your bag. Please update your bag and try again.`;
+  if (/no longer available/i.test(message)) return "An item in your bag is no longer available. Please remove it and try again.";
   if (/row-level security|permission denied|not allowed/i.test(message)) return "You don’t have permission to do that.";
   if (/duplicate key|unique/i.test(message)) return "That already exists.";
   if (/foreign key/i.test(message)) return "This is in use elsewhere and can’t be removed.";

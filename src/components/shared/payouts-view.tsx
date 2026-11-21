@@ -1,5 +1,6 @@
 "use client";
 
+import { downloadCsv } from "@/lib/csv";
 import { useMemo, useState } from "react";
 import { Banknote, Download, Landmark } from "lucide-react";
 import { StatCard } from "@/components/shared/blocks";
@@ -54,7 +55,7 @@ export function PayoutsView({ payouts, role }: { payouts: Payout[]; role: "admin
         p.status === "scheduled" ? <Button size="sm" onClick={() => set(p.id, "processing", `Payout to ${p.sellerName} released`)}>Release payout</Button>
         : p.status === "on_hold" ? <Button size="sm" variant="outline" onClick={() => set(p.id, "scheduled", "Hold removed")}>Remove hold</Button>
         : p.status === "processing" ? <Button size="sm" variant="outline" onClick={() => set(p.id, "paid", "Marked as paid")}>Mark paid</Button> : <span className="font-mono text-[11px] text-subtle">{p.utr}</span>
-      ) : <Button size="sm" variant="ghost" onClick={() => toast.info("Statement downloaded (demo)")}><Download className="size-3.5" /> Statement</Button>} />
+      ) : <Button size="sm" variant="ghost" onClick={() => downloadCsv(`payout-${p.period.replace(/[^a-z0-9]+/gi, "-")}`, [["Seller", "Period", "Orders", "Gross (INR)", "Fee (INR)", "Net payout (INR)", "Status", "Date", "UTR"], [p.sellerName, p.period, p.orders, p.gross, p.commission, p.net, p.status, p.date.slice(0, 10), p.utr ?? ""]])}><Download className="size-3.5" /> Statement</Button>} />
     </>
   );
 }

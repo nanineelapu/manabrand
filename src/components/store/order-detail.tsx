@@ -1,4 +1,8 @@
 import Link from "next/link";
+import { PayNowButton } from "@/components/store/pay-now-button";
+import { MessageCircle, Printer } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { askAboutOrder } from "@/lib/whatsapp";
 import { CreditCard, MapPin, Truck } from "lucide-react";
 import { OrderTimeline } from "@/components/shared/blocks";
 import { StatusBadge } from "@/components/shared/status";
@@ -19,6 +23,11 @@ export async function OrderDetail({ order: o }: { order: Order }) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div><p className="text-sm text-muted">Order</p><h2 className="font-display text-2xl font-semibold md:text-3xl">{o.number}</h2><p className="text-[13px] text-muted">Placed on {formatDateTime(o.createdAt)}</p></div>
         <StatusBadge status={o.status} className="text-[13px]" />
+      </div>
+      <div className="flex flex-wrap gap-2.5">
+        <Button href={`/print/order/${o.id}?type=invoice`} target="_blank" size="sm" variant="outline"><Printer className="size-4" /> Invoice</Button>
+        {o.payment.status === "pending" && o.payment.method !== "cod" && o.status !== "cancelled" && <PayNowButton orderId={o.id} />}
+        <Button href={askAboutOrder(o.number)} target="_blank" size="sm" variant="outline"><MessageCircle className="size-4" /> Ask about this order on WhatsApp</Button>
       </div>
       <OrderActions orderId={o.id} number={o.number} status={o.status} items={o.items.map((i) => ({ itemId: i.itemId, name: i.name }))} />
 

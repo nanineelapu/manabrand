@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { CheckCircle2, Package, Truck, Home } from "lucide-react";
 import { ProductImage } from "@/components/brand/product-image";
 import { Button } from "@/components/ui/button";
+import { askAboutOrder } from "@/lib/whatsapp";
 import { formatINR } from "@/lib/utils";
 import type { PhotoKind } from "@/types";
 
@@ -57,6 +58,7 @@ export function OrderConfirmed({ number }: { number: string }) {
       <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
         <Button href="/account/orders" size="lg" className="rounded-full">View my orders</Button>
         <Button href="/shop" size="lg" variant="outline" className="rounded-full">Continue shopping</Button>
+        <Button href={askAboutOrder(number)} target="_blank" size="lg" variant="outline" className="rounded-full">Questions? WhatsApp us</Button>
       </div>
     </div>
   );

@@ -36,7 +36,7 @@ export function ProductForm({
 }: { product?: Product; categories: Category[]; subcategories: Record<string, string[]>; base: string; role: "admin" | "seller"; sellers?: { id: string; name: string }[]; sellerId?: string; canPublish?: boolean }) {
   const router = useRouter();
   const [v, setV] = useState({
-    name: product?.name ?? "", cat: product?.categorySlug ?? "", sub: product?.subcategory ?? "", description: product?.description ?? "", fabric: product?.fabric ?? "",
+    name: product?.name ?? "", cat: product?.categorySlug ?? "", sub: product?.subcategory ?? "", description: product?.description ?? "", seoTitle: product?.seoTitle ?? "", seoDescription: product?.seoDescription ?? "", fabric: product?.fabric ?? "",
     price: product?.price?.toString() ?? "", mrp: product?.mrp?.toString() ?? "", gst: "5", live: product ? product.status === "active" : false,
     seller: product?.sellerId ?? sellers?.[0]?.id ?? "", featured: product?.badges.includes("bestseller") ?? false,
   });
@@ -91,7 +91,7 @@ export function ProductForm({
     if (!isSupabaseConfigured()) { await new Promise((r) => setTimeout(r, 600)); done(); return; } // demo mode keeps the old behaviour
     try {
       const res = await saveProduct({
-        id: product?.id, name: v.name, categorySlug: v.cat, subcategory: v.sub || undefined, description: v.description, material: v.fabric, price, mrp,
+        id: product?.id, name: v.name, categorySlug: v.cat, subcategory: v.sub || undefined, description: v.description, seoTitle: v.seoTitle, seoDescription: v.seoDescription, material: v.fabric, price, mrp,
         optionLabel: product?.optionLabel && product.sizes.length && sizes.every((s) => product.sizes.includes(s)) ? product.optionLabel : labelFor(sizes),
         colors, options: sizes.map((s) => ({ value: s, stock: Number(stock[s]) || 0 })), publish, sellerId: role === "admin" ? v.seller : sellerId, featured: role === "admin" ? v.featured : undefined,
       });
@@ -129,6 +129,15 @@ export function ProductForm({
               <Field label="Sub-category" htmlFor="ps" optional><Select id="ps" value={v.sub} onChange={(e) => set("sub", e.target.value)} disabled={!subs.length}><option value="">Select</option>{subs.map((s) => <option key={s}>{s}</option>)}</Select></Field>
             </div>
             <Field label="Description" htmlFor="pd" error={errs.description} hint={`${v.description.length}/600 characters`}><Textarea id="pd" rows={4} maxLength={600} value={v.description} onChange={(e) => set("description", e.target.value)} invalid={!!errs.description} placeholder="Fit, feel, occasion, what makes it special…" /></Field>
+            <div className="rounded-ctl border border-line p-4">
+              <p className="text-[13px] font-semibold">Search appearance (SEO)</p>
+              <p className="mt-0.5 text-xs text-muted">How this product looks on Google. Leave empty to use the product name and description.</p>
+              <div className="mt-3 space-y-3">
+                <Field label="Page title" htmlFor="seo-t" hint={`${v.seoTitle.length}/70 characters`}><Input id="seo-t" maxLength={70} value={v.seoTitle} onChange={(e) => set("seoTitle", e.target.value)} placeholder={v.name || "Product name"} /></Field>
+                <Field label="Page description" htmlFor="seo-d" hint={`${v.seoDescription.length}/170 characters`}><Textarea id="seo-d" rows={2} maxLength={170} value={v.seoDescription} onChange={(e) => set("seoDescription", e.target.value)} placeholder={v.description.slice(0, 120)} /></Field>
+                <div className="rounded-lg bg-bg-subtle p-3 text-sm"><p className="truncate font-medium text-[#1a0dab]">{v.seoTitle || v.name || "Product name"} · ManaBrand</p><p className="truncate text-xs text-success">manabrand.vercel.app › product</p><p className="line-clamp-2 text-[13px] text-muted">{v.seoDescription || v.description || "Description appears here."}</p></div>
+              </div>
+            </div>
             <Field label="Fabric & care" htmlFor="pf" optional><Input id="pf" value={v.fabric} onChange={(e) => set("fabric", e.target.value)} placeholder="100% handloom cotton · Machine wash cold" /></Field>
           </div>
         </Panel>

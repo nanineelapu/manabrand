@@ -1,5 +1,6 @@
 "use client";
 
+import { NotifyMe } from "@/components/store/notify-me";
 import { OUT_OF_AREA, inServiceArea } from "@/lib/locale";
 import { groupOf } from "@/lib/fashion";
 import Link from "next/link";
@@ -158,6 +159,9 @@ export function BuyBox({ product, sellerName, sellerSlug }: { product: Product; 
               );
             })}
           </div>
+          {product.sizes.every((s) => product.stock[s] === 0)
+            ? <NotifyMe productId={product.id} />
+            : product.sizes.some((s) => product.stock[s] === 0) && <NotifyMe productId={product.id} sizes={product.sizes.filter((s) => product.stock[s] === 0)} collapsed />}
           {low !== undefined && low > 0 && low <= 5 && <p className="mt-2 text-[13px] font-medium text-warning">Only {low} left — selling fast</p>}
         </div>
       )}

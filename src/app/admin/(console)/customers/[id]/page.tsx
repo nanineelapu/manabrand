@@ -8,6 +8,8 @@ import { Avatar, Badge } from "@/components/ui/display";
 import { getCustomerById, getOrdersForCustomer } from "@/lib/data";
 import { formatDate, formatDateTime, formatINR } from "@/lib/utils";
 
+export const metadata = { title: "Customer" };
+
 export default async function CustomerPage({ params }: PageProps<"/admin/customers/[id]">) {
   const c = await getCustomerById((await params).id);
   if (!c) notFound();

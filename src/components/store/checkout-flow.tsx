@@ -1,5 +1,6 @@
 "use client";
 
+import { payWithRazorpay } from "@/lib/payments/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -23,7 +24,7 @@ import { ShoppingBag } from "lucide-react";
 type Pay = "upi" | "card" | "cod" | "netbanking";
 const STEPS = ["Address", "Delivery", "Payment"];
 
-export function CheckoutFlow({ addresses: initial, onlinePayments = true }: { addresses: Address[]; onlinePayments?: boolean }) {
+export function CheckoutFlow({ addresses: initial, onlinePayments = true, gateway = false }: { addresses: Address[]; onlinePayments?: boolean; gateway?: boolean }) {
   const router = useRouter();
   const mounted = useMounted();
   const cart = useCartPricing();
@@ -51,14 +52,14 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true }: { ad
 
   const validatePay = () => {
     const e: Record<string, string> = {};
-    if (pay === "upi" && !/^[\w.-]{2,}@[a-zA-Z]{2,}$/.test(f.vpa.trim())) e.vpa = "Enter a valid UPI ID, e.g. name@okhdfc";
-    if (pay === "card") {
+    if (pay === "upi" && !gateway && !/^[\w.-]{2,}@[a-zA-Z]{2,}$/.test(f.vpa.trim())) e.vpa = "Enter a valid UPI ID, e.g. name@okhdfc";
+    if (pay === "card" && !gateway) {
       if (f.card.replace(/\s/g, "").length !== 16) e.card = "Enter the 16-digit card number";
       if (!f.name.trim()) e.name = "Enter the name on card";
       if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(f.exp)) e.exp = "Use MM/YY";
       if (!/^\d{3,4}$/.test(f.cvv)) e.cvv = "3 or 4 digits";
     }
-    if (pay === "netbanking" && !f.bank) e.bank = "Choose your bank";
+    if (pay === "netbanking" && !gateway && !f.bank) e.bank = "Choose your bank";
     setErrs(e);
     return !Object.keys(e).length;
   };
@@ -72,7 +73,18 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true }: { ad
       method: pay, coupon: couponCode, express,
     });
     let number: string, total: number;
-    if (res.ok) { number = res.number; total = res.total; }
+    if (res.ok) {
+      number = res.number; total = res.total;
+      if (pay !== "cod") {   // online payment: open Razorpay for the order we just created
+        const pr = await payWithRazorpay(res.orderId);
+        if (pr.status !== "paid") {
+          clear();   // the order exists — keep the bag empty and let the customer finish paying from the order page
+          toast.error(pr.status === "error" ? pr.message : "Payment not completed. Your order is saved — you can pay from My orders.");
+          router.replace(`/account/orders/${res.orderId}`);
+          return;
+        }
+      }
+    }
     else if (res.demo) {   // no database connected: simulate so the demo flow still works
       await new Promise((r) => setTimeout(r, 1100));
       number = `MB-${10500 + Math.floor(Math.random() * 400)}`;
@@ -158,10 +170,10 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true }: { ad
                   <Radio name="pay" value={o.id} checked={pay === o.id} onChange={(v) => { setPay(v as Pay); setErrs({}); }}>
                     <div className="flex items-center gap-3"><span className="text-muted">{o.icon}</span><span><span className="block text-sm font-semibold">{o.label}</span><span className="block text-xs text-muted">{o.sub}</span></span></div>
                   </Radio>
-                  {pay === o.id && o.id === "upi" && (
+                  {!gateway && pay === o.id && o.id === "upi" && (
                     <div className="animate-fade-in mt-2 rounded-ctl bg-bg-subtle p-4"><Field label="UPI ID" htmlFor="vpa" error={errs.vpa}><Input id="vpa" autoCapitalize="none" placeholder="yourname@okhdfc" value={f.vpa} onChange={(e) => setField("vpa", e.target.value)} invalid={!!errs.vpa} /></Field></div>
                   )}
-                  {pay === o.id && o.id === "card" && (
+                  {!gateway && pay === o.id && o.id === "card" && (
                     <div className="animate-fade-in mt-2 space-y-3.5 rounded-ctl bg-bg-subtle p-4">
                       <Field label="Card number" htmlFor="cc" error={errs.card}><Input id="cc" inputMode="numeric" autoComplete="cc-number" placeholder="1234 5678 9012 3456" maxLength={19} value={f.card} onChange={(e) => setField("card", e.target.value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim())} invalid={!!errs.card} /></Field>
                       <Field label="Name on card" htmlFor="cn" error={errs.name}><Input id="cn" autoComplete="cc-name" value={f.name} onChange={(e) => setField("name", e.target.value)} invalid={!!errs.name} /></Field>
@@ -171,7 +183,7 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true }: { ad
                       </div>
                     </div>
                   )}
-                  {pay === o.id && o.id === "netbanking" && (
+                  {!gateway && pay === o.id && o.id === "netbanking" && (
                     <div className="animate-fade-in mt-2 rounded-ctl bg-bg-subtle p-4"><Field label="Choose your bank" htmlFor="bk" error={errs.bank}><Select id="bk" value={f.bank} onChange={(e) => setField("bank", e.target.value)} invalid={!!errs.bank}><option value="">Select bank</option>{["HDFC Bank", "ICICI Bank", "State Bank of India", "Axis Bank", "Kotak Mahindra Bank"].map((b) => <option key={b}>{b}</option>)}</Select></Field></div>
                   )}
                 </div>

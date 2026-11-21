@@ -41,6 +41,16 @@ export function ReviewsSection({ product, reviews, breakdown }: { product: Produ
               <Rating value={r.rating} showValue={false} className="mt-3" />
               <h3 className="mt-1.5 text-[15px] font-semibold">{r.title}</h3>
               <p className="mt-1 text-sm leading-relaxed text-muted">{r.body}</p>
+              {r.images && r.images.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {r.images.map((u) => (
+                    <a key={u} href={u} target="_blank" rel="noopener noreferrer" aria-label="Open review photo" className="block size-20 overflow-hidden rounded-lg border border-line">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={u} alt="Customer photo" loading="lazy" className="size-full object-cover" />
+                    </a>
+                  ))}
+                </div>
+              )}
               <p className="mt-2.5 inline-flex items-center gap-1.5 text-xs text-muted"><ThumbsUp className="size-3.5" /> Helpful ({r.helpful})</p>
             </li>
           ))}

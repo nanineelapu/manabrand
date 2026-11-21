@@ -1,12 +1,17 @@
 "use server";
 
+import { normalizeDealBox } from "@/lib/magic-hours";
 import { revalidatePath } from "next/cache";
 import { passwordError, normalizeEmail, normalizePhone, nameError } from "@/lib/auth/validation";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { clampStr, demoResult, fail, guarded, isUuid, live, slugify, type Result } from "./common";
 import { lockoutStatus, recordAttempt, clientIp } from "@/lib/auth/throttle";
 import { DEFAULT_PERMISSIONS, mergePermissions } from "@/lib/permissions";
-import { notifyReturnStatus, notifySellerApplied, notifySellerDecision, notifyOrderStatus } from "@/lib/email/notify";
+import { sendEmail, SUPPORT_EMAIL } from "@/lib/email/send";
+import { refundOrderIfPaid } from "@/lib/payments/refund";
+import { adminMessageEmail } from "@/lib/email/templates";
+import { siteUrl } from "@/lib/supabase/env";
+import { notifyRestock, notifyReturnStatus, notifySellerApplied, notifySellerDecision, notifyOrderStatus } from "@/lib/email/notify";
 import type { SellerPermissions } from "@/types";
 
 const bust = (...paths: string[]) => paths.forEach((p) => revalidatePath(p, "layout"));
@@ -40,6 +45,58 @@ export async function addOrderNote(orderId: string, body: string): Promise<Resul
     return { ok: true };
   });
 }
+/** Admin: refund an online-paid order to the customer's original payment method (Razorpay). */
+export async function refundOrderPayment(orderId: string): Promise<Result> {
+  return guarded(["admin"], async () => {
+    if (!isUuid(orderId)) return { ok: false, error: "Order not found." };
+    const r = await refundOrderIfPaid(orderId);
+    if (!r.ok) return { ok: false, error: r.error ?? "The refund could not be processed." };
+    if (!r.refunded) return { ok: false, error: "This order wasn’t paid online, so there is nothing to refund through the gateway." };
+    bust("/admin", "/account"); return { ok: true };
+  });
+}
+/** Add a teammate who can sign in to the admin panel. Only a "Super admin" may do this. */
+export async function addTeamMember(input: { name: string; email: string; password: string; role: string }): Promise<Result> {
+  return guarded(["admin"], async (actor) => {
+    const db = createAdminClient();
+    const { data: me } = await db.from("admin_members").select("admin_role").eq("user_id", actor.id).maybeSingle();
+    if ((me as { admin_role?: string } | null)?.admin_role !== "Super admin") return { ok: false, error: "Only a Super admin can add teammates." };
+    const email = normalizeEmail(input.email), pw = passwordError(input.password);
+    if (!email || nameError(input.name)) return { ok: false, error: "Enter a name and a valid email." };
+    if (pw) return { ok: false, error: `Password: ${pw}` };
+    const role = ["Super admin", "Operations", "Support", "Marketing"].includes(input.role) ? input.role : "Support";
+    const { error } = await db.auth.admin.createUser({ email, password: input.password, email_confirm: true,
+      user_metadata: { full_name: clampStr(input.name, 80) }, app_metadata: { provisioned_by: "mana-server", role: "admin", admin_role: role } });
+    if (error) return { ok: false, error: /already|registered/i.test(error.message) ? "That email already has an account." : "We couldn’t create the account." };
+    bust("/admin"); return { ok: true };
+  });
+}
+/** Remove a teammate's access (their admin account is deleted). Only a Super admin; never yourself. */
+export async function removeTeamMember(userId: string): Promise<Result> {
+  return guarded(["admin"], async (actor) => {
+    const db = createAdminClient();
+    const { data: me } = await db.from("admin_members").select("admin_role").eq("user_id", actor.id).maybeSingle();
+    if ((me as { admin_role?: string } | null)?.admin_role !== "Super admin") return { ok: false, error: "Only a Super admin can remove teammates." };
+    if (!isUuid(userId) || userId === actor.id) return { ok: false, error: "You can’t remove yourself." };
+    const { data: target } = await db.from("admin_members").select("user_id").eq("user_id", userId).maybeSingle();
+    if (!target) return { ok: false, error: "That person isn’t on the team." };
+    const { error } = await db.auth.admin.deleteUser(userId);
+    if (error) throw new Error(error.message);
+    bust("/admin"); return { ok: true };
+  });
+}
+/** Admin → customer: send a personal email from the customer page (replies go to the support inbox). */
+export async function emailCustomer(userId: string, subject: string, message: string): Promise<Result> {
+  return guarded(["admin"], async () => {
+    const subj = clampStr(subject, 120), body = clampStr(message, 3000);
+    if (!isUuid(userId) || subj.length < 3 || body.length < 5) return { ok: false, error: "Add a subject and a message." };
+    const { data } = await createAdminClient().from("profiles").select("email, full_name").eq("id", userId).maybeSingle();
+    const c = data as { email: string; full_name: string } | null;
+    if (!c?.email) return { ok: false, error: "This customer has no email address." };
+    const res = await sendEmail({ to: c.email, replyTo: SUPPORT_EMAIL(), ...adminMessageEmail({ name: c.full_name, subject: subj, message: body, siteUrl: siteUrl() }) });
+    return res.ok ? { ok: true } : { ok: false, error: "The email could not be sent. Check the Resend settings." };
+  });
+}
 export async function decideReturn(returnId: string, status: "approved" | "rejected" | "picked_up" | "refunded"): Promise<Result> {
   return guarded(["admin", "seller"], async () => {
     const { error } = await (await createClient()).rpc("decide_return", { p_return: returnId, p_status: status });
@@ -54,7 +111,7 @@ export async function decideReturn(returnId: string, status: "approved" | "rejec
 export interface ProductInput {
   id?: string; name: string; categorySlug: string; subcategory?: string; description: string; material?: string;
   price: number; mrp: number; optionLabel: string; colors: { name: string; hex: string }[]; options: { value: string; stock: number }[];
-  publish: boolean; sellerId?: string; featured?: boolean;
+  publish: boolean; sellerId?: string; featured?: boolean; seoTitle?: string; seoDescription?: string;
 }
 
 export async function saveProduct(input: ProductInput): Promise<Result<{ id: string }>> {
@@ -94,6 +151,8 @@ export async function saveProduct(input: ProductInput): Promise<Result<{ id: str
     const fields = {
       name, description: clampStr(input.description, 600), material: clampStr(input.material, 200), price: Math.round(input.price), mrp: Math.round(input.mrp),
       option_label: clampStr(input.optionLabel, 20) || "Standard", category_id: catRow.id, subcategory_id: subId, photo_kind: catRow.photo_kind, status,
+      // only written when filled in, so saving still works on a database that has not had the SEO columns added yet
+      ...(input.seoTitle?.trim() || input.seoDescription?.trim() ? { seo_title: clampStr(input.seoTitle, 70) || null, seo_description: clampStr(input.seoDescription, 170) || null } : {}),
       ...(isAdmin && input.featured !== undefined ? { badges: input.featured ? ["bestseller"] : [] } : {}),
     };
 
@@ -119,6 +178,7 @@ export async function saveProduct(input: ProductInput): Promise<Result<{ id: str
     await supabase.from("product_colors").delete().eq("product_id", id).not("name", "in", `(${colors.map((c) => `"${c.name.replace(/"/g, "")}"`).join(",")})`);
     await supabase.from("product_options").delete().eq("product_id", id).not("value", "in", `(${options.map((o) => `"${o.value.replace(/"/g, "")}"`).join(",")})`);
 
+    void notifyRestock(id!);
     bust("/admin", "/seller", "/shop", "/product");
     return { ok: true, id: id! };
   });
@@ -189,6 +249,8 @@ export async function updateInventory(updates: { productId: string; value: strin
       if (error) throw new Error(error.message);
       n++;
     }
+    // stock went up → email anyone who asked to be told when it is back
+    new Set(updates.filter((u) => u.stock > 0 && isUuid(u.productId)).map((u) => u.productId)).forEach((id) => void notifyRestock(id));
     bust("/seller", "/admin", "/shop");
     return { ok: true, updated: n };
   });
@@ -385,11 +447,12 @@ export async function setPayoutStatus(id: string, status: "scheduled" | "process
   });
 }
 
-export async function saveSetting(key: "shipping" | "payments" | "commission" | "business", value: Record<string, unknown>): Promise<Result> {
+export async function saveSetting(key: "shipping" | "payments" | "commission" | "business" | "dealbox", value: Record<string, unknown>): Promise<Result> {
   return guarded(["admin"], async () => {
+    if (key === "dealbox") value = normalizeDealBox(value as never) as unknown as Record<string, unknown>;
     const { error } = await (await createClient()).from("settings").upsert({ key, value }, { onConflict: "key" });
     if (error) throw new Error(error.message);
-    bust("/admin", "/cart", "/checkout"); return { ok: true };
+    bust("/admin", "/cart", "/checkout", "/"); return { ok: true };
   });
 }
 export async function markNotificationsRead(): Promise<Result> {

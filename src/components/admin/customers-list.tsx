@@ -1,11 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import { UserSearch } from "lucide-react";
+import { Download, UserSearch } from "lucide-react";
 import { DataTable } from "@/components/shared/data-table";
 import { ListToolbar, useListFilter } from "@/components/shared/list-toolbar";
 import { StatusBadge } from "@/components/shared/status";
 import { Avatar, Badge, EmptyState } from "@/components/ui/display";
+import { Button } from "@/components/ui/button";
+import { downloadCsv } from "@/lib/csv";
 import { formatDate, formatINR } from "@/lib/utils";
 import type { Customer } from "@/types";
 
@@ -19,7 +21,8 @@ export function CustomersList({ customers }: { customers: Customer[] }) {
 
   return (
     <>
-      <ListToolbar {...f} placeholder="Search name, email, phone or city" tabs={[{ value: "all", label: "All", count: n("all") }, { value: "VIP", label: "VIP", count: n("VIP") }, { value: "Regular", label: "Regular", count: n("Regular") }, { value: "New", label: "New", count: n("New") }, { value: "blocked", label: "Blocked", count: n("blocked") }]} />
+      <ListToolbar {...f} placeholder="Search name, email, phone or city" tabs={[{ value: "all", label: "All", count: n("all") }, { value: "VIP", label: "VIP", count: n("VIP") }, { value: "Regular", label: "Regular", count: n("Regular") }, { value: "New", label: "New", count: n("New") }, { value: "blocked", label: "Blocked", count: n("blocked") }]}
+        right={<Button variant="outline" size="sm" className="h-10" onClick={() => downloadCsv(`customers-${new Date().toISOString().slice(0, 10)}`, [["Name", "Email", "Phone", "Town", "Joined", "Orders", "Spent (INR)", "Tier", "Status"], ...rows.map((c) => [c.name, c.email, c.phone, c.city, c.joined.slice(0, 10), c.orders, c.spent, c.tier, c.status])])}><Download className="size-4" /> Export</Button>} />
       <DataTable rows={rows} rowKey={(c) => c.id} rowHref={(c) => `/admin/customers/${c.id}`} empty={<EmptyState icon={<UserSearch />} title="No customers found" />}
         columns={[
           { key: "n", header: "Customer", mobile: "title", cell: (c) => <span className="flex items-center gap-3"><Avatar name={c.name} size={34} /><span className="min-w-0"><span className="block truncate font-medium">{c.name}</span><span className="block truncate text-xs text-muted">{c.email}</span></span></span> },

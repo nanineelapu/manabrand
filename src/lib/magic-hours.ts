@@ -1,21 +1,36 @@
 /**
  * "Magic hours": the daily window when the Mana Deal Box opens for members.
- * Change the two hours below (24-hour clock, India time) and the whole site follows.
+ * The hours, price and picked products are edited by the admin in Admin → Deal Box (stored in the `dealbox` setting).
  */
-export const MAGIC = { startHour: 20, endHour: 22 } as const; // 8 PM – 10 PM IST
+export interface DealBoxConfig {
+  enabled: boolean;
+  startHour: number;   // 0–23, India time
+  endHour: number;     // 0–23, India time (must be after startHour)
+  price: number;       // yearly pass price in ₹
+  productIds: string[];
+}
+export const DEFAULT_DEALBOX: DealBoxConfig = { enabled: true, startHour: 20, endHour: 22, price: 699, productIds: [] };
+
+/** Merge whatever is stored with the defaults, and clamp the values so a bad save can never break the page. */
+export function normalizeDealBox(raw: Partial<DealBoxConfig> | null | undefined): DealBoxConfig {
+  const c = { ...DEFAULT_DEALBOX, ...(raw ?? {}) };
+  const start = Math.min(22, Math.max(0, Math.floor(Number(c.startHour))));
+  const end = Math.min(23, Math.max(start + 1, Math.floor(Number(c.endHour))));
+  return { enabled: Boolean(c.enabled), startHour: start, endHour: end, price: Math.max(1, Math.round(Number(c.price) || DEFAULT_DEALBOX.price)), productIds: Array.isArray(c.productIds) ? c.productIds.slice(0, 12) : [] };
+}
 
 const IST = 5.5 * 3600e3;
 const DAY = 86400e3;
 const h12 = (h: number) => `${h % 12 === 0 ? 12 : h % 12} ${h < 12 ? "AM" : "PM"}`;
 
 /** "8 PM – 10 PM" */
-export const MAGIC_LABEL = `${h12(MAGIC.startHour)} – ${h12(MAGIC.endHour)}`;
+export const magicLabel = (c: Pick<DealBoxConfig, "startHour" | "endHour">) => `${h12(c.startHour)} – ${h12(c.endHour)}`;
 
 /** Whether the magic hours are on right now, and how many ms until they end (if on) or next start (if off). */
-export function magicState(now = Date.now()): { live: boolean; msLeft: number } {
+export function magicState(c: Pick<DealBoxConfig, "startHour" | "endHour">, now = Date.now()): { live: boolean; msLeft: number } {
   const dayStart = Math.floor((now + IST) / DAY) * DAY - IST; // today 00:00 IST, as a UTC timestamp
-  const start = dayStart + MAGIC.startHour * 3600e3;
-  const end = dayStart + MAGIC.endHour * 3600e3;
+  const start = dayStart + c.startHour * 3600e3;
+  const end = dayStart + c.endHour * 3600e3;
   if (now >= start && now < end) return { live: true, msLeft: end - now };
   return { live: false, msLeft: (now < start ? start : start + DAY) - now };
 }

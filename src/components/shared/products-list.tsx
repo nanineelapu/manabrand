@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PackageSearch, Plus } from "lucide-react";
+import { Download, PackageSearch, Plus } from "lucide-react";
+import { downloadCsv } from "@/lib/csv";
 import { ProductImage } from "@/components/brand/product-image";
 import { DataTable } from "@/components/shared/data-table";
 import { ListToolbar, useListFilter } from "@/components/shared/list-toolbar";
@@ -35,7 +36,7 @@ export function ProductsList({ products, base, showSeller, sellerNames }: { prod
         { value: "all", label: "All", count: count("all") }, { value: "active", label: "Active", count: count("active") },
         { value: "draft", label: "Draft", count: count("draft") }, { value: "out_of_stock", label: "Out of stock", count: count("out_of_stock") },
         { value: "pending_review", label: "In review", count: count("pending_review") },
-      ]} right={<Button href={`${base}/products/new`} className="h-10"><Plus className="size-4" /> Add product</Button>} />
+      ]} right={<><Button variant="outline" className="h-10" onClick={() => downloadCsv(`products-${new Date().toISOString().slice(0, 10)}`, [["Name", "Category", "Sub-category", "Price (INR)", "MRP (INR)", "Stock", "Sold", "Status"], ...rows.map((p) => [p.name, p.categorySlug, p.subcategory, p.price, p.mrp, Object.values(p.stock).reduce((a, b) => a + b, 0), p.sold, p.status])])}><Download className="size-4" /> Export</Button><Button href={`${base}/products/new`} className="h-10"><Plus className="size-4" /> Add product</Button></>} />
 
       <DataTable rows={rows} rowKey={(p) => p.id} rowHref={(p) => `${base}/products/${p.id}`}
         empty={<EmptyState icon={<PackageSearch />} title="No products found" body="Adjust your filters or add a new product." action={<Button href={`${base}/products/new`}>Add product</Button>} />}

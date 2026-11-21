@@ -2,17 +2,17 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { CreditCard, MapPin, Printer, Truck, User } from "lucide-react";
+import { CreditCard, MapPin, MessageCircle, Printer, Truck, User } from "lucide-react";
+import { orderUpdateLink } from "@/lib/whatsapp";
 import { OrderTimeline, Panel } from "@/components/shared/blocks";
 import { StatusBadge } from "@/components/shared/status";
 import { ProductImage } from "@/components/brand/product-image";
 import { Avatar, DetailRow } from "@/components/ui/display";
 import { Button } from "@/components/ui/button";
 import { Field, Select, Textarea } from "@/components/ui/form";
-import { addOrderNote, setOrderStatus } from "@/lib/actions/manage";
+import { addOrderNote, refundOrderPayment, setOrderStatus } from "@/lib/actions/manage";
 import { cancelOrder } from "@/lib/actions/store";
 import { useAct } from "@/lib/actions/use-act";
-import { toast } from "@/lib/stores";
 import { formatDateTime, formatINR } from "@/lib/utils";
 import type { Order, OrderStatus } from "@/types";
 
@@ -45,7 +45,10 @@ export function OrderManager({ order, base, role }: { order: Order; base: string
     <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-2.5 rounded-card border border-line bg-card p-4 shadow-card md:p-5">
         <div className="mr-auto"><div className="flex items-center gap-2.5"><h2 className="text-xl font-semibold">{o.number}</h2><StatusBadge status={o.status} /></div><p className="mt-0.5 text-[13px] text-muted">Placed {formatDateTime(o.createdAt)} · {o.items.length} line{o.items.length > 1 ? "s" : ""}</p></div>
-        <Button variant="outline" size="sm" onClick={() => toast.info("Packing slip sent to printer (demo)")}><Printer className="size-4" /> {role === "seller" ? "Packing slip" : "Invoice"}</Button>
+        {role === "admin" && <Button variant="outline" size="sm" href={`/print/order/${o.id}?type=invoice`} target="_blank"><Printer className="size-4" /> Invoice</Button>}
+        <Button variant="outline" size="sm" href={`/print/order/${o.id}?type=slip`} target="_blank"><Printer className="size-4" /> Packing slip</Button>
+        {role === "admin" && <Button variant="outline" size="sm" href={orderUpdateLink({ phone: o.address.phone, name: o.customerName, number: o.number, status: o.status, awb: o.awb, courier: o.courier })} target="_blank"><MessageCircle className="size-4" /> WhatsApp customer</Button>}
+        {role === "admin" && o.payment.status === "paid" && o.payment.method !== "cod" && <Button variant="outline" size="sm" className="text-danger" onClick={() => { if (window.confirm(`Refund ${formatINR(o.total)} to the customer for ${o.number}?`)) act(() => refundOrderPayment(o.id), { success: "Refund sent to the customer", refresh: true }); }}>Refund payment</Button>}
         {step && <Button size="sm" variant="accent" onClick={() => advance(step.to)}>{step.label}</Button>}
         {["placed", "confirmed"].includes(o.status) && <Button size="sm" variant="outline" className="text-danger" onClick={() => advance("cancelled", "Cancelled by " + role)}>Cancel</Button>}
       </div>

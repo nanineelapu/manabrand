@@ -39,6 +39,9 @@ export interface Product {
   sold: number;
   badges: ProductBadge[];
   description: string;
+  /** search-result title / description (leave empty to use the product name / description) */
+  seoTitle?: string;
+  seoDescription?: string;
   fabric: string;
   care: string[];
   details: string[];
@@ -62,6 +65,8 @@ export interface Review {
   date: string;
   verified: boolean;
   helpful: number;
+  /** photos the customer attached (public URLs) */
+  images?: string[];
   status: "published" | "pending" | "flagged";
 }
 

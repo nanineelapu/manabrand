@@ -7,6 +7,8 @@ import { ProductImage } from "@/components/brand/product-image";
 import { getAllProducts, getAllSellers, getSellerPayouts } from "@/lib/data";
 import { formatINR } from "@/lib/utils";
 
+export const metadata = { title: "Seller" };
+
 export default async function SellerPage({ params }: PageProps<"/admin/sellers/[id]">) {
   const { id } = await params;
   const seller = (await getAllSellers()).find((s) => s.id === id);

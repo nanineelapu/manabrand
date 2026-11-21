@@ -38,7 +38,7 @@ export function SupportCenter({ initial }: { initial: TicketRow[] }) {
   return (
     <>
       <div className="mb-5 grid gap-3 sm:grid-cols-3">
-        {[[MessageCircle, "Chat with us", "Replies in ~10 min", () => toast.info("Chat opens here (demo)")], [Phone, "Call seller support", "1800-120-7000 · 9am–8pm", () => toast.info("Dialling… (demo)")], [BookOpen, "Seller guide", "Photos, pricing, shipping", () => toast.info("Guide opens here (demo)")]].map(([I, t, d, fn]) => {
+        {[[MessageCircle, "Chat with us", "Replies in ~10 min", () => toast.info("Chat opens here (demo)")], [Phone, "Call seller support", "+91 831 765 8309 · 9am–8pm", () => toast.info("Dialling… (demo)")], [BookOpen, "Seller guide", "Photos, pricing, shipping", () => toast.info("Guide opens here (demo)")]].map(([I, t, d, fn]) => {
           const Icon = I as typeof Phone;
           return <button key={t as string} onClick={fn as () => void} className="flex items-center gap-3.5 rounded-card border border-line bg-card p-4 text-left shadow-card transition-colors hover:bg-bg-subtle/60"><span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-gold-100"><Icon className="size-5 text-gold-500" /></span><span><span className="block text-sm font-semibold">{t as string}</span><span className="text-xs text-muted">{d as string}</span></span></button>;
         })}

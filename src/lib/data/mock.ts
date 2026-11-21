@@ -4,6 +4,7 @@
  * src/lib/mock; in Phase 7 each body becomes a Supabase query with the same
  * signature, and no UI file changes.
  */
+import { normalizeDealBox } from "@/lib/magic-hours";
 import { HIDDEN_CATEGORY_SLUGS } from "@/lib/fashion";
 import type { Order, OrderStatus, Product } from "@/types";
 import {
@@ -191,6 +192,7 @@ export interface SettingsData {
 export interface PromoRow { id: string; name: string; off: number; scope: string; ends: string; on: boolean; orders: number }
 export interface TicketRow { id: string; subject: string; status: string; at: string }
 
+export const getDealBox = async () => normalizeDealBox(undefined);
 export const getSettings = async (): Promise<SettingsData> => ({
   shipping: { freeAbove: 9999999, standardFee: 99, expressFee: 149, codFee: 40 }, payments: { upi: true, card: true, netbanking: true, cod: true, wallet: false },
   commission: { default: 12 }, business: { name: "ManaBrand Pvt. Ltd.", supportEmail: "care@manabrand.in", supportPhone: "+91 831 765 8309", gstin: "27AABCM1234P1Z9" },

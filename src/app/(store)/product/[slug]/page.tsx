@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { catTitle } from "@/lib/fashion";
+import { catTitle, groupOf } from "@/lib/fashion";
 import { notFound } from "next/navigation";
 import { BadgeCheck, FileText, Scissors, Shirt, Truck } from "lucide-react";
 import { Accordion, AccordionItem } from "@/components/ui/accordion";
@@ -14,15 +14,20 @@ export async function generateStaticParams() {
 }
 export async function generateMetadata({ params }: PageProps<"/product/[slug]">) {
   const p = await getProduct((await params).slug);
-  return p ? { title: p.name, description: p.description } : { title: "Product" };
+  return p ? { title: p.seoTitle || p.name, description: p.seoDescription || p.description } : { title: "Product" };
 }
 
 export default async function ProductPage({ params }: PageProps<"/product/[slug]">) {
   const product = await getProduct((await params).slug);
   if (!product) notFound();
-  const [cat, seller, reviews, related] = await Promise.all([
+  const [cat, seller, reviews, related, grouped] = await Promise.all([
     getCategory(product.categorySlug), getSellerById(product.sellerId), getProductReviews(product.id), getRelated(product, 8),
+    groupOf(product.categorySlug) ? queryProducts({ group: groupOf(product.categorySlug)!, sort: "rating", pageSize: 40 }) : Promise.resolve(null),
   ]);
+  // "Complete the look": one top-rated piece from each OTHER category in the same group (Men / Women)
+  const look: NonNullable<typeof grouped>["items"] = [];
+  const seen = new Set([product.categorySlug]);
+  for (const p of grouped?.items ?? []) { if (seen.has(p.categorySlug)) continue; seen.add(p.categorySlug); look.push(p); if (look.length === 6) break; }
 
   return (
     <div className="container-page pb-28 pt-3 md:pb-6 md:pt-6">
@@ -65,6 +70,14 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
       </ProductSelection>
 
       <div className="mt-14 md:mt-20"><ReviewsSection product={product} reviews={reviews} breakdown={await ratingBreakdown(product.id)} /></div>
+
+      {look.length > 0 && (
+        <section className="mt-14 md:mt-20" aria-labelledby="look-h">
+          <SectionHeader title="Complete the look" subtitle="Pieces that go with this one" />
+          <h2 id="look-h" className="sr-only">Complete the look</h2>
+          <ProductRail products={look} className="mt-6" />
+        </section>
+      )}
 
       {related.length > 0 && (
         <section className="mt-14 md:mt-20" aria-labelledby="rel-h">

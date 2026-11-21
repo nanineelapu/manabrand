@@ -73,3 +73,39 @@ export const notifySellerApplied = (s: { store: string; owner: string; email: st
 export const notifySellerDecision = (s: { store: string; owner: string; email: string; status: "active" | "suspended" | "rejected" }) => safe(async () => {
   await sendEmail({ to: s.email, ...t.sellerDecisionEmail({ store: s.store, owner: s.owner, status: s.status, siteUrl: siteUrl() }) });
 });
+
+/** Stock was added to a product → email everyone waiting for it (each alert is used once, then deleted). */
+export const notifyRestock = (productId: string) => safe(async () => {
+  const db = createAdminClient();
+  const { data: alerts } = await db.from("stock_alerts").select("id, email, option_value").eq("product_id", productId);
+  if (!alerts?.length) return;
+  const [{ data: opts }, { data: p }] = await Promise.all([
+    db.from("product_options").select("value, stock").eq("product_id", productId),
+    db.from("products").select("name, slug, status").eq("id", productId).maybeSingle(),
+  ]);
+  const product = p as { name: string; slug: string; status: string } | null;
+  if (!product || product.status !== "active") return;
+  const inStock = new Set(((opts ?? []) as { value: string; stock: number }[]).filter((o) => o.stock > 0).map((o) => o.value));
+  const sentIds: string[] = [];
+  for (const a of alerts as { id: string; email: string; option_value: string }[]) {
+    const ready = a.option_value === "" ? inStock.size > 0 : inStock.has(a.option_value);
+    if (!ready) continue;
+    const r = await sendEmail({ to: a.email, ...t.backInStockEmail({ name: product.name, size: a.option_value || undefined, slug: product.slug, siteUrl: siteUrl() }) });
+    if (r.ok) sentIds.push(a.id);
+  }
+  if (sentIds.length) await db.from("stock_alerts").delete().in("id", sentIds);
+});
+
+/** One reminder for a left-behind cart. Returns true when an email was sent. (Used by the daily cron.) */
+export async function notifyAbandonedCart(userId: string, productIds: string[]): Promise<boolean> {
+  try {
+    const db = createAdminClient();
+    const { data: prof } = await db.from("profiles").select("email, full_name, notify_offers, status").eq("id", userId).maybeSingle();
+    const b = prof as { email: string; full_name: string; notify_offers: boolean; status: string } | null;
+    if (!b || !b.notify_offers || b.status !== "active") return false;
+    const { data: prods } = await db.from("products").select("name, price, status").in("id", productIds);
+    const items = ((prods ?? []) as { name: string; price: number; status: string }[]).filter((p) => p.status === "active");
+    if (!items.length) return false;
+    return (await sendEmail({ to: b.email, ...t.abandonedCartEmail({ name: b.full_name, items, siteUrl: siteUrl() }) })).ok;
+  } catch (e) { console.error("[email] abandoned cart failed:", e instanceof Error ? e.message : e); return false; }
+}

@@ -15,6 +15,8 @@ import { Skeleton } from "@/components/ui/display";
 export function CartView() {
   const mounted = useMounted();
   const cart = useCartPricing();
+  // a line that cannot be fulfilled (sold out, or more than what is left) blocks checkout until fixed
+  const blocked = cart.lines.some((l) => { const have = l.product.stock[l.size]; return have !== undefined && l.qty > have; });
   const { setQty, remove } = useCart();
   const wish = useWishlist();
 
@@ -46,6 +48,10 @@ export function CartView() {
                     <p className="text-[11px] font-medium uppercase tracking-wide text-subtle">{l.product.sellerName}</p>
                     <Link href={`/product/${l.product.slug}`} className="line-clamp-2 text-[15px] font-medium leading-snug">{l.product.name}</Link>
                     <p className="mt-1 text-[13px] text-muted">{l.color} · Size {l.size}</p>
+                    {(() => { const have = l.product.stock[l.size]; return have === undefined ? null : have === 0
+                      ? <p role="alert" className="mt-1 text-[13px] font-semibold text-danger">Sold out in this size — remove it to continue.</p>
+                      : l.qty > have ? <p role="alert" className="mt-1 text-[13px] font-semibold text-danger">Only {have} left — lower the quantity to continue.</p>
+                      : have <= 3 ? <p className="mt-1 text-[13px] font-medium text-warning">Only {have} left</p> : null; })()}
                     <p className="mt-2 flex items-baseline gap-2 tabular">
                       <span className="font-semibold">{formatINR(l.product.price)}</span>
                       {off > 0 && <><span className="text-xs text-subtle line-through">{formatINR(l.product.mrp)}</span><span className="text-xs font-semibold text-success">{off}% off</span></>}
@@ -73,7 +79,7 @@ export function CartView() {
           <section className="rounded-card border border-line bg-card p-5 shadow-card">
             <h2 className="mb-4 text-[15px] font-semibold">Price details</h2>
             <PriceBreakdown />
-            <Button href="/checkout" size="lg" full className="mt-5 hidden rounded-full lg:inline-flex">Proceed to checkout</Button>
+            {blocked ? <Button size="lg" full disabled className="mt-5 hidden rounded-full lg:inline-flex">Fix your bag to continue</Button> : <Button href="/checkout" size="lg" full className="mt-5 hidden rounded-full lg:inline-flex">Proceed to checkout</Button>}
           </section>
         </aside>
       </div>
@@ -82,7 +88,7 @@ export function CartView() {
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/97 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
         <div className="mx-auto flex max-w-md items-center gap-4">
           <div className="min-w-0"><p className="text-xs text-muted">Total</p><p className="text-xl font-semibold leading-tight tabular">{formatINR(cart.total)}</p></div>
-          <Button href="/checkout" size="lg" className="flex-1 rounded-full">Checkout</Button>
+          {blocked ? <Button size="lg" disabled className="flex-1 rounded-full">Fix your bag</Button> : <Button href="/checkout" size="lg" className="flex-1 rounded-full">Checkout</Button>}
         </div>
       </div>
     </div>

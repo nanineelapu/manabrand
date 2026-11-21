@@ -1,5 +1,6 @@
 "use client";
 
+import { downloadCsv } from "@/lib/csv";
 import { useMemo, useState } from "react";
 import { Download, SearchX } from "lucide-react";
 import { ListToolbar, useListFilter } from "@/components/shared/list-toolbar";
@@ -40,7 +41,7 @@ export function OrdersList({ orders, base = "/admin", showCustomer = true }: { o
         { value: "delivered", label: "Delivered", count: count("delivered") }, { value: "closed", label: "Cancelled / Returned", count: count("closed") },
       ]} right={<>
         <Select aria-label="Sort orders" value={sort} onChange={(e) => setSort(e.target.value)} className="h-10 w-auto min-w-40"><option value="new">Newest first</option><option value="high">Value: high → low</option><option value="low">Value: low → high</option></Select>
-        <Button variant="outline" size="sm" className="h-10" onClick={() => toast.success(`Exported ${rows.length} orders (demo)`)}><Download className="size-4" /> Export</Button>
+        <Button variant="outline" size="sm" className="h-10" onClick={() => { downloadCsv(`orders-${new Date().toISOString().slice(0, 10)}`, [["Order", "Date", "Customer", "Items", "Total (INR)", "Payment", "Payment status", "Status", "City", "Pincode"], ...rows.map((o) => [o.number, o.createdAt.slice(0, 10), o.customerName, o.items.map((i) => `${i.name} x${i.qty}`).join("; "), o.total, o.payment.method, o.payment.status, o.status, o.address.city, o.address.pincode])]); toast.success(`Exported ${rows.length} orders`); }}><Download className="size-4" /> Export</Button>
       </>} />
       <DataTable rows={rows} rowKey={(o) => o.id} rowHref={(o) => `${base}/orders/${o.id}`}
         empty={<EmptyState icon={<SearchX />} title="No orders found" body="Try a different search or status." />}
