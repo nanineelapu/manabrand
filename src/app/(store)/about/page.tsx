@@ -10,17 +10,17 @@ export async function generateMetadata() {
   return cms ? cmsMetadata(cms) : { title: "Our story" };
 }
 
-const stats = [["1,200+", "verified sellers"], ["28", "states represented"], ["2 lakh+", "happy shoppers"], ["4.7★", "average rating"]];
+const stats = [["Local", "verified sellers"], ["48 hrs", "delivery in town"], ["COD", "pay at your door"], ["532312", "Ichapuram & nearby"]];
 
 export default async function AboutPage() {
   const cms = await getCmsPage("about");
   if (cms) return <CmsPageView page={cms} />;
   return (
-    <InfoPage title="Our story" intro="ManaBrand takes its name from “mana” — heart, spirit, the thing you put into what you make. We built ManaBrand as a marketplace where verified sellers across India — from handloom studios to footwear and jewellery shops — can reach the people who love what they make."
+    <InfoPage title="Our story" intro="ManaBrand takes its name from “mana” — heart, spirit, the thing you put into what you make. We built ManaBrand as a marketplace where local sellers in and around Ichapuram, Srikakulam — from handloom studios to tailors and tee makers — can reach the people who love what they make."
       aside={<div className="aspect-[3/4] overflow-hidden rounded-[28px]"><ProductImage photo="saree" seed="about" /></div>}>
       <section>
         <h2>Why we started</h2>
-        <p>Good products and trustworthy sellers are scattered across the country, but finding them online meant sifting through endless look-alike listings. We wanted one place with honest photos, honest specs and a real seller behind every item.</p>
+        <p>Good products and trustworthy sellers are scattered across our town and the villages around it, but finding them online meant sifting through endless look-alike listings. We wanted one place with honest photos, honest specs and a real seller behind every item.</p>
       </section>
       <section>
         <h2>How it works</h2>

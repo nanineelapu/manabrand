@@ -34,7 +34,7 @@ export function OrderManager({ order, base, role }: { order: Order; base: string
     setO((p) => ({
       ...p, status: to,
       timeline: [...p.timeline, { status: to, at: new Date().toISOString(), note: msg || `Updated by ${role}` }],
-      awb: to === "shipped" && !p.awb ? `${Math.floor(1e9 + Math.random() * 8e9)}` : p.awb, courier: to === "shipped" && !p.courier ? "Delhivery" : p.courier,
+      awb: to === "shipped" && !p.awb ? `${Math.floor(1e9 + Math.random() * 8e9)}` : p.awb, courier: to === "shipped" && !p.courier ? "ManaBrand Local Delivery" : p.courier,
     }));
   };
   const advance = (to: OrderStatus, msg = "") =>

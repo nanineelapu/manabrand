@@ -8,7 +8,7 @@ const channels = [
   { icon: Phone, t: "Call & WhatsApp", d: "+91 831 765 8309" },
   { icon: Mail, t: "Email", d: "care@manabrand.in" },
   { icon: Clock, t: "Hours", d: "Mon–Sat, 9am – 8pm IST" },
-  { icon: MapPin, t: "Studio", d: "Bandra Kurla Complex, Mumbai 400051" },
+  { icon: MapPin, t: "Find us", d: "Ichapuram, Srikakulam district, Andhra Pradesh 532312" },
 ];
 
 export default function ContactPage() {

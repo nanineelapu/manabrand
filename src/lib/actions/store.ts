@@ -1,10 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { sendEmail } from "@/lib/email/send";
+import { notifyContact, notifyNewsletter, notifyOrderPlaced, notifyOrderStatus } from "@/lib/email/notify";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { emailError, nameError, normalizeEmail, normalizePhone } from "@/lib/auth/validation";
-import { clampStr, currentActor, demoResult, fail, guarded, isUuid, live, type Result } from "./common";
+import { AREA, OUT_OF_AREA, inServiceArea } from "@/lib/locale";
+import { clampStr, demoResult, fail, guarded, isUuid, live, type Result } from "./common";
 
 /* ================================================================= orders */
 export interface CartLineInput { productId: string; color: string; size: string; qty: number }
@@ -23,6 +24,7 @@ export async function placeOrder(input: {
     if (!items.every((i) => isUuid(i.product_id))) return { ok: false, error: "Your bag contains items that are no longer available. Please remove them and try again." };
     const phone = normalizePhone(input.address.phone);
     if (!phone) return { ok: false, error: "Enter a valid delivery phone number." };
+    if (!inServiceArea(String(input.address.pincode ?? ""))) return { ok: false, error: OUT_OF_AREA };
     if (input.method !== "cod" && process.env.PAYMENT_MODE !== "live") return { ok: false, error: "Online payment isn’t available yet — please choose Cash on delivery." };
 
     const { data, error } = await supabase.rpc("place_order", {
@@ -35,11 +37,7 @@ export async function placeOrder(input: {
     // PAYMENTS: cash on delivery is "pending" until delivery. Online methods only reach here when a gateway is live
     // (PAYMENT_MODE=live) — the gateway's webhook then calls confirm_payment(order, payment_id).
     const paymentStatus: "paid" | "pending" = "pending";
-    const actor = await currentActor();
-    if (actor?.email) {
-      void sendEmail({ to: actor.email, subject: `Order ${row.order_number} confirmed`,
-        html: `<p>Thanks for shopping with ManaBrand. Your order <b>${row.order_number}</b> (₹${row.total}) has been placed. You can track it in your account.</p>` });
-    }
+    void notifyOrderPlaced(row.order_id); // confirmation email (never blocks or fails the order)
     revalidatePath("/account/orders");
     return { ok: true, orderId: row.order_id, number: row.order_number, total: row.total, paymentStatus };
   });
@@ -50,6 +48,7 @@ export async function cancelOrder(orderId: string, reason: string): Promise<Resu
     if (!isUuid(orderId)) return { ok: false, error: "Order not found." };
     const { error } = await (await createClient()).rpc("cancel_order", { p_order: orderId, p_reason: clampStr(reason, 200) });
     if (error) throw new Error(error.message);
+    void notifyOrderStatus(orderId, "cancelled");
     revalidatePath("/account/orders"); revalidatePath("/admin/orders");
     return { ok: true };
   });
@@ -72,10 +71,10 @@ export async function saveAddress(input: AddressInput & { id?: string; label: "H
   return guarded(["customer"], async (actor) => {
     const phone = normalizePhone(input.phone);
     if (!phone) return { ok: false, error: "Enter a valid 10-digit mobile number." };
-    if (!/^[1-9]\d{5}$/.test(input.pincode)) return { ok: false, error: "Enter a valid 6-digit pincode." };
+    if (!inServiceArea(input.pincode)) return { ok: false, error: OUT_OF_AREA };
     const row = { user_id: actor.id, label: input.label, name: clampStr(input.name, 80), phone, line1: clampStr(input.line1, 160), line2: clampStr(input.line2, 160) || null,
-      city: clampStr(input.city, 60), state: clampStr(input.state, 60), pincode: input.pincode, is_default: input.isDefault };
-    if (!row.name || !row.line1 || !row.city || !row.state) return { ok: false, error: "Please complete the address." };
+      city: clampStr(input.city, 60), state: AREA.state, pincode: input.pincode, is_default: input.isDefault };
+    if (!row.name || !row.line1 || !row.city) return { ok: false, error: "Please complete the address." };
     const supabase = await createClient();
     if (input.isDefault) await supabase.from("addresses").update({ is_default: false }).eq("user_id", actor.id);   // the unique index allows one default
     const q = input.id && isUuid(input.id) ? supabase.from("addresses").update(row).eq("id", input.id).eq("user_id", actor.id).select("id").single()
@@ -184,19 +183,26 @@ export async function subscribeNewsletter(emailRaw: string): Promise<Result> {
   const email = normalizeEmail(emailRaw);
   if (!email) return { ok: false, error: emailError(emailRaw) ?? "Enter a valid email." };
   try {
-    const { error } = await createAdminClient().from("newsletter_subscribers").upsert({ email }, { onConflict: "email" });
+    // ignoreDuplicates: only a genuinely new address comes back, so the welcome email (with the code) is sent once
+    const { data, error } = await createAdminClient().from("newsletter_subscribers").upsert({ email }, { onConflict: "email", ignoreDuplicates: true }).select("email");
     if (error) throw new Error(error.message);
+    if (data?.length) void notifyNewsletter(email);
     return { ok: true };
   } catch (e) { return fail(e); }
 }
 
-export async function sendContactMessage(input: { name: string; email: string; topic: string; message: string }): Promise<Result> {
+export async function sendContactMessage(input: { name: string; email: string; topic: string; message: string; phone?: string; order?: string }): Promise<Result> {
   if (!live()) return demoResult();
   const email = normalizeEmail(input.email);
   if (!email || nameError(input.name) || clampStr(input.message, 2000).length < 10) return { ok: false, error: "Please fill in your name, a valid email and a message." };
   try {
-    const { error } = await createAdminClient().from("contact_messages").insert({ name: clampStr(input.name, 80), email, topic: clampStr(input.topic, 60), message: clampStr(input.message, 2000) });
+    const phone = normalizePhone(input.phone ?? "") ?? undefined, order = clampStr(input.order, 20) || undefined;
+    const message = clampStr(input.message, 2000);
+    // phone / order number have no column of their own — keep them with the message so nothing is lost
+    const stored = [message, phone && `Phone: ${phone}`, order && `Order: ${order}`].filter(Boolean).join("\n\n");
+    const { error } = await createAdminClient().from("contact_messages").insert({ name: clampStr(input.name, 80), email, topic: clampStr(input.topic, 60), message: stored });
     if (error) throw new Error(error.message);
+    void notifyContact({ name: clampStr(input.name, 80), email, phone, order, topic: clampStr(input.topic, 60), message });
     return { ok: true };
   } catch (e) { return fail(e); }
 }

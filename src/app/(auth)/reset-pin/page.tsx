@@ -18,7 +18,7 @@ export default async function ResetPinPage() {
   return (
     <AuthShell variant={me.role === "admin" ? "admin" : me.role === "seller" ? "seller" : "customer"}
       title={pin ? "Set a new PIN" : "Set a new password"}
-      subtitle={pin ? `Hi ${me.name.split(" ")[0]}, choose a new 6-digit PIN for ${me.phone}.` : `Choose a new password for ${me.email}.`}>
+      subtitle={pin ? `Hi ${me.name.split(" ")[0]}, choose a new 4-digit PIN for ${me.phone}.` : `Choose a new password for ${me.email}.`}>
       <ResetForm kind={pin ? "pin" : "password"} />
     </AuthShell>
   );

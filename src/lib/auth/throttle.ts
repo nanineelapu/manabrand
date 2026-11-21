@@ -4,11 +4,12 @@ import { createAdminClient } from "@/lib/supabase/server";
 
 /**
  * Brute-force protection backed by the `login_attempts` table (service-role only).
- * A 6-digit PIN has 1,000,000 combinations, so this is a core part of PIN security:
- * 5 wrong tries in 15 minutes locks that account's sign-in for the rest of the window.
+ * A 4-digit PIN has only 10,000 combinations, so this is a core part of PIN security:
+ * 5 wrong tries in an hour locks that account's sign-in for the rest of the window
+ * (at most 120 guesses a day per account).
  */
 export const MAX_FAILURES = 5;
-export const WINDOW_MINUTES = 15;
+export const WINDOW_MINUTES = 60;
 
 export async function clientIp(): Promise<string | null> {
   const h = await headers();

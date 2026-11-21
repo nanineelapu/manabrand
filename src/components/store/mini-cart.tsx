@@ -4,10 +4,9 @@ import Link from "next/link";
 import { ShoppingBag, Trash2 } from "lucide-react";
 import { ProductImage } from "@/components/brand/product-image";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/display";
 import { QuantityStepper } from "@/components/ui/form";
 import { Sheet } from "@/components/ui/sheet";
-import { priceCart, FREE_SHIPPING_AT } from "@/lib/cart";
+import { priceCart } from "@/lib/cart";
 import { useCart, useUi } from "@/lib/stores";
 import { formatINR } from "@/lib/utils";
 import { useStoreData } from "./store-data";
@@ -70,10 +69,6 @@ export function MiniCart() {
         </div>
       ) : (
         <>
-          <div className="mb-1 rounded-ctl bg-bg-subtle p-3.5">
-            <p className="text-[13px]">{cart.toFreeShipping > 0 ? <>Add <b>{formatINR(cart.toFreeShipping)}</b> for free shipping</> : <b className="text-success">You’ve unlocked free shipping 🎉</b>}</p>
-            <Progress className="mt-2" value={(cart.subtotal / FREE_SHIPPING_AT) * 100} tone="success" label="Free shipping progress" />
-          </div>
           <CartLines compact />
         </>
       )}

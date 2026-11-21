@@ -192,7 +192,7 @@ export interface PromoRow { id: string; name: string; off: number; scope: string
 export interface TicketRow { id: string; subject: string; status: string; at: string }
 
 export const getSettings = async (): Promise<SettingsData> => ({
-  shipping: { freeAbove: 1499, standardFee: 99, expressFee: 149, codFee: 40 }, payments: { upi: true, card: true, netbanking: true, cod: true, wallet: false },
+  shipping: { freeAbove: 9999999, standardFee: 99, expressFee: 149, codFee: 40 }, payments: { upi: true, card: true, netbanking: true, cod: true, wallet: false },
   commission: { default: 12 }, business: { name: "ManaBrand Pvt. Ltd.", supportEmail: "care@manabrand.in", supportPhone: "+91 831 765 8309", gstin: "27AABCM1234P1Z9" },
 });
 export const getSellerPromotions = async (): Promise<PromoRow[]> => [

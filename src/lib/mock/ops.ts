@@ -14,9 +14,8 @@ const iso = (ms: number) => new Date(ms).toISOString();
 const first = ["Ananya", "Rohan", "Isha", "Vikram", "Diya", "Aditya", "Kavya", "Rahul", "Sneha", "Arnav", "Tanya", "Karan", "Pooja", "Nikhil", "Riya", "Siddharth", "Meghna", "Yash", "Aarti", "Dev", "Nisha", "Harsh", "Simran", "Varun"];
 const last = ["Sharma", "Verma", "Iyer", "Singh", "Patel", "Gupta", "Nair", "Mehta", "Reddy", "Kapoor", "Joshi", "Bose", "Khan", "Das", "Rao", "Malhotra"];
 const cities: [string, string, string][] = [
-  ["Mumbai", "Maharashtra", "400050"], ["Delhi", "Delhi", "110017"], ["Bengaluru", "Karnataka", "560034"], ["Hyderabad", "Telangana", "500034"],
-  ["Chennai", "Tamil Nadu", "600028"], ["Pune", "Maharashtra", "411038"], ["Kolkata", "West Bengal", "700019"], ["Jaipur", "Rajasthan", "302001"],
-  ["Ahmedabad", "Gujarat", "380015"], ["Kochi", "Kerala", "682016"], ["Lucknow", "Uttar Pradesh", "226010"], ["Chandigarh", "Chandigarh", "160017"],
+  ["Ichapuram", "Andhra Pradesh", "532312"], ["Sompeta", "Andhra Pradesh", "532284"], ["Kaviti", "Andhra Pradesh", "532318"], ["Kanchili", "Andhra Pradesh", "532290"],
+  ["Palasa", "Andhra Pradesh", "532221"], ["Mandasa", "Andhra Pradesh", "532242"], ["Tekkali", "Andhra Pradesh", "532201"],
 ];
 
 export const customers: Customer[] = first.map((f, i) => {
@@ -35,9 +34,9 @@ export const currentCustomer = customers[0]; // the logged-in storefront user in
 
 /* ============================================================ Addresses */
 export const addresses: Address[] = [
-  { id: "a1", label: "Home", name: "Ananya Sharma", phone: "+91 98765 43210", line1: "Flat 402, Lotus Heights, Linking Road", line2: "Bandra West", city: "Mumbai", state: "Maharashtra", pincode: "400050", isDefault: true },
-  { id: "a2", label: "Work", name: "Ananya Sharma", phone: "+91 98765 43210", line1: "WeWork, Raheja Platinum, Sag Baug Rd", line2: "Andheri East", city: "Mumbai", state: "Maharashtra", pincode: "400059", isDefault: false },
-  { id: "a3", label: "Other", name: "Neha Sharma", phone: "+91 99870 11223", line1: "12, Green Park Extension", city: "Delhi", state: "Delhi", pincode: "110016", isDefault: false },
+  { id: "a1", label: "Home", name: "Ananya Sharma", phone: "+91 98765 43210", line1: "Door No. 4-112, Main Road", line2: "Near Bus Stand", city: "Ichapuram", state: "Andhra Pradesh", pincode: "532312", isDefault: true },
+  { id: "a2", label: "Work", name: "Ananya Sharma", phone: "+91 98765 43210", line1: "Shop 7, Market Street", line2: "Ichapuram Bazaar", city: "Ichapuram", state: "Andhra Pradesh", pincode: "532312", isDefault: false },
+  { id: "a3", label: "Other", name: "Neha Sharma", phone: "+91 99870 11223", line1: "Gandhi Nagar, Beside Temple Road", city: "Sompeta", state: "Andhra Pradesh", pincode: "532284", isDefault: false },
 ];
 
 /* =============================================================== Orders */
@@ -47,7 +46,7 @@ const notes: Record<OrderStatus, string> = {
   shipped: "Handed to courier partner", out_for_delivery: "Out for delivery today", delivered: "Delivered to you",
   cancelled: "Order cancelled", returned: "Return completed — refund initiated",
 };
-const couriers = ["Delhivery", "Blue Dart", "Ecom Express", "Xpressbees"];
+const couriers = ["ManaBrand Local Delivery", "Local courier partner"];
 const methods: PaymentMethod[] = ["upi", "upi", "card", "cod", "netbanking", "wallet"];
 
 function makeOrder(n: number, customerIdx: number, ageDays: number, status: OrderStatus): Order {
@@ -62,7 +61,7 @@ function makeOrder(n: number, customerIdx: number, ageDays: number, status: Orde
   const subtotal = items.reduce((a, b) => a + b.price * b.qty, 0);
   const coupon = rnd() < 0.3;
   const discount = coupon ? Math.min(500, Math.round(subtotal * 0.1)) : 0;
-  const shipping = subtotal - discount >= 1499 ? 0 : 99;
+  const shipping = 99;
   const total = subtotal - discount + shipping;
   const created = MOCK_NOW - ageDays * DAY - Math.floor(rnd() * 12) * 3600000;
   const method = pick(methods);
@@ -122,11 +121,11 @@ export const coupons: Coupon[] = [
 /* ============================================================== Banners */
 export const banners: Banner[] = [
   { id: "b1", title: "The Wedding Edit", subtitle: "Silk sarees, jewellery & festive wear — up to 30% off", cta: "Shop the edit", href: "/collections/wedding-edit", placement: "home-hero", status: "live", tone: ["#f3e6e6", "#b13a26"], photo: "saree", starts: "2026-11-01", ends: "2026-12-10" },
-  { id: "b2", title: "Work From Home", subtitle: "Laptops, audio and desk setups with no-cost EMI", cta: "Explore tech", href: "/collections/work-from-home", placement: "home-hero", status: "live", tone: ["#e4ebf3", "#2a5db0"], photo: "laptop", starts: "2026-11-01", ends: "2026-12-31" },
-  { id: "b3", title: "Home Refresh", subtitle: "Sofas, decor and bedding from verified sellers", cta: "Shop home", href: "/collections/home-refresh", placement: "home-hero", status: "live", tone: ["#efe9dc", "#0f6b52"], photo: "decor", starts: "2026-11-10", ends: "2026-12-31" },
-  { id: "b4", title: "Free shipping above ₹1,499", subtitle: "Plus 7-day easy returns", cta: "Shop now", href: "/shop", placement: "home-strip", status: "live", tone: ["#efe9dc", "#d0bd8a"], photo: "bag", starts: "2026-11-01", ends: "2026-12-31" },
+  { id: "b2", title: "Street Style", subtitle: "Tees, shirts and denim for everyday menswear", cta: "Shop men", href: "/men", placement: "home-hero", status: "live", tone: ["#e4ebf3", "#2a5db0"], photo: "shirt", starts: "2026-11-01", ends: "2026-12-31" },
+  { id: "b3", title: "The Summer Edit", subtitle: "Light dresses, easy tops and breezy shorts", cta: "Shop women", href: "/collections/summer-edit", placement: "home-hero", status: "live", tone: ["#efe9dc", "#0f6b52"], photo: "dress", starts: "2026-11-10", ends: "2026-12-31" },
+  { id: "b4", title: "Delivery within 48 hours", subtitle: "Cash on delivery available", cta: "Shop now", href: "/shop", placement: "home-strip", status: "live", tone: ["#efe9dc", "#d0bd8a"], photo: "dress", starts: "2026-11-01", ends: "2026-12-31" },
   { id: "b5", title: "Winter Wardrobe Preview", subtitle: "Jackets & knits arriving soon", cta: "Get notified", href: "/new", placement: "home-hero", status: "scheduled", tone: ["#e4e8ef", "#6b7a99"], photo: "jacket", starts: "2026-12-01", ends: "2027-01-31" },
-  { id: "b6", title: "Audio Week", subtitle: "Up to 35% off headphones & speakers", cta: "Shop audio", href: "/category/electronics?sub=Audio", placement: "category", status: "draft", tone: ["#efe6f3", "#8b6bb0"], photo: "headphones", starts: "2026-12-05", ends: "2026-12-12" },
+  { id: "b6", title: "Kurta Week", subtitle: "Up to 35% off kurtas and ethnic sets", cta: "Shop ethnic wear", href: "/category/women-ethnic-wear", placement: "category", status: "draft", tone: ["#efe6f3", "#8b6bb0"], photo: "kurta", starts: "2026-12-05", ends: "2026-12-12" },
 ];
 
 /* ============================================================== Payouts */
@@ -197,7 +196,7 @@ export const analytics = {
     { label: "Checkout", value: 7400 }, { label: "Purchased", value: 4780 },
   ],
   topCities: [
-    { label: "Mumbai", value: 18.2 }, { label: "Delhi NCR", value: 16.4 }, { label: "Bengaluru", value: 12.9 },
-    { label: "Hyderabad", value: 8.7 }, { label: "Pune", value: 7.1 }, { label: "Chennai", value: 6.3 },
+    { label: "Ichapuram", value: 46.2 }, { label: "Sompeta", value: 14.1 }, { label: "Kaviti", value: 11.8 },
+    { label: "Palasa–Kasibugga", value: 9.3 }, { label: "Kanchili", value: 7.4 }, { label: "Nearby villages", value: 5.2 },
   ],
 };

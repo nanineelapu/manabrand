@@ -6,6 +6,7 @@ import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { clampStr, demoResult, fail, guarded, isUuid, live, slugify, type Result } from "./common";
 import { lockoutStatus, recordAttempt, clientIp } from "@/lib/auth/throttle";
 import { DEFAULT_PERMISSIONS, mergePermissions } from "@/lib/permissions";
+import { notifyReturnStatus, notifySellerApplied, notifySellerDecision, notifyOrderStatus } from "@/lib/email/notify";
 import type { SellerPermissions } from "@/types";
 
 const bust = (...paths: string[]) => paths.forEach((p) => revalidatePath(p, "layout"));
@@ -26,6 +27,7 @@ export async function setOrderStatus(orderId: string, status: string, note?: str
     if (!isUuid(orderId)) return { ok: false, error: "Order not found." };
     const { error } = await (await createClient()).rpc("set_order_status", { p_order: orderId, p_status: status, p_note: clampStr(note, 200) || null });
     if (error) throw new Error(error.message);
+    void notifyOrderStatus(orderId, status);
     bust("/admin", "/seller", "/account");
     return { ok: true };
   });
@@ -42,6 +44,7 @@ export async function decideReturn(returnId: string, status: "approved" | "rejec
   return guarded(["admin", "seller"], async () => {
     const { error } = await (await createClient()).rpc("decide_return", { p_return: returnId, p_status: status });
     if (error) throw new Error(error.message);
+    void notifyReturnStatus(returnId, status);
     bust("/admin", "/seller", "/account");
     return { ok: true };
   });
@@ -338,9 +341,10 @@ export async function setSellerStatus(sellerId: string, status: "active" | "susp
     const supabase = await createClient();
     const patch: Record<string, string> = { status };
     if (status === "active") patch.kyc = "verified";
-    const { data, error } = await supabase.from("sellers").update(patch).eq("id", sellerId).select("owner_id, name").single();
+    const { data, error } = await supabase.from("sellers").update(patch).eq("id", sellerId).select("owner_id, name, owner_name, email").single();
     if (error) throw new Error(error.message);
-    const s = data as { owner_id: string | null; name: string };
+    const s = data as { owner_id: string | null; name: string; owner_name: string; email: string };
+    if (s.email) void notifySellerDecision({ store: s.name, owner: s.owner_name, email: s.email, status });
     if (s.owner_id) await createAdminClient().from("notifications").insert({ user_id: s.owner_id, audience: "seller", kind: "seller",
       title: status === "active" ? "Your store is approved 🎉" : `Your store was ${status}`, body: status === "active" ? "You can now list products." : "Contact support for details." });
     bust("/admin", "/seller"); return { ok: true };
@@ -500,6 +504,7 @@ export async function registerSeller(input: {
     });
     if (sErr) { await admin.auth.admin.deleteUser(created.user.id); throw new Error(sErr.message); }
     await admin.from("notifications").insert({ audience: "admin", kind: "seller", title: "New seller application", body: `${input.store} (${input.city}) is waiting for review.` });
+    void notifySellerApplied({ store: clampStr(input.store, 60), owner: clampStr(input.owner, 80), email: email!, city: clampStr(input.city, 60) });
 
     const { error: inErr } = await (await createClient()).auth.signInWithPassword({ email: email!, password: input.password });
     return { ok: true, redirectTo: inErr ? "/seller/login" : "/seller" };

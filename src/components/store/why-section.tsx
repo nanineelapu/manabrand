@@ -5,12 +5,12 @@ import { Reveal } from "@/components/ui/motion";
 /**
  * "Why ManaBrand" band — a light section between the black hero and the shop, in the reference's style:
  * wide-tracked eyebrow, giant black + red-italic title, three numbered rounded cards.
- * Copy matches the FAQ / shipping policy (delivery within 48 hours, COD, ₹1,499 free-shipping line).
+ * Copy matches the FAQ / shipping policy (delivery within 48 hours, COD).
  */
 const CARDS = [
-  { n: "001", icon: ShieldCheck, label: "1,200+ KYC-verified makers", title: ["Verified", "Sellers"], text: "Every maker is identity-checked and quality-reviewed before they list a single product — real people, real stock." },
+  { n: "001", icon: ShieldCheck, label: "KYC-verified local makers", title: ["Verified", "Sellers"], text: "Every maker is identity-checked and quality-reviewed before they list a single product — real people, real stock." },
   { n: "002", icon: Clock, label: "Delivered within 48 hours", title: ["Lightning", "Delivery"], text: "Orders are packed and delivered within 48 hours, with live tracking from the moment you order." },
-  { n: "003", icon: Truck, label: "Free above ₹1,499", title: ["Free", "Shipping"], text: "Free shipping on orders above ₹1,499, and cash on delivery if you prefer to pay at your door." },
+  { n: "003", icon: Truck, label: "Pay at your door", title: ["Cash on", "Delivery"], text: "Prefer to pay when your order arrives? Cash on delivery is available on every order." },
 ] as const;
 
 export function WhySection() {

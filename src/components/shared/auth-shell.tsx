@@ -7,11 +7,11 @@ type Item = { icon: typeof Truck; text: string };
 const variants: Record<"customer" | "seller" | "admin", { photo: string; lead: string; hot: string; items: Item[]; quote: string; by: string; back?: { href: string; label: string } }> = {
   customer: {
     photo: "1572804013309-59a88b7e92f1", lead: "Everything you love,", hot: "one login.",
-    items: [{ icon: Truck, text: "Free shipping above ₹1,499" }, { icon: Clock, text: "Delivery within 48 hours" }, { icon: BadgeCheck, text: "Verified sellers across India" }],
+    items: [{ icon: Truck, text: "Cash on delivery available" }, { icon: Clock, text: "Delivery within 48 hours" }, { icon: BadgeCheck, text: "Verified local sellers" }],
     quote: "“Arrived within two days, exactly as shown. Delivery was super quick.”", by: "A ManaBrand shopper, Ichapuram", back: { href: "/", label: "Back to store" },
   },
   seller: {
-    photo: "1618220179428-22790b461013", lead: "Sell to all of India,", hot: "from one place.",
+    photo: "1618220179428-22790b461013", lead: "Sell to your neighbours,", hot: "from one place.",
     items: [{ icon: Boxes, text: "List products and manage stock" }, { icon: BarChart3, text: "Track orders and sales live" }, { icon: Wallet, text: "Clear, simple payouts" }],
     quote: "“I went from Instagram DMs to 400 orders a month in one season.”", by: "A local ManaBrand seller", back: { href: "/", label: "Back to store" },
   },

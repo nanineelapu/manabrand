@@ -104,7 +104,7 @@ const copy: Record<string, { desc: string[]; spec: (s: Seed) => string; care: st
     desc: ["Cut for easy movement and finished with care by small-batch makers. Easy to style from day to night.", "A staple designed to be worn on repeat. Soft hand-feel from the first wear and built to hold shape wash after wash."],
     spec: (s) => ({ kurta: "100% handloom cotton", saree: "Handwoven fabric, 5.5 m + blouse piece", shirt: "Premium woven cotton", tee: "240 GSM combed cotton jersey", jacket: "Cotton twill / denim", jeans: "98% cotton, 2% elastane denim", hoodie: "320 GSM brushed fleece", dress: "Viscose crepe, fully lined", sneaker: "Breathable mesh upper, EVA sole" } as Record<string, string>)[s[3]] ?? "Premium fabric",
     care: ["Machine wash cold, gentle cycle", "Wash dark colours separately", "Dry in shade"],
-    details: ["True-to-size fit", "Colour may vary slightly with screen settings", "Made in India"],
+    details: ["True-to-size fit", "Colour may vary slightly with screen settings", "Made locally in Ichapuram"],
   },
 };
 

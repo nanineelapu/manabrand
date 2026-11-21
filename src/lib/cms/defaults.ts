@@ -5,17 +5,16 @@ export const DEFAULT_SITE: CmsSite = {
   siteName: "ManaBrand",
   defaultTitle: "ManaBrand — Fashion from local makers",
   titleTemplate: "%s · ManaBrand",
-  description: "A local fashion marketplace for men's and women's clothing from verified sellers in Ichapuram. Footwear coming soon. Free shipping above ₹1,499 and delivery within 48 hours.",
+  description: "A local fashion marketplace for men's and women's clothing from verified sellers in Ichapuram. Footwear coming soon. Delivery within 48 hours.",
   announcementEnabled: true,
   announcements: [
-    { text: "Free shipping above ₹1,499" },
     { text: "Delivery within 48 hours" },
     { text: "Use WELCOME10 for 10% off", highlight: "WELCOME10", hideOnMobile: true },
   ],
   footerAbout: "A local fashion marketplace for men and women — from verified sellers in Ichapuram.",
   newsletterTitle: "Get 10% off your first order",
   copyright: "© 2026 ManaBrand Pvt. Ltd. All rights reserved.",
-  madeIn: "Made in India",
+  madeIn: "Made in Ichapuram",
   supportPhone: "+91 831 765 8309",
 };
 

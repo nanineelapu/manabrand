@@ -20,7 +20,7 @@ function FormError({ message }: { message?: string }) {
   );
 }
 
-/** 6-digit PIN / password field with show-hide. Digits only for PINs. */
+/** 4-digit PIN / password field with show-hide. Digits only for PINs. */
 function SecretField({
   id, label, value, onChange, error, hint, pin = true, autoComplete = "current-password",
 }: { id: string; label: string; value: string; onChange: (v: string) => void; error?: string; hint?: string; pin?: boolean; autoComplete?: string }) {
@@ -29,9 +29,9 @@ function SecretField({
     <Field label={label} htmlFor={id} error={error} hint={hint}>
       <Input
         id={id} type={show ? "text" : "password"} autoComplete={autoComplete} value={value} invalid={!!error}
-        inputMode={pin ? "numeric" : undefined} maxLength={pin ? 6 : 128} placeholder={pin ? "••••••" : undefined}
+        inputMode={pin ? "numeric" : undefined} maxLength={pin ? 4 : 128} placeholder={pin ? "••••" : undefined}
         className={pin ? "text-lg tracking-[0.5em]" : undefined}
-        onChange={(e) => onChange(pin ? e.target.value.replace(/\D/g, "").slice(0, 6) : e.target.value)}
+        onChange={(e) => onChange(pin ? e.target.value.replace(/\D/g, "").slice(0, 4) : e.target.value)}
         trailing={
           <button type="button" aria-label={show ? "Hide" : "Show"} onClick={() => setShow(!show)} className="grid size-9 place-items-center text-subtle hover:bg-bg-subtle">
             {show ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
@@ -90,7 +90,7 @@ export function LoginForm({
       e.preventDefault();
       const f: Record<string, string> = {};
       const pe = phoneError(phone); if (pe) f.phone = pe;
-      if (!/^\d{6}$/.test(pin)) f.pin = "Enter your 6-digit PIN";
+      if (!/^\d{4}$/.test(pin)) f.pin = "Enter your 4-digit PIN";
       setFields(f); if (Object.keys(f).length) return;
       run(() => loginWithPhonePin({ phone, pin, next }));
     }}>
@@ -99,7 +99,7 @@ export function LoginForm({
         <Input id="ph" type="tel" inputMode="tel" autoComplete="username" placeholder="98765 43210" maxLength={14}
           leading={<span className="text-sm font-medium text-fg">+91</span>} className="pl-14" value={phone} onChange={(e) => setPhone(e.target.value)} invalid={!!fields.phone} />
       </Field>
-      <SecretField id="pin" label="6-digit PIN" value={pin} onChange={setPin} error={fields.pin} />
+      <SecretField id="pin" label="4-digit PIN" value={pin} onChange={setPin} error={fields.pin} />
       <div className="text-right"><Link href={forgotHref} className="text-sm font-medium underline underline-offset-4">Forgot PIN?</Link></div>
       <Button type="submit" size="lg" full loading={pending}>Sign in</Button>
     </form>
@@ -134,7 +134,7 @@ export function RegisterForm({ next }: { next?: string }) {
       <Field label="Email address" htmlFor="re" error={fields.email} hint="We send order updates, receipts and your PIN-reset link here.">
         <Input id="re" type="email" inputMode="email" autoComplete="email" leading={<Mail className="size-4" />} value={v.email} onChange={(e) => set("email", e.target.value)} invalid={!!fields.email} />
       </Field>
-      <SecretField id="rpin" label="Create a 6-digit PIN" autoComplete="new-password" value={v.pin} onChange={(x) => set("pin", x)} error={fields.pin} hint="Avoid birthdays, 123456 or repeated digits." />
+      <SecretField id="rpin" label="Create a 4-digit PIN" autoComplete="new-password" value={v.pin} onChange={(x) => set("pin", x)} error={fields.pin} hint="Avoid birth years, 1234 or repeated digits." />
       <SecretField id="rpin2" label="Confirm PIN" autoComplete="new-password" value={v.confirmPin} onChange={(x) => set("confirmPin", x)} error={fields.confirmPin} />
       <p className="flex items-start gap-2 bg-accent-soft px-3.5 py-3 text-[13px] text-accent-soft-fg"><ShieldCheck className="mt-0.5 size-4 shrink-0" /> Your PIN is stored securely and can never be viewed — not even by us. We will never ask for it.</p>
       <div>
@@ -190,7 +190,7 @@ export function ResetForm({ kind }: { kind: "pin" | "password" }) {
       run(() => completeReset({ secret, confirm }));
     }}>
       <FormError message={error} />
-      <SecretField id="ns" label={isPin ? "New 6-digit PIN" : "New password"} pin={isPin} autoComplete="new-password" value={secret} onChange={setSecret} error={fields.secret} />
+      <SecretField id="ns" label={isPin ? "New 4-digit PIN" : "New password"} pin={isPin} autoComplete="new-password" value={secret} onChange={setSecret} error={fields.secret} />
       <SecretField id="nc" label={isPin ? "Confirm new PIN" : "Confirm new password"} pin={isPin} autoComplete="new-password" value={confirm} onChange={setConfirm} error={fields.confirm} />
       <Button type="submit" size="lg" full loading={pending}>{isPin ? "Save new PIN" : "Save new password"}</Button>
     </form>

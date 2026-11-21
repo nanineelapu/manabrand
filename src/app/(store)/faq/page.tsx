@@ -13,7 +13,7 @@ export async function generateMetadata() {
 const groups = [
   { title: "Orders & delivery", qs: [
     ["How long does delivery take?", "Every order is delivered within 48 hours of being placed."],
-    ["How much is shipping?", "Shipping is free on orders above ₹1,499. Below that it’s a flat ₹99."],
+    ["How much is shipping?", "Orders are delivered within 48 hours. Any delivery charge is shown at checkout before you pay."],
     ["Can I change my address after ordering?", "You can change the address until the order is packed. Open the order in My orders or contact support."],
   ]},
   { title: "Payments", qs: [

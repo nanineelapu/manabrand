@@ -10,7 +10,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const next = safeNext(Array.isArray(sp.next) ? sp.next[0] : sp.next, "");
   const nextQs = next ? `?next=${encodeURIComponent(next)}` : "";
   return (
-    <AuthShell title="Welcome back" subtitle="Sign in with your mobile number and 6-digit PIN."
+    <AuthShell title="Welcome back" subtitle="Sign in with your mobile number and 4-digit PIN."
       footer={<>New to ManaBrand? <Link href={`/register${nextQs}`} className="font-semibold text-fg underline underline-offset-4">Create an account</Link></>}>
       <LoginForm mode="customer" next={next || undefined} />
     </AuthShell>

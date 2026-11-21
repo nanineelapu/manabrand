@@ -1,6 +1,6 @@
 -- =============================================================================
 -- 0001 · IDENTITY
--- Customers sign in with PHONE + 6-digit PIN. The PIN is stored by Supabase Auth
+-- Customers sign in with PHONE + 4-digit PIN. The PIN is stored by Supabase Auth
 -- (bcrypt) as the account password — it is never stored in our tables.
 -- Every account also has a real EMAIL, used for all communication and PIN reset.
 -- Sellers and admins sign in with email + password.

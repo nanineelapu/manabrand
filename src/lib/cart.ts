@@ -1,7 +1,8 @@
 import type { CartLine } from "@/lib/stores";
 import type { CouponLite, ProductLite } from "@/components/store/store-data";
 
-export const FREE_SHIPPING_AT = 1499;
+/** Free delivery by order value is switched off (the value is never reached). Keep in step with settings.shipping.freeAbove. */
+export const FREE_SHIPPING_AT = 9_999_999;
 export const SHIPPING_FEE = 99;
 export const COD_FEE = 40;
 
@@ -34,4 +35,3 @@ export function priceCart(lines: CartLine[], byId: Map<string, ProductLite>, cou
   };
 }
 
-export const ETA_DAYS = (pincode: string) => (/^(4|1|5|6)/.test(pincode) ? 3 : 5);

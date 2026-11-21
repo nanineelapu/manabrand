@@ -194,7 +194,7 @@ async function main() {
   await as("authenticated", buyer);
   const big = await one<{ id: string; v: string; price: number }>(`select p.id, po.value v, p.price from products p join product_options po on po.product_id=p.id where p.status='active' and po.stock>=8 and p.price between 1200 and 2600 limit 1`);
   const o2 = (await place([{ product_id: big[0].id, option_value: big[0].v, qty: 1 }], { coupon: "welcome10" }))[0];
-  const exp2 = big[0].price - Math.min(500, Math.round(big[0].price * 0.1)) + (big[0].price - Math.min(500, Math.round(big[0].price * 0.1)) >= 1499 ? 0 : 99);
+  const exp2 = big[0].price - Math.min(500, Math.round(big[0].price * 0.1)) + 99;
   ok("WELCOME10 applied server-side (case-insensitive) with correct total", o2.total === exp2, `(got ${o2.total}, expected ${exp2})`);
   await mustFail("WELCOME10 only works for the first order", () => place([{ product_id: big[0].id, option_value: big[0].v, qty: 1 }], { coupon: "WELCOME10" }), /first order/);
   await mustFail("unknown coupon rejected", () => place([{ product_id: A.id, option_value: A.v, qty: 1 }], { coupon: "HACK100" }), /not valid/);

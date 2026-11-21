@@ -44,7 +44,7 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
                 <ul className="mt-2 list-disc space-y-1 pl-5">{product.care.map((d) => <li key={d}>{d}</li>)}</ul>
               </AccordionItem>
               <AccordionItem title="Shipping & delivery" icon={<Truck className="size-[18px]" />} name="pd">
-                Delivered within 48 hours. Free delivery above ₹1,499, otherwise ₹99.{" "}
+                Delivered within 48 hours. Cash on delivery is available.{" "}
                 <Link href="/shipping-returns" className="font-medium text-fg underline underline-offset-4">Read the full policy</Link>
               </AccordionItem>
               <AccordionItem title="About the seller" icon={<Scissors className="size-[18px]" />} name="pd">

@@ -96,7 +96,7 @@ create table public.settings (
   value jsonb not null
 );
 insert into public.settings (key, value) values
-  ('shipping',   '{"freeAbove":1499,"standardFee":99,"expressFee":149,"codFee":40}'),
+  ('shipping',   '{"freeAbove":9999999,"standardFee":99,"expressFee":149,"codFee":40}'),
   ('payments',   '{"upi":true,"card":true,"netbanking":true,"cod":true,"wallet":false}'),
   ('commission', '{"default":12}'),
   ('business',   '{"name":"ManaBrand Pvt. Ltd.","supportEmail":"care@manabrand.in","supportPhone":"1800-120-6262"}');

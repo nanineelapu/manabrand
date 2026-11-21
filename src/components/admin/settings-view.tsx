@@ -54,7 +54,7 @@ export function SettingsView({ initial }: { initial: SettingsData }) {
 
       {tab === "shipping" && (
         <Panel title="Shipping rules"><form className="grid max-w-2xl gap-4 sm:grid-cols-2" onSubmit={(e) => { e.preventDefault(); act(() => saveSetting("shipping", { freeAbove: Number(ship.free), standardFee: Number(ship.fee), expressFee: Number(ship.express), codFee: Number(ship.codFee) }), { success: "Shipping rules updated", refresh: false }); }}>
-          <Field label="Free shipping above (₹)" htmlFor="h1"><Input id="h1" inputMode="numeric" value={ship.free} onChange={(e) => setShip({ ...ship, free: e.target.value.replace(/\D/g, "") })} /></Field>
+          <Field label="Free shipping above (₹)" htmlFor="h1" hint="Set very high (9999999) to never offer free delivery."><Input id="h1" inputMode="numeric" value={ship.free} onChange={(e) => setShip({ ...ship, free: e.target.value.replace(/\D/g, "") })} /></Field>
           <Field label="Standard shipping fee (₹)" htmlFor="h2"><Input id="h2" inputMode="numeric" value={ship.fee} onChange={(e) => setShip({ ...ship, fee: e.target.value.replace(/\D/g, "") })} /></Field>
           <Field label="Express delivery fee (₹)" htmlFor="h3"><Input id="h3" inputMode="numeric" value={ship.express} onChange={(e) => setShip({ ...ship, express: e.target.value.replace(/\D/g, "") })} /></Field>
           <Field label="COD handling fee (₹)" htmlFor="h4"><Input id="h4" inputMode="numeric" value={ship.codFee} onChange={(e) => setShip({ ...ship, codFee: e.target.value.replace(/\D/g, "") })} /></Field>

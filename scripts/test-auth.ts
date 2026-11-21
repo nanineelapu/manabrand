@@ -20,17 +20,19 @@ t("email lowercased + trimmed", normalizeEmail("  Anita@Example.COM ") === "anit
 t("bad email rejected", emailError("not-an-email") !== null && emailError("a@b") !== null);
 
 // PIN
-t("valid PIN accepted", pinError("483920") === null);
-t("5 digits rejected", pinError("12345") !== null);
-t("letters rejected", pinError("12ab56") !== null);
-t("111111 rejected", pinError("111111") !== null);
-t("123456 rejected", pinError("123456") !== null);
-t("654321 rejected", pinError("654321") !== null);
-t("121212 rejected", pinError("121212") !== null);
-t("123123 rejected", pinError("123123") !== null);
-t("000000 rejected", pinError("000000") !== null);
-t("PIN inside phone number rejected", pinError("876543", "9876543210") !== null);
-t("unrelated PIN with phone accepted", pinError("482915", "9876543210") === null);
+t("valid PIN accepted", pinError("4839") === null);
+t("3 digits rejected", pinError("483") !== null);
+t("5 digits rejected", pinError("48392") !== null);
+t("6 digits (old format) rejected", pinError("483920") !== null);
+t("letters rejected", pinError("12ab") !== null);
+t("1111 rejected", pinError("1111") !== null);
+t("1234 rejected", pinError("1234") !== null);
+t("4321 rejected", pinError("4321") !== null);
+t("1212 rejected", pinError("1212") !== null);
+t("2580 rejected (common)", pinError("2580") !== null);
+t("0000 rejected", pinError("0000") !== null);
+t("PIN inside phone number rejected", pinError("8765", "9876543210") !== null);
+t("unrelated PIN with phone accepted", pinError("4829", "9876543210") === null);
 
 // staff password
 t("short password rejected", passwordError("abc123") !== null);
@@ -46,10 +48,10 @@ t("safeNext blocks backslash trick", safeNext("/\\evil.com", "/x") === "/x");
 // PIN derivation (mirrors src/lib/auth/pin.ts without the server-only import)
 const derive = (pin: string, phone: string, pepper: string) => createHmac("sha256", pepper).update(`${phone}:${pin}`).digest("hex");
 const P1 = "a".repeat(32), P2 = "b".repeat(32);
-t("derivation is deterministic", derive("482915", "+919876543210", P1) === derive("482915", "+919876543210", P1));
-t("different phone → different password (same PIN)", derive("482915", "+919876543210", P1) !== derive("482915", "+919811111111", P1));
-t("different pepper → different password (leaked DB useless without pepper)", derive("482915", "+919876543210", P1) !== derive("482915", "+919876543210", P2));
-t("derived value is 64 hex chars and never contains the PIN pattern", /^[0-9a-f]{64}$/.test(derive("482915", "+919876543210", P1)));
+t("derivation is deterministic", derive("4829", "+919876543210", P1) === derive("4829", "+919876543210", P1));
+t("different phone → different password (same PIN)", derive("4829", "+919876543210", P1) !== derive("4829", "+919811111111", P1));
+t("different pepper → different password (leaked DB useless without pepper)", derive("4829", "+919876543210", P1) !== derive("4829", "+919876543210", P2));
+t("derived value is 64 hex chars and never contains the PIN pattern", /^[0-9a-f]{64}$/.test(derive("4829", "+919876543210", P1)));
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

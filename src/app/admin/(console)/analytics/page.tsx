@@ -41,7 +41,7 @@ export default async function AnalyticsPage() {
             <div className="w-full flex-1"><Legend data={a.traffic.map((t) => ({ label: t.label, value: `${t.value}%` }))} /></div>
           </div>
         </Panel>
-        <Panel title="Top cities"><HBars rows={a.topCities} format={(n) => `${n}%`} /></Panel>
+        <Panel title="Top towns"><HBars rows={a.topCities} format={(n) => `${n}%`} /></Panel>
       </div>
 
       <Panel title="Orders per day" className="mt-5"><BarChart data={a.orders} labels={a.days} height={180} ariaLabel="Orders per day" /></Panel>

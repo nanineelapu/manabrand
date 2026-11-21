@@ -1,7 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { sendEmail, welcomeEmail } from "@/lib/email/send";
+import { sendEmail } from "@/lib/email/send";
+import { welcomeEmail } from "@/lib/email/templates";
 import { isSupabaseConfigured, siteUrl } from "@/lib/supabase/env";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { passwordFromPin } from "./pin";
@@ -75,7 +76,7 @@ export async function loginWithPhonePin(input: { phone: string; pin: string; nex
   if (!ready()) return { ok: false, error: NOT_CONFIGURED };
 
   const phone = normalizePhone(input.phone);
-  if (!phone || !/^\d{6}$/.test(input.pin)) return { ok: false, error: GENERIC_LOGIN_ERROR };
+  if (!phone || !/^\d{4}$/.test(input.pin)) return { ok: false, error: GENERIC_LOGIN_ERROR };
 
   const lock = await lockoutStatus(phone);
   if (lock.locked) return { ok: false, error: lockedMsg(lock.minutesLeft) };

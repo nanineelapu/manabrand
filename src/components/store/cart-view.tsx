@@ -4,9 +4,8 @@ import Link from "next/link";
 import { Heart, ShoppingBag, Trash2 } from "lucide-react";
 import { ProductImage } from "@/components/brand/product-image";
 import { Button } from "@/components/ui/button";
-import { Breadcrumb, EmptyState, Progress } from "@/components/ui/display";
+import { Breadcrumb, EmptyState } from "@/components/ui/display";
 import { QuantityStepper } from "@/components/ui/form";
-import { FREE_SHIPPING_AT } from "@/lib/cart";
 import { toast, useCart, useWishlist } from "@/lib/stores";
 import { useMounted } from "@/lib/stores/hydrate";
 import { discountPct, formatINR } from "@/lib/utils";
@@ -35,19 +34,14 @@ export function CartView() {
       <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Bag" }]} className="hidden md:block" />
       <h1 className="font-display text-[30px] font-semibold tracking-tight md:mt-4 md:text-4xl">Your bag <span className="text-lg font-normal text-muted">({cart.count})</span></h1>
 
-      <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_380px] lg:gap-12">
-        <div>
-          <div className="rounded-card bg-bg-subtle p-4">
-            <p className="text-sm">{cart.toFreeShipping > 0 ? <>Add <b>{formatINR(cart.toFreeShipping)}</b> more for <b>free shipping</b></> : <b className="text-success">Free shipping unlocked 🎉</b>}</p>
-            <Progress className="mt-2.5" value={((cart.subtotal - cart.discount) / FREE_SHIPPING_AT) * 100} tone="success" label="Free shipping progress" />
-          </div>
-
+      <div className="mt-5 grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-12">
+        <div className="min-w-0">
           <ul className="mt-2 divide-y divide-line">
             {cart.lines.map((l) => {
               const off = discountPct(l.product.price, l.product.mrp);
               return (
-                <li key={l.key} className="flex gap-4 py-5">
-                  <Link href={`/product/${l.product.slug}`} className="aspect-[3/4] w-24 shrink-0 overflow-hidden rounded-xl md:w-28"><ProductImage photo={l.product.photo} seed={l.product.id} color={l.colorHex} src={l.product.image} /></Link>
+                <li key={l.key} className="flex gap-3 py-5 sm:gap-4">
+                  <Link href={`/product/${l.product.slug}`} className="aspect-[3/4] w-20 shrink-0 overflow-hidden rounded-xl min-[400px]:w-24 md:w-28"><ProductImage photo={l.product.photo} seed={l.product.id} color={l.colorHex} src={l.product.image} /></Link>
                   <div className="flex min-w-0 flex-1 flex-col">
                     <p className="text-[11px] font-medium uppercase tracking-wide text-subtle">{l.product.sellerName}</p>
                     <Link href={`/product/${l.product.slug}`} className="line-clamp-2 text-[15px] font-medium leading-snug">{l.product.name}</Link>
@@ -70,7 +64,7 @@ export function CartView() {
           </ul>
         </div>
 
-        <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
+        <aside className="min-w-0 space-y-5 lg:sticky lg:top-24 lg:self-start">
           <section className="rounded-card border border-line bg-card p-5 shadow-card">
             <h2 className="mb-3 text-[15px] font-semibold">Apply coupon</h2>
             <CouponBox />

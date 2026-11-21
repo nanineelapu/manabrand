@@ -11,7 +11,9 @@
     "db:test": "tsx scripts/test-db.ts",
     "admin:create": "tsx scripts/create-admin.ts",
     "auth:test": "tsx scripts/test-auth.ts",
-    "cms:test": "tsx scripts/test-cms.ts"
+    "cms:test": "tsx scripts/test-cms.ts",
+    "email:test": "tsx --env-file=.env.local scripts/test-email.ts",
+    "sanity:reset": "tsx --env-file=.env.local scripts/sanity-reset.ts"
   },
   "dependencies": {
     "@sanity/client": "^8.16.0",

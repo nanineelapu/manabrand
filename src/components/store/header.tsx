@@ -54,9 +54,9 @@ export function StoreHeader({ items, accountLabel = "Account" }: Props) {
         <div className={cn(capsule, "min-w-0 gap-1 pl-2 pr-1.5 sm:gap-1.5 lg:pl-3 lg:pr-2")}>
           <nav aria-label="Primary" className="hidden min-w-0 items-center lg:flex">
             {items.filter((it) => it.showOn !== "mobile").map((it) => it.dropdown ? (
-              <div key={it.href + it.label} className="group/nav">
+              <div key={it.href + it.label} className="group/nav flex items-center self-stretch">
                 <NavLink href={it.href} active={pathname === it.href} accent={it.accent} chevron>{it.label}</NavLink>
-                <div className="invisible absolute left-1/2 top-full z-50 w-[920px] max-w-[94vw] -translate-x-1/2 pt-4 opacity-0 transition-all duration-150 group-focus-within/nav:visible group-focus-within/nav:opacity-100 group-hover/nav:visible group-hover/nav:opacity-100">
+                <div className="invisible absolute right-0 top-full z-50 w-[920px] max-w-[94vw] pt-3 opacity-0 transition-all duration-150 group-focus-within/nav:visible group-focus-within/nav:opacity-100 group-hover/nav:visible group-hover/nav:opacity-100">
                   <div className="rounded-3xl border border-white/10 bg-black/95 p-6 text-white">
                     <div className="mb-4 flex items-baseline justify-between"><p className="text-xs font-medium uppercase tracking-[0.14em] text-white/50">{it.dropdown.title}</p><Link href={it.dropdown.href} className="text-sm font-semibold text-accent">Shop all</Link></div>
                     <div className="grid grid-cols-4 gap-x-8 gap-y-6">
@@ -109,9 +109,9 @@ export function StoreHeader({ items, accountLabel = "Account" }: Props) {
 function NavLink({ href, children, active, accent, chevron }: { href: string; children: React.ReactNode; active?: boolean; accent?: boolean; chevron?: boolean }) {
   return (
     <Link href={href} aria-current={active ? "page" : undefined}
-      className={cn("inline-flex h-10 items-center gap-1 whitespace-nowrap px-2 text-[14px] font-semibold tracking-tight transition-colors xl:px-3.5 xl:text-[15px]",
-        active || accent ? "text-accent" : "text-white/85 hover:text-white")}>
-      {children}{chevron && <ChevronDown className="hidden size-3.5 opacity-60 xl:block" />}
+      className={cn("inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 text-[14px] font-semibold tracking-tight transition-colors xl:px-4 xl:text-[15px]",
+        accent ? "bg-accent/15 text-accent hover:bg-accent hover:text-white" : active ? "bg-white/15 text-white" : "text-white/80 hover:bg-white/10 hover:text-white")}>
+      {children}{chevron && <ChevronDown className="size-3.5 opacity-60 transition-transform duration-200 group-hover/nav:rotate-180 group-focus-within/nav:rotate-180" />}
     </Link>
   );
 }

@@ -47,7 +47,7 @@ Copy `.env.example` to `.env.local` and fill it in. Never commit `.env.local` (i
 | `SUPABASE_SERVICE_ROLE_KEY` | Same page. **Secret, server only** — bypasses security rules |
 | `PIN_PEPPER` | Secret mixed into every customer PIN. Generate with `openssl rand -hex 32`. **Never change it** once customers have registered |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` locally, your real domain in production |
-| `RESEND_API_KEY`, `EMAIL_FROM` | Optional — welcome emails (logged to the console when empty) |
+| `RESEND_API_KEY`, `EMAIL_FROM`, `SUPPORT_EMAIL` | Transactional email via Resend (orders, contact form, sellers…) — logged to the console when empty. See [docs/EMAIL_SETUP.md](docs/EMAIL_SETUP.md) |
 | `PAYMENT_MODE` | Leave unset for test mode (online orders count as paid). `live` needs a payment gateway webhook |
 | `NEXT_PUBLIC_SANITY_PROJECT_ID`, `NEXT_PUBLIC_SANITY_DATASET` | Optional — turns on the content editor |
 | `SANITY_API_READ_TOKEN` | Only if your Sanity dataset is private |
@@ -86,7 +86,7 @@ Full step-by-step guides:
 
 ## How login works
 
-- **Customers** sign in with a mobile number and a 6-digit PIN. No OTP or SMS. An email is required at sign-up for order updates and PIN reset.
+- **Customers** sign in with a mobile number and a 4-digit PIN. No OTP or SMS. An email is required at sign-up for order updates and PIN reset.
 - The real PIN is never stored: it is combined with `PIN_PEPPER` and hashed before it reaches Supabase.
 - **Sellers and admins** sign in with email and password.
 - Accounts can only be created by the server. The database rejects any direct sign-up.

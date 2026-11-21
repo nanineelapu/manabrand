@@ -1,5 +1,6 @@
 "use client";
 
+import { OUT_OF_AREA, inServiceArea } from "@/lib/locale";
 import { groupOf } from "@/lib/fashion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -99,8 +100,8 @@ export function BuyBox({ product, sellerName, sellerSlug }: { product: Product; 
   };
 
   const checkPin = () => {
-    if (!/^[1-9]\d{5}$/.test(pin)) { setPinMsg({ ok: false, text: "Enter a valid 6-digit pincode" }); return; }
-    setPinMsg({ ok: true, text: "Delivery within 48 hours · Free above ₹1,499 · COD available" });
+    if (!/^\d{6}$/.test(pin)) { setPinMsg({ ok: false, text: "Enter a valid 6-digit pincode" }); return; }
+    setPinMsg(inServiceArea(pin) ? { ok: true, text: "Delivery within 48 hours · COD available" } : { ok: false, text: OUT_OF_AREA });
   };
 
   const low = size ? product.stock[size] : undefined;
@@ -172,12 +173,12 @@ export function BuyBox({ product, sellerName, sellerSlug }: { product: Product; 
       <div className="rounded-card border border-line bg-card p-4">
         <p className="mb-2.5 flex items-center gap-2 text-sm font-semibold"><MapPin className="size-4 text-accent" /> Delivery options</p>
         <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); checkPin(); }}>
-          <Field htmlFor="pin" className="flex-1"><Input id="pin" inputMode="numeric" maxLength={6} placeholder="Enter pincode" value={pin} aria-label="Pincode" onChange={(e) => { setPin(e.target.value.replace(/\D/g, "")); setPinMsg(null); }} invalid={pinMsg?.ok === false} /></Field>
+          <Field htmlFor="pin" className="flex-1"><Input id="pin" inputMode="numeric" maxLength={6} placeholder="Pincode, e.g. 532312" value={pin} aria-label="Pincode" onChange={(e) => { setPin(e.target.value.replace(/\D/g, "")); setPinMsg(null); }} invalid={pinMsg?.ok === false} /></Field>
           <Button type="submit" variant="outline">Check</Button>
         </form>
         {pinMsg && <p role="status" className={cn("mt-2 text-[13px] font-medium", pinMsg.ok ? "text-success" : "text-danger")}>{pinMsg.text}</p>}
         <ul className="mt-4 space-y-3 text-[13px] text-muted">
-          <li className="flex items-center gap-3"><Truck className="size-[18px] shrink-0 text-fg" /> Free delivery on orders above ₹1,499</li>
+          <li className="flex items-center gap-3"><Truck className="size-[18px] shrink-0 text-fg" /> Cash on delivery available</li>
           <li className="flex items-center gap-3"><Clock className="size-[18px] shrink-0 text-fg" /> Delivered within 48 hours</li>
           <li className="flex items-center gap-3"><ShieldCheck className="size-[18px] shrink-0 text-fg" /> Authentic · quality-checked by ManaBrand</li>
         </ul>

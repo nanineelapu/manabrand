@@ -1,37 +1,59 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowRight, Check, Gift, Truck, X, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, Check, Clock, Gift, Truck, X, Zap } from "lucide-react";
 import { SectionHeader } from "@/components/ui/display";
 import { Reveal } from "@/components/ui/motion";
-import { cn } from "@/lib/utils";
+import { MAGIC_LABEL, clock, magicState } from "@/lib/magic-hours";
 
 const PERKS = [
-  { icon: Gift, title: "Weekly deal box", desc: "Hand-picked fashion deals every week, at a members’ price." },
+  { icon: Gift, title: "Daily magic-hour deal", desc: `A fresh members-only fashion deal box opens every day, ${MAGIC_LABEL}.` },
   { icon: Truck, title: "Free delivery", desc: "No delivery fee on any order, all year." },
   { icon: Zap, title: "Early access", desc: "First look at new styles and festive drops." },
 ] as const;
 
-const PLANS = {
-  monthly: { price: 149, unit: "month", label: "Monthly" },
-  annual: { price: 999, unit: "year", label: "Annual" },
-} as const;
+const PASS = { price: 699, unit: "year" } as const;
+
+/** Live status of the daily magic hours: "Live now · ends in …" or "Opens in …". Client-only so it never mismatches on hydration. */
+function MagicClock() {
+  const [st, setSt] = useState<{ live: boolean; msLeft: number } | null>(null);
+  useEffect(() => {
+    const tick = () => setSt(magicState());
+    tick();
+    const t = setInterval(tick, 1000);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="flex items-center gap-4 rounded-[22px] bg-black p-4 text-white md:p-5" role="timer" aria-live="off">
+      <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-white/10"><Clock className="size-[22px]" strokeWidth={1.8} /></span>
+      <div className="min-w-0 flex-1">
+        <p className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.14em] text-white/60">
+          {st?.live && <span className="size-2 rounded-full bg-emerald-400" />}
+          {st?.live ? "Magic hours are on" : "Magic hours"} <span className="whitespace-nowrap">· {MAGIC_LABEL}</span>
+        </p>
+        <p className="mt-0.5 text-[13px] text-white/75">{st ? (st.live ? "Today’s deal box is open — ends in" : "Next deal box opens in") : "Every day, for a limited time"}</p>
+      </div>
+      <p className="shrink-0 text-2xl font-black tabular-nums tracking-tight md:text-3xl">{st ? clock(st.msLeft) : "--:--:--"}</p>
+    </div>
+  );
+}
 
 /** Members-only pass: white section, three short perks, one pricing card. */
 export function ManaDealBox() {
-  const [plan, setPlan] = useState<keyof typeof PLANS>("annual");
   const [open, setOpen] = useState(false);
   const [contact, setContact] = useState("");
   const [done, setDone] = useState(false);
-  const p = PLANS[plan];
+  const p = PASS;
 
   return (
     <section aria-labelledby="dealbox-heading" data-round className="bg-white text-black">
       <div className="container-page py-12 md:py-16">
-        <Reveal><SectionHeader id="dealbox-heading" eyebrow="Members only" title="Mana Deal Box" subtitle="One pass for weekly fashion deals and free delivery." /></Reveal>
+        <Reveal><SectionHeader id="dealbox-heading" eyebrow="Members only · Daily" title="Mana Deal Box" subtitle={`Opens every day in the magic hours, ${MAGIC_LABEL}.`} /></Reveal>
 
         <div className="mt-7 grid gap-5 md:mt-9 lg:grid-cols-[1.15fr_1fr] lg:items-stretch lg:gap-8">
           {/* perks */}
+          <div className="grid gap-3">
+          <MagicClock />
           <ul className="grid gap-3">
             {PERKS.map((k, i) => (
               <li key={k.title}>
@@ -44,27 +66,21 @@ export function ManaDealBox() {
               </li>
             ))}
           </ul>
+          </div>
 
           {/* pass */}
           <Reveal delay={140}>
             <div className="flex h-full flex-col rounded-[28px] border border-black/10 bg-neutral-50 p-6 md:p-7">
-              <div className="inline-flex w-fit rounded-full bg-black/[0.06] p-1" role="tablist" aria-label="Choose a plan">
-                {(Object.keys(PLANS) as (keyof typeof PLANS)[]).map((k) => (
-                  <button key={k} type="button" role="tab" aria-selected={plan === k} onClick={() => setPlan(k)}
-                    className={cn("rounded-full px-4 py-1.5 text-[13px] font-bold transition-colors", plan === k ? "bg-black text-white" : "text-black/60 hover:text-black")}>
-                    {PLANS[k].label}{k === "annual" && <span className={cn("ml-1.5 text-[11px]", plan === k ? "text-pink-300" : "text-primary")}>Save 44%</span>}
-                  </button>
-                ))}
-              </div>
+              <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-black/50">Annual pass</p>
 
-              <p className="mt-6 flex items-baseline gap-1.5">
+              <p className="mt-3 flex items-baseline gap-1.5">
                 <span className="text-5xl font-black tracking-tight tabular">₹{p.price}</span>
                 <span className="text-sm font-medium text-black/50">/ {p.unit}</span>
               </p>
-              {plan === "annual" && <p className="mt-1 text-[13px] font-medium text-primary">That’s about ₹83 a month.</p>}
+              <p className="mt-1 text-[13px] font-medium text-primary">That’s about ₹{Math.round(p.price / 12)} a month.</p>
 
               <ul className="mt-5 space-y-2 text-[14px] text-black/75">
-                {["Weekly deal box", "Free delivery on every order", "Early access to limited drops"].map((t) => (
+                {[`Daily deal box, ${MAGIC_LABEL}`, "Free delivery on every order", "Early access to limited drops"].map((t) => (
                   <li key={t} className="flex items-center gap-2.5"><Check className="size-4 shrink-0 text-primary" strokeWidth={3} />{t}</li>
                 ))}
               </ul>
@@ -88,7 +104,7 @@ export function ManaDealBox() {
             {!done ? (
               <form onSubmit={(e) => { e.preventDefault(); setDone(true); }}>
                 <h3 className="pr-10 text-xl font-black tracking-tight">Join the Mana Deal Box</h3>
-                <p className="mt-1.5 text-sm text-black/60">{p.label} pass · ₹{p.price} / {p.unit}. Leave your mobile number or email and we’ll get in touch to start your pass.</p>
+                <p className="mt-1.5 text-sm text-black/60">Annual pass · ₹{p.price} / {p.unit}. Leave your mobile number or email and we’ll get in touch to start your pass.</p>
                 <label htmlFor="dealbox-contact" className="mt-5 block text-[13px] font-semibold">Mobile number or email</label>
                 <input id="dealbox-contact" required value={contact} onChange={(e) => setContact(e.target.value)} placeholder="98765 43210 or you@example.com"
                   className="mt-1.5 h-12 w-full rounded-xl border border-black/15 bg-white px-4 text-[15px] outline-none placeholder:text-black/35 focus:border-primary" />

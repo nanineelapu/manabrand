@@ -5,23 +5,13 @@ import { getCategories } from "@/lib/data";
 import { GROUPS, groupOf } from "@/lib/fashion";
 import { parseListingParams } from "@/lib/listing";
 
-export const dynamicParams = false;
-export const generateStaticParams = () => GROUPS.map((g) => ({ group: g.id }));
-
 const BLURB = {
   men: "T-shirts, shirts, jeans, trousers, ethnic wear and shorts from local makers.",
   women: "Tops, kurtis, sarees, dresses, jeans, leggings and ethnic wear from local makers.",
 } as const;
 
-export async function generateMetadata({ params }: { params: Promise<{ group: string }> }) {
-  const { group } = await params;
-  const g = GROUPS.find((x) => x.id === group);
-  return { title: g ? g.title : "Shop" };
-}
-
 /** Men's / Women's landing: category chips on top, then every product in that group with the usual filters. */
-export default async function GroupPage({ params, searchParams }: { params: Promise<{ group: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const { group } = await params;
+export async function GroupPage({ group, searchParams }: { group: "men" | "women"; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const g = GROUPS.find((x) => x.id === group);
   if (!g) notFound();
   const sp = await searchParams;

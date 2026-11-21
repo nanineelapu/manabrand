@@ -24,7 +24,7 @@ Copy `.env.example` → `.env.local` and fill it in:
 | `SUPABASE_SERVICE_ROLE_KEY` | Project Settings → API (**secret**, server only) |
 | `PIN_PEPPER` | run `openssl rand -hex 32` — keep it secret and **never change it** (every PIN would stop working) |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` (your real domain in production) |
-| `RESEND_API_KEY` / `EMAIL_FROM` | optional; without it, welcome emails are only logged |
+| `RESEND_API_KEY` / `EMAIL_FROM` / `SUPPORT_EMAIL` | optional; without them emails are only logged — see [EMAIL_SETUP.md](EMAIL_SETUP.md) |
 | `PAYMENT_MODE` | leave unset for **test mode** (UPI/card orders are marked paid immediately). Set `live` once a payment gateway webhook calls `confirm_payment` — until then online orders stay *awaiting payment* |
 
 ## 3. Supabase dashboard settings
@@ -41,7 +41,7 @@ npm run admin:create -- boss@manabrand.in "A-Strong-Password-123" "Your Name" ad
 Then sign in at `/admin/login`. Sellers don't need the command any more: they register at `/seller/register` (email + password), land in a **pending** store, and you approve them under *Admin → Sellers*. Until approved they can edit their profile and upload KYC documents but not list products.
 
 ## 5. Restart `npm run dev` and try it
-- `/register` → name, mobile, **email**, 6-digit PIN → you're signed in; a welcome email goes to the address given.
+- `/register` → name, mobile, **email**, 4-digit PIN → you're signed in; a welcome email goes to the address given.
 - `/login` → mobile + PIN. 5 wrong PINs in 15 min locks that number for the rest of the window.
 - `/forgot-password` → enter email → link → `/reset-pin`.
 

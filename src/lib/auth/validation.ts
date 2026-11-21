@@ -27,19 +27,19 @@ export const nameError = (input: string) => {
 };
 
 /**
- * PIN rules: exactly 6 digits, and not trivially guessable.
- * A 6-digit PIN is weak by nature, so we remove the most-guessed values and
- * (on the server) throttle attempts + mix in a secret pepper.
+ * PIN rules: exactly 4 digits, and not trivially guessable.
+ * A 4-digit PIN has only 10,000 combinations, so we remove the most-guessed values and
+ * (on the server) lock sign-in after a few wrong tries + mix in a secret pepper.
  */
 export function pinError(pin: string, phone?: string): string | null {
-  if (!/^\d{6}$/.test(pin)) return "Your PIN must be exactly 6 digits";
-  if (/^(\d)\1{5}$/.test(pin)) return "Avoid repeated digits like 111111";
-  const asc = "0123456789012345678901234567890", desc = "9876543210987654321098765432109";
-  if (asc.includes(pin) || desc.includes(pin)) return "Avoid sequences like 123456";
-  if (/^(\d\d)\1\1$/.test(pin) || /^(\d\d\d)\1$/.test(pin)) return "Avoid repeating patterns like 121212";
-  if (["112233", "123321", "100000", "101010", "696969", "007007", "123123", "654321", "159753"].includes(pin)) return "That PIN is too common — pick another";
+  if (!/^\d{4}$/.test(pin)) return "Your PIN must be exactly 4 digits";
+  if (/^(\d)\1{3}$/.test(pin)) return "Avoid repeated digits like 1111";
+  const asc = "012345678901234567890", desc = "987654321098765432109";
+  if (asc.includes(pin) || desc.includes(pin)) return "Avoid sequences like 1234";
+  if (/^(\d\d)\1$/.test(pin)) return "Avoid repeating patterns like 1212";
+  if (["1004", "2000", "2001", "1122", "1313", "6969", "0007", "2580", "1357", "2468", "1230", "0852", "7777", "4200", "1998", "1999", "2002", "2003"].includes(pin)) return "That PIN is too common — pick another";
   const p = phone ? normalizePhone(phone)?.slice(3) : undefined;
-  if (p && (p.includes(pin) || pin === p.slice(0, 6))) return "Your PIN must not be part of your phone number";
+  if (p && p.includes(pin)) return "Your PIN must not be part of your phone number";
   return null;
 }
 
