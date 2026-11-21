@@ -564,10 +564,13 @@ html[data-preloaded] #preloader { display: none; }  /* repeat visit: set by the 
 @keyframes hbf-flow-b { from { transform: translateX(-50%); } to { transform: translateX(0); } }
 
 .hbf-tilt { transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 0.35s ease-out; transform-style: preserve-3d; }
+.hbf-ring { background: conic-gradient(from 0deg, transparent 0 62%, rgba(255, 95, 176, 0.95) 84%, transparent 100%); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px)); animation: hbf-spin 9s linear infinite; }
+.hbf-orbit { animation: hbf-spin linear infinite; }
+@keyframes hbf-spin { to { transform: rotate(360deg); } }
 .hbf-float { animation: hbf-float 7s ease-in-out infinite; }
 @keyframes hbf-float { 0%, 100% { transform: translateY(0) rotateY(-7deg); } 50% { transform: translateY(-14px) rotateY(7deg); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .hbf-row, .hbf-float { animation: none; }
+  .hbf-row, .hbf-ring, .hbf-orbit, .hbf-float { animation: none; }
   .hbf-tilt { transition: none; }
 }
