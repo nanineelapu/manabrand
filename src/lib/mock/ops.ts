@@ -46,7 +46,7 @@ const notes: Record<OrderStatus, string> = {
   shipped: "Handed to courier partner", out_for_delivery: "Out for delivery today", delivered: "Delivered to you",
   cancelled: "Order cancelled", returned: "Return completed — refund initiated",
 };
-const couriers = ["ManaBrand Local Delivery", "Local courier partner"];
+const couriers = ["ManaBrand Delivery"];
 const methods: PaymentMethod[] = ["upi", "upi", "card", "cod", "netbanking", "wallet"];
 
 function makeOrder(n: number, customerIdx: number, ageDays: number, status: OrderStatus): Order {

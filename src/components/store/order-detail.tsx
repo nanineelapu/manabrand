@@ -35,7 +35,7 @@ export async function OrderDetail({ order: o }: { order: Order }) {
         <div className="space-y-5">
           <section className="rounded-card border border-line bg-card p-5 shadow-card">
             <h3 className="mb-5 text-[15px] font-semibold">Tracking</h3>
-            {o.awb && <p className="mb-5 flex items-center gap-2 rounded-ctl bg-bg-subtle px-3.5 py-3 text-[13px]"><Truck className="size-4 text-accent" /><span><b>{o.courier}</b> · AWB {o.awb}</span></p>}
+            {o.awb && <p className="mb-5 flex items-center gap-2 rounded-ctl bg-bg-subtle px-3.5 py-3 text-[13px]"><Truck className="size-4 text-accent" /><span><b>{o.courier}</b> · Tracking no. {o.awb}</span></p>}
             <OrderTimeline events={o.timeline} status={o.status} />
             {eta && o.status !== "delivered" && o.status !== "cancelled" && o.status !== "returned" && <p className="mt-5 text-xs text-muted">Expected by {formatDate(new Date(+new Date(o.createdAt) + 2 * 86400000).toISOString(), { weekday: "short", day: "numeric", month: "short" })}</p>}
           </section>

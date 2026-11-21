@@ -43,9 +43,9 @@ export default async function AdminDashboard() {
         actions={<><Button variant="outline" size="sm" href="/" ><Eye className="size-4" /> Storefront</Button><Button size="sm" href="/admin/business"><Download className="size-4" /> Business report</Button></>} />
 
       {/* Needs attention — first thing on mobile */}
-      <section aria-label="Needs attention" className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4 2xl:grid-cols-7">
+      <section aria-label="Needs attention" className="no-scrollbar -mx-4 mb-5 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 lg:grid-cols-4 2xl:grid-cols-7">
         {attention.map((a) => (
-          <Link key={a.label} href={a.href} className="group flex items-center gap-3 rounded-card border border-line bg-card p-3.5 shadow-card transition-colors hover:border-line-strong md:p-4">
+          <Link key={a.label} href={a.href} className="group flex w-[68%] shrink-0 snap-start items-center gap-3 rounded-card border border-line bg-card p-3.5 sm:w-[44%] md:w-auto shadow-card transition-colors hover:border-line-strong md:p-4">
             <span className={`grid size-10 shrink-0 place-items-center rounded-ctl ${a.tone}`}><a.icon className="size-5" /></span>
             <span className="min-w-0"><span className="block text-xl font-semibold leading-none tabular">{a.n}</span><span className="mt-1 block text-xs leading-tight text-muted">{a.label}</span></span>
             <ArrowRight className="ml-auto hidden size-4 text-subtle transition-transform group-hover:translate-x-0.5 md:block" />

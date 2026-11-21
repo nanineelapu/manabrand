@@ -19,9 +19,10 @@ Open **Supabase → SQL Editor → New query**. For each file: open it in VS Cod
 - [ ] `…000008_seller_permissions.sql`
 - [ ] `…000009_admin_tools.sql`  (product SEO fields + Deal Box settings)
 - [ ] `…000010_payments_alerts_reviews.sql`  (back-in-stock alerts, cart reminders, review photos)
+- [ ] `…000011_own_delivery.sql`  (no more made-up tracking numbers — delivery is "ManaBrand Delivery", tracking typed by hand)
 
 If a file says something "already exists", that's fine — go on to the next.
-If you already ran 0001–0008 earlier, you only need 0009 and 0010.
+If you already ran 0001–0008 earlier, you only need 0009, 0010 and 0011.
 
 Then load the fashion catalogue:
 
@@ -108,6 +109,8 @@ Until this is done the site only offers Cash on delivery.
 
 - [ ] Real sellers (they register at `/seller/register`; you approve them in Admin → Sellers).
 - [ ] Real products + real photos (Admin → Products). The demo photos are stock images.
+- [ ] Delivery is your own: on each order (Admin → Orders → open it) fill **Delivery details** (who delivers + optional tracking no.) BEFORE tapping "Mark as shipped".
+- [ ] Invoices say plain "Invoice" until you add `BUSINESS_GSTIN` in Vercel, then they say "Tax invoice".
 - [ ] Footwear is "coming soon" — add a Footwear category product when ready.
 - [ ] Deal Box: Admin → Deal Box → set hours, price, picked products.
 - [ ] Admin → Settings: delivery fees, payment methods, business details.

@@ -31,7 +31,7 @@ export default async function PrintOrderPage({ params, searchParams }: { params:
           <p className="mt-1 text-neutral-600">Ichapuram, Srikakulam, Andhra Pradesh 532312<br />care@manabrand.in · +91 831 765 8309{process.env.BUSINESS_GSTIN && !slip ? <><br />GSTIN: <b>{process.env.BUSINESS_GSTIN}</b></> : null}</p>
         </div>
         <div className="text-right">
-          <p className="text-lg font-extrabold uppercase tracking-wide">{slip ? "Packing slip" : "Tax invoice"}</p>
+          <p className="text-lg font-extrabold uppercase tracking-wide">{slip ? "Packing slip" : process.env.BUSINESS_GSTIN ? "Tax invoice" : "Invoice"}</p>
           <p className="mt-1">Order <b>{o.number}</b></p>
           <p className="text-neutral-600">{formatDate(o.createdAt)}</p>
         </div>
@@ -44,9 +44,9 @@ export default async function PrintOrderPage({ params, searchParams }: { params:
           <p>{[a.line1, a.line2].filter(Boolean).join(", ")}<br />{[a.city, a.state].filter(Boolean).join(", ")} {a.pincode}<br />Phone: {a.phone}</p>
         </div>
         <div className="text-right">
-          <p className="text-[11px] font-bold uppercase tracking-widest text-neutral-500">{slip ? "Courier" : "Payment"}</p>
+          <p className="text-[11px] font-bold uppercase tracking-widest text-neutral-500">{slip ? "Delivery" : "Payment"}</p>
           {slip
-            ? <p className="mt-1">{o.courier ?? "ManaBrand Local Delivery"}<br />{o.awb ? <>Tracking: <b>{o.awb}</b></> : "Tracking: —"}</p>
+            ? <p className="mt-1">{o.courier ?? "ManaBrand Delivery"}{o.awb ? <><br />Tracking: <b>{o.awb}</b></> : null}</p>
             : <p className="mt-1">{PAY[o.payment.method] ?? o.payment.method}<br />Status: <b className="capitalize">{o.payment.status}</b></p>}
         </div>
       </section>

@@ -71,7 +71,7 @@ export const orderConfirmedEmail = (o: OrderMail): Mail => {
 };
 
 const STATUS_COPY: Record<string, { subject: string; head: string; body: string }> = {
-  shipped: { subject: "is on its way", head: "Your order is on its way 🚚", body: "Your order has been handed to the courier." },
+  shipped: { subject: "is on its way", head: "Your order is on its way 🚚", body: "Your order is on its way with the ManaBrand delivery team." },
   out_for_delivery: { subject: "is out for delivery", head: "Out for delivery today 📦", body: "Your order will reach you today. Please keep your phone nearby." },
   delivered: { subject: "was delivered", head: "Delivered — enjoy! 🎉", body: "Your order has been delivered. We hope you love it." },
   cancelled: { subject: "was cancelled", head: "Your order was cancelled", body: "Your order has been cancelled. If you paid online, the refund goes back to the same method." },
@@ -82,7 +82,7 @@ export const EMAIL_STATUSES = Object.keys(STATUS_COPY);
 
 export const orderStatusEmail = (o: { name: string; number: string; status: string; awb?: string | null; courier?: string | null; siteUrl: string }): Mail | null => {
   const c = STATUS_COPY[o.status]; if (!c) return null;
-  const track = o.awb ? p(`<b>${esc(o.courier ?? "Courier")}</b> tracking number: <b>${esc(o.awb)}</b>`) : "";
+  const track = o.awb ? p(`Delivered by <b>${esc(o.courier ?? "ManaBrand Delivery")}</b> · tracking no. <b>${esc(o.awb)}</b>`) : "";
   return mail(`Order ${o.number} ${c.subject}`, layout({
     title: `Order ${o.number} ${c.subject}`, preheader: `Order ${o.number} ${c.subject}.`, siteUrl: o.siteUrl,
     reason: "You are receiving this because of an order on ManaBrand.",

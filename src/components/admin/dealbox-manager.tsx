@@ -25,7 +25,7 @@ export function DealBoxManager({ initial, products }: { initial: DealBoxConfig; 
     <div className="grid gap-5 lg:grid-cols-[1fr_1.2fr]">
       <Panel title="Settings">
         <div className="space-y-5">
-          <Switch label="Show the Deal Box on the home page" checked={c.enabled} onChange={(v) => setC({ ...c, enabled: v })} />
+          <div className="flex items-center gap-3"><Switch label="Show the Deal Box on the home page" checked={c.enabled} onChange={(v) => setC({ ...c, enabled: v })} /><span className="text-sm font-medium">Show the Deal Box on the home page</span></div>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Opens (India time)" htmlFor="db-s"><Select id="db-s" value={c.startHour} onChange={(e) => setC({ ...c, startHour: Number(e.target.value) })}>{HOURS.slice(0, 23).map((o) => <option key={o.h} value={o.h}>{o.label}</option>)}</Select></Field>
             <Field label="Closes (India time)" htmlFor="db-e" error={bad}><Select id="db-e" value={c.endHour} onChange={(e) => setC({ ...c, endHour: Number(e.target.value) })}>{HOURS.slice(1).map((o) => <option key={o.h} value={o.h}>{o.label}</option>)}</Select></Field>
@@ -36,7 +36,8 @@ export function DealBoxManager({ initial, products }: { initial: DealBoxConfig; 
         </div>
       </Panel>
 
-      <Panel title={`Picked products (${c.productIds.length}/12)`} action={<SearchField value={q} onChange={setQ} placeholder="Search products" className="w-44" />}>
+      <Panel title={`Picked products (${c.productIds.length}/12)`}>
+        <SearchField value={q} onChange={setQ} placeholder="Search products" className="mb-3" />
         <p className="mb-3 text-[13px] text-muted">These appear under the Deal Box as “Today’s picks for members”. Change them whenever you like.</p>
         <ul className="max-h-[26rem] divide-y divide-line overflow-y-auto rounded-ctl border border-line">
           {shown.map((p) => {

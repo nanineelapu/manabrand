@@ -15,4 +15,4 @@ const STATUS_TEXT: Record<string, string> = {
 };
 /** ManaBrand → customer: a status message the team can send from the admin order page. */
 export const orderUpdateLink = (o: { phone: string; name: string; number: string; status: string; awb?: string; courier?: string }) =>
-  waLink(o.phone, `Hi ${o.name.split(" ")[0]}, your ManaBrand order ${o.number} ${STATUS_TEXT[o.status] ?? `is ${o.status}`}.${o.awb ? ` Tracking: ${o.courier ?? "courier"} ${o.awb}.` : ""} Thank you for shopping local! – Team ManaBrand`);
+  waLink(o.phone, `Hi ${o.name.split(" ")[0]}, your ManaBrand order ${o.number} ${STATUS_TEXT[o.status] ?? `is ${o.status}`}.${o.awb ? ` Tracking no.: ${o.awb}.` : ""} Thank you for shopping local! – Team ManaBrand`);

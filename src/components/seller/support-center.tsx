@@ -16,7 +16,7 @@ import type { TicketRow } from "@/lib/data";
 const faqs = [
   ["When do I get paid?", "Payout cycles close on the 15th and last day of the month. Funds reach your bank two working days later."],
   ["How is the marketplace fee calculated?", "12% of the selling price (incl. GST) on each delivered order. There are no listing or monthly fees."],
-  ["Who arranges shipping?", "ManaBrand’s courier partners collect from your pickup address. Pack the order, print the label from the order page and hand it over."],
+  ["Who arranges shipping?", "ManaBrand’s own delivery team collects from your pickup address and delivers in Ichapuram and nearby. Pack the order, print the label from the order page and hand it over."],
   ["What if a buyer returns an item?", "Approved returns are picked up free. If the item is damaged or not as described, you can raise a dispute with photos within 48 hours."],
   ["How do I improve my listing quality score?", "Add 4+ clear photos, accurate sizes and fabric details, and keep stock up to date."],
 ];

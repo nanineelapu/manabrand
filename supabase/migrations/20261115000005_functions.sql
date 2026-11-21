@@ -165,8 +165,7 @@ begin
   if v_o.status in ('cancelled', 'returned', 'delivered') then raise exception 'This order is closed'; end if;
 
   update public.orders set status = p_status,
-         awb = case when p_status = 'shipped' and awb is null then (1000000000 + floor(random() * 8999999999))::bigint::text else awb end,
-         courier = case when p_status = 'shipped' and courier is null then 'Delhivery' else courier end,
+         courier = case when p_status = 'shipped' and courier is null then 'ManaBrand Delivery' else courier end,
          payment_status = case when p_status = 'delivered' and payment_method = 'cod' then 'paid' else payment_status end
    where id = p_order;
   insert into public.order_events (order_id, status, note)

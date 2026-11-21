@@ -9,8 +9,8 @@ import { StatusBadge } from "@/components/shared/status";
 import { ProductImage } from "@/components/brand/product-image";
 import { Avatar, DetailRow } from "@/components/ui/display";
 import { Button } from "@/components/ui/button";
-import { Field, Select, Textarea } from "@/components/ui/form";
-import { addOrderNote, refundOrderPayment, setOrderStatus } from "@/lib/actions/manage";
+import { Field, Input, Select, Textarea } from "@/components/ui/form";
+import { addOrderNote, refundOrderPayment, setOrderStatus, setShipment } from "@/lib/actions/manage";
 import { cancelOrder } from "@/lib/actions/store";
 import { useAct } from "@/lib/actions/use-act";
 import { formatDateTime, formatINR } from "@/lib/utils";
@@ -28,13 +28,14 @@ export function OrderManager({ order, base, role }: { order: Order; base: string
   const [note, setNote] = useState("");
   const { act } = useAct();
   const [force, setForce] = useState<OrderStatus | "">("");
+  const [ship, setShip] = useState({ courier: order.courier ?? "ManaBrand Delivery", awb: order.awb ?? "" });
   const step = next[o.status];
 
   const applyLocal = (to: OrderStatus, msg: string) => {
     setO((p) => ({
       ...p, status: to,
       timeline: [...p.timeline, { status: to, at: new Date().toISOString(), note: msg || `Updated by ${role}` }],
-      awb: to === "shipped" && !p.awb ? `${Math.floor(1e9 + Math.random() * 8e9)}` : p.awb, courier: to === "shipped" && !p.courier ? "ManaBrand Local Delivery" : p.courier,
+      courier: to === "shipped" && !p.courier ? "ManaBrand Delivery" : p.courier,
     }));
   };
   const advance = (to: OrderStatus, msg = "") =>
@@ -43,14 +44,20 @@ export function OrderManager({ order, base, role }: { order: Order; base: string
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center gap-2.5 rounded-card border border-line bg-card p-4 shadow-card md:p-5">
-        <div className="mr-auto"><div className="flex items-center gap-2.5"><h2 className="text-xl font-semibold">{o.number}</h2><StatusBadge status={o.status} /></div><p className="mt-0.5 text-[13px] text-muted">Placed {formatDateTime(o.createdAt)} · {o.items.length} line{o.items.length > 1 ? "s" : ""}</p></div>
-        {role === "admin" && <Button variant="outline" size="sm" href={`/print/order/${o.id}?type=invoice`} target="_blank"><Printer className="size-4" /> Invoice</Button>}
-        <Button variant="outline" size="sm" href={`/print/order/${o.id}?type=slip`} target="_blank"><Printer className="size-4" /> Packing slip</Button>
-        {role === "admin" && <Button variant="outline" size="sm" href={orderUpdateLink({ phone: o.address.phone, name: o.customerName, number: o.number, status: o.status, awb: o.awb, courier: o.courier })} target="_blank"><MessageCircle className="size-4" /> WhatsApp customer</Button>}
-        {role === "admin" && o.payment.status === "paid" && o.payment.method !== "cod" && <Button variant="outline" size="sm" className="text-danger" onClick={() => { if (window.confirm(`Refund ${formatINR(o.total)} to the customer for ${o.number}?`)) act(() => refundOrderPayment(o.id), { success: "Refund sent to the customer", refresh: true }); }}>Refund payment</Button>}
-        {step && <Button size="sm" variant="accent" onClick={() => advance(step.to)}>{step.label}</Button>}
-        {["placed", "confirmed"].includes(o.status) && <Button size="sm" variant="outline" className="text-danger" onClick={() => advance("cancelled", "Cancelled by " + role)}>Cancel</Button>}
+      <div className="rounded-card border border-line bg-card p-4 shadow-card md:p-5">
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-3">
+          <div className="mr-auto min-w-0"><div className="flex items-center gap-2.5"><h2 className="text-xl font-semibold">{o.number}</h2><StatusBadge status={o.status} /></div><p className="mt-0.5 text-[13px] text-muted">Placed {formatDateTime(o.createdAt)} · {o.items.length} line{o.items.length > 1 ? "s" : ""}</p></div>
+          <div className="order-2 flex w-full gap-2 md:order-3 md:w-auto">
+          {step && <Button size="sm" variant="accent" className="flex-1 md:flex-none" onClick={() => advance(step.to)}>{step.label}</Button>}
+          {["placed", "confirmed"].includes(o.status) && <Button size="sm" variant="outline" className="flex-1 text-danger md:flex-none" onClick={() => advance("cancelled", "Cancelled by " + role)}>Cancel</Button>}
+          </div>
+          <div className="no-scrollbar order-3 -mx-4 flex w-[calc(100%+2rem)] gap-2 overflow-x-auto px-4 md:order-2 md:mx-0 md:w-auto md:overflow-visible md:px-0">
+          {role === "admin" && <Button variant="outline" size="sm" className="shrink-0" href={`/print/order/${o.id}?type=invoice`} target="_blank"><Printer className="size-4" /> Invoice</Button>}
+          <Button variant="outline" size="sm" className="shrink-0" href={`/print/order/${o.id}?type=slip`} target="_blank"><Printer className="size-4" /> Packing slip</Button>
+          {role === "admin" && <Button variant="outline" size="sm" className="shrink-0" href={orderUpdateLink({ phone: o.address.phone, name: o.customerName, number: o.number, status: o.status, awb: o.awb, courier: o.courier })} target="_blank"><MessageCircle className="size-4" /> WhatsApp customer</Button>}
+          {role === "admin" && o.payment.status === "paid" && o.payment.method !== "cod" && <Button variant="outline" size="sm" className="shrink-0 text-danger" onClick={() => { if (window.confirm(`Refund ${formatINR(o.total)} to the customer for ${o.number}?`)) act(() => refundOrderPayment(o.id), { success: "Refund sent to the customer", refresh: true }); }}>Refund payment</Button>}
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[1.6fr_1fr]">
@@ -74,7 +81,15 @@ export function OrderManager({ order, base, role }: { order: Order; base: string
           </Panel>
 
           <Panel title="Fulfilment">
-            {o.awb ? <p className="mb-4 flex items-center gap-2 rounded-ctl bg-bg-subtle px-3.5 py-3 text-sm"><Truck className="size-4 text-accent" /><span><b>{o.courier}</b> · AWB {o.awb}</span></p> : <p className="mb-4 text-sm text-muted">Shipment details appear after the order is marked shipped.</p>}
+            <div className="mb-5 rounded-ctl border border-line p-3.5">
+              <p className="flex items-center gap-2 text-sm font-semibold"><Truck className="size-4 text-accent" /> Delivery details</p>
+              <p className="mt-0.5 text-xs text-muted">We deliver ourselves. Add who is delivering and, if you like, a tracking / reference number. Fill this in before marking the order as shipped so the customer’s email includes it.</p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <Field label="Delivered by" htmlFor="sh-c"><Input id="sh-c" value={ship.courier} maxLength={60} onChange={(e) => setShip({ ...ship, courier: e.target.value })} /></Field>
+                <Field label="Tracking no. (optional)" htmlFor="sh-a"><Input id="sh-a" value={ship.awb} maxLength={60} onChange={(e) => setShip({ ...ship, awb: e.target.value })} /></Field>
+              </div>
+              <Button size="sm" variant="secondary" className="mt-3" onClick={() => act(() => setShipment(o.id, ship.courier, ship.awb), { success: "Delivery details saved", onOk: () => setO((p) => ({ ...p, courier: ship.courier || undefined, awb: ship.awb || undefined })), onDemo: () => setO((p) => ({ ...p, courier: ship.courier || undefined, awb: ship.awb || undefined })), refresh: false })}>Save delivery details</Button>
+            </div>
             <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
               <Field label="Update status manually" htmlFor="fs"><Select id="fs" value={force} onChange={(e) => setForce(e.target.value as OrderStatus)}><option value="">Choose status…</option>{(["placed", "confirmed", "packed", "shipped", "out_for_delivery", "delivered", "cancelled", "returned"] as OrderStatus[]).map((s) => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}</Select></Field>
               <Button variant="outline" disabled={!force} onClick={() => { advance(force as OrderStatus, "Manual update"); setForce(""); }}>Apply</Button>

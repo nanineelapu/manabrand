@@ -55,6 +55,21 @@ export async function refundOrderPayment(orderId: string): Promise<Result> {
     bust("/admin", "/account"); return { ok: true };
   });
 }
+/** Own delivery: the person delivering and an optional tracking / reference number, typed in by hand. */
+export async function setShipment(orderId: string, courier: string, tracking: string): Promise<Result> {
+  return guarded(["admin", "seller"], async (actor) => {
+    if (!isUuid(orderId)) return { ok: false, error: "Order not found." };
+    const db = createAdminClient();
+    if (actor.role === "seller") {
+      const me = await mySeller(await createClient(), actor.id);
+      const { data } = me ? await db.from("order_items").select("id").eq("order_id", orderId).eq("seller_id", me.id).limit(1) : { data: [] };
+      if (!data?.length) return { ok: false, error: "You can only update orders that include your products." };
+    }
+    const { error } = await db.from("orders").update({ courier: clampStr(courier, 60) || "ManaBrand Delivery", awb: clampStr(tracking, 60) || null }).eq("id", orderId);
+    if (error) throw new Error(error.message);
+    bust("/admin", "/seller", "/account"); return { ok: true };
+  });
+}
 /** Add a teammate who can sign in to the admin panel. Only a "Super admin" may do this. */
 export async function addTeamMember(input: { name: string; email: string; password: string; role: string }): Promise<Result> {
   return guarded(["admin"], async (actor) => {
