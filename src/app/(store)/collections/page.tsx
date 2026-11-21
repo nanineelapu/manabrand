@@ -11,7 +11,7 @@ export default async function CollectionsPage() {
     <div className="container-page pb-6 pt-4 md:pt-6">
       <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Collections" }]} />
       <h1 className="mt-4 text-3xl font-semibold tracking-tight md:mt-6 md:text-4xl">Collections</h1>
-      <p className="mt-1.5 max-w-xl text-sm text-muted md:text-base">Hand-picked edits across fashion, tech and home.</p>
+      <p className="mt-1.5 max-w-xl text-sm text-muted md:text-base">Hand-picked fashion edits, from weddings to everyday.</p>
       <div className="mt-6 grid gap-3 md:grid-cols-2 md:gap-5">
         {cols.map((c) => (
           <Link key={c.id} href={`/collections/${c.slug}`} className="group relative isolate aspect-[16/10] overflow-hidden rounded-[28px] border border-white/70 shadow-card">

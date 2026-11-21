@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight, Heart, LogOut, MapPin, Package, RotateCcw, User, LifeBuoy } from "lucide-react";
+import { ChevronRight, Heart, LogOut, MapPin, Package, User, LifeBuoy } from "lucide-react";
 import { SignOutButton } from "@/components/shared/sign-out-button";
 import { cn } from "@/lib/utils";
 

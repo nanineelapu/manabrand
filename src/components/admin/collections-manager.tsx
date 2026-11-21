@@ -16,9 +16,9 @@ interface Pick { id: string; name: string; category: string }
 type Draft = { id?: string; name: string; story: string; photo: PhotoKind; productIds: string[] };
 
 const COVERS: [PhotoKind, string][] = [
-  ["decor", "Home decor"], ["sofa", "Living room"], ["kitchen", "Kitchen"], ["dress", "Fashion — dress"], ["saree", "Fashion — saree"], ["jacket", "Fashion — jacket"],
-  ["bag", "Bags"], ["jewellery", "Jewellery"], ["watch", "Watches"], ["perfume", "Perfume"], ["skincare", "Skincare"], ["candle", "Candles"],
-  ["coffee", "Coffee & tea"], ["snacks", "Snacks & gifts"], ["laptop", "Laptops"], ["headphones", "Headphones"],
+  ["dress", "Dresses"], ["saree", "Sarees"], ["kurta", "Kurtas"], ["shirt", "Shirts"], ["tee", "Tees"], ["jacket", "Jackets"],
+  ["jeans", "Denim"], ["hoodie", "Hoodies"], ["sneaker", "Sneakers"], ["bag", "Bags"], ["jewellery", "Jewellery"], ["watch", "Watches"],
+  ["sunglasses", "Eyewear"],
 ];
 
 /** Admin → Collections: create themed groups of products, rename them, pick the cover photo, add / remove products, delete. */

@@ -266,7 +266,7 @@ export async function saveCollection(input: { id?: string; name: string; story: 
   return guarded(["admin"], async () => {
     const name = clampStr(input.name, 60); if (name.length < 2) return { ok: false, error: "Give the collection a name." };
     const supabase = await createClient();
-    const fields = { name, story: clampStr(input.story, 200), photo_kind: clampStr(input.photo, 30) || "decor" };
+    const fields = { name, story: clampStr(input.story, 200), photo_kind: clampStr(input.photo, 30) || "dress" };
     let id = input.id && isUuid(input.id) ? input.id : undefined;
     if (id) {
       const { error } = await supabase.from("collections").update(fields).eq("id", id);

@@ -4,6 +4,7 @@
  * src/lib/mock; in Phase 7 each body becomes a Supabase query with the same
  * signature, and no UI file changes.
  */
+import { HIDDEN_CATEGORY_SLUGS } from "@/lib/fashion";
 import type { Order, OrderStatus, Product } from "@/types";
 import {
   categories, collections, products, sellers, subcategories, sellerById, productById,
@@ -76,8 +77,8 @@ export async function queryProducts(qy: ProductQuery = {}) {
   return { items: sorted.slice((page - 1) * pageSize, page * pageSize), total, page, pages: Math.max(1, Math.ceil(total / pageSize)), facets };
 }
 
-export const getCategories = async () => categories;
-export const getCategory = async (slug: string) => categories.find((c) => c.slug === slug);
+export const getCategories = async () => categories.filter((c) => !HIDDEN_CATEGORY_SLUGS.has(c.slug));
+export const getCategory = async (slug: string) => (await getCategories()).find((c) => c.slug === slug);
 export const getSubcategories = async (slug: string) => subcategories[slug] ?? [];
 export const getProduct = async (slug: string) => products.find((p) => p.slug === slug);
 export const getProductById = async (id: string) => productById(id);
@@ -96,7 +97,7 @@ export const getProductReviews = async (productId: string) => reviews.filter((r)
 export const getHomeBanners = async () => banners.filter((b) => b.placement === "home-hero" && b.status === "live");
 export const getStripBanner = async () => banners.find((b) => b.placement === "home-strip" && b.status === "live");
 export const getCoupon = async (code: string) => coupons.find((c) => c.code.toLowerCase() === code.trim().toLowerCase());
-export const getTrendingSearches = async () => ["Wireless earbuds", "Silk saree", "Sneakers", "Smart watch", "Sofa", "Vitamin C serum"];
+export const getTrendingSearches = async () => ["Silk saree", "Sneakers", "Kurta", "Denim jacket", "Handbag", "Watch"];
 
 export async function ratingBreakdown(productId: string) {
   const r = reviews.filter((x) => x.productId === productId);

@@ -44,7 +44,7 @@ async function main() {
                  grant usage on all sequences in schema public to authenticated, service_role;`);
   await db.exec(readFileSync("supabase/seed.sql", "utf8"));
   const counts = await one<{ n: number }>(`select count(*)::int n from products`);
-  ok("migrations + seed apply cleanly (65 products)", counts[0].n === 65);
+  ok("migrations + seed apply cleanly (30 products)", counts[0].n === 30);
 
   // ---- account creation ---------------------------------------------------------
   const server = JSON.stringify({ provisioned_by: "mana-server" });
@@ -95,7 +95,7 @@ async function main() {
   const activeN = (await one<{ n: number }>(`select count(*)::int n from products where status='active'`))[0].n;
   await as("anon");
   const vis = await one<{ n: number }>(`select count(*)::int n from products`);
-  ok("anon sees only active products (draft/in-review hidden)", vis[0].n === activeN && activeN >= 60, `(saw ${vis[0].n}, active ${activeN})`);
+  ok("anon sees only active products (draft/in-review hidden)", vis[0].n === activeN && activeN >= 25, `(saw ${vis[0].n}, active ${activeN})`);
   ok("anon cannot see pending sellers", (await one(`select 1 from sellers where status='pending'`)).length === 0);
   await mustFail("anon cannot insert a product", () => db.exec(`insert into products (slug, seller_id, category_id, name, price, mrp) select 'hack', id, (select id from categories limit 1), 'Hack', 1, 1 from sellers limit 1`), /row-level|permission/);
 
@@ -147,7 +147,7 @@ async function main() {
   await as("postgres");
   await db.exec(`insert into coupons (code, description, type, value, min_order, max_discount, usage_limit) values
                    ('WELCOME10', '10% off first order', 'percent', 10, 999, 500, 100),
-                   ('FLAT200', 'Flat 200', 'flat', 200, 500, null, 100),
+                   ('FLAT200', 'Flat 200', 'flat', 200, 1500, null, 100),
                    ('FREESHIP', 'Free shipping', 'shipping', 0, 100, null, 100)`);
   const shopper = await mk("shopper@example.com", "+919855555555", "Sam Shopper");
   const other2 = await mk("other2@example.com", "+919866666666", "Other Person");
@@ -168,11 +168,11 @@ async function main() {
 
   await as("authenticated", shopper);
   const s0 = await stockOf(A.id, A.v);
-  const o1 = (await place([{ product_id: A.id, color: "Black", option_value: A.v, qty: 2 }]))[0];
+  const o1 = (await place([{ product_id: A.id, color: "Black", option_value: A.v, qty: 1 }]))[0];
   ok("place_order returns an order number MB-xxxxx", /^MB-\d{5,}$/.test(o1.order_number));
-  ok("total is computed on the SERVER (price*qty + ₹99 shipping under ₹1,499)", o1.total === A.price * 2 + 99, `(got ${o1.total}, expected ${A.price * 2 + 99})`);
+  ok("total is computed on the SERVER (price*qty + ₹99 shipping under ₹1,499)", o1.total === A.price + 99, `(got ${o1.total}, expected ${A.price + 99})`);
   await as("postgres");
-  ok("stock was decremented atomically", (await stockOf(A.id, A.v)) === s0 - 2);
+  ok("stock was decremented atomically", (await stockOf(A.id, A.v)) === s0 - 1);
   ok("first event 'placed' recorded", (await one(`select 1 from order_events where order_id=$1 and status='placed'`, [o1.order_id])).length === 1);
   ok("admin + seller notified of the new order", (await one(`select 1 from notifications where title like $1`, [`New order ${o1.order_number}%`])).length >= 1);
 
@@ -208,7 +208,7 @@ async function main() {
   await as("authenticated", shopper);
   const sMid = await stockOf(A.id, A.v);
   await db.query(`select cancel_order($1, 'Changed my mind')`, [o1.order_id]);
-  ok("cancel_order restores stock", (await stockOf(A.id, A.v)) === sMid + 2);
+  ok("cancel_order restores stock", (await stockOf(A.id, A.v)) === sMid + 1);
   ok("order is cancelled with an event", (await one(`select 1 from orders o join order_events e on e.order_id=o.id where o.id=$1 and o.status='cancelled' and e.status='cancelled'`, [o1.order_id])).length === 1);
   await mustFail("cancelled order cannot be cancelled again", () => db.query(`select cancel_order($1)`, [o1.order_id]), /no longer be cancelled/);
 

@@ -13,12 +13,7 @@ export type HeroSlideData = HeroSlide;
 /** Bright stock photos (Unsplash) used when a slide has no uploaded photo — matched to the slide's category. */
 const STOCK: Record<string, string> = {
   fashion: "1609357605129-26f69add5d6e",     // teal dress, flowing
-  gift: "1559454403-b8fb88521f11",           // teddy bear gift
-  electronics: "1517336714731-489689fd1ca8", // neon laptop
-  home: "1600210492486-724fe5c67fb0",        // sunlit living room
-  beauty: "1541643600914-78b084683601",      // perfume
   accessories: "1584917865442-de89df76afd3", // red handbag
-  gourmet: "1596040033229-a9821ebd058d",     // spices
 };
 const DEFAULT_STOCK = "1488161628813-04466f872be2"; // men's street style (desktop): jacket, orange trousers
 const WIDTHS = [640, 1024, 1536, 2200] as const;
@@ -107,10 +102,13 @@ export function Hero({ c, slides, site }: {
                 )}
 
                 {/* first screen: the message, vertically centred between the header and the buttons */}
-                <div className="flex flex-1 items-center max-md:items-end lg:h-[100svh] lg:flex-none">
-                  <div className="container-page w-full pb-[clamp(176px,24svh,220px)] max-md:pb-[clamp(168px,22svh,200px)] pt-[clamp(84px,13svh,128px)] lg:pb-[clamp(110px,15svh,150px)] lg:pt-[clamp(96px,14svh,140px)]">
+                <div className={cn("flex flex-1 lg:h-[100svh] lg:flex-none", k === 0 ? "items-end lg:items-center" : "items-center max-md:items-end")}>
+                  <div className={cn("container-page w-full pb-[clamp(176px,24svh,220px)] pt-[clamp(84px,13svh,128px)] lg:pb-[clamp(110px,15svh,150px)] lg:pt-[clamp(96px,14svh,140px)]", k === 0 ? "max-lg:pb-[clamp(168px,22svh,200px)]" : "max-md:pb-[clamp(168px,22svh,200px)]")}>
                     <div className={cn("flex max-w-3xl flex-col items-start gap-[clamp(12px,2.2svh,20px)]", active && "stagger")}>
-                      <Title style={{ "--i": 0 } as React.CSSProperties} className="text-[clamp(34px,6svh,44px)] font-black leading-[1.08] tracking-[-0.04em] text-white sm:text-[clamp(42px,8svh,58px)] lg:text-[clamp(44px,min(4.8vw,9svh),72px)]">
+                      <Title style={{ "--i": 0 } as React.CSSProperties} className={cn("font-black tracking-[-0.04em] text-white",
+                        k === 0
+                          ? "text-[clamp(27px,4.4svh,34px)] leading-[1.12] sm:text-[clamp(34px,6svh,48px)] lg:text-[clamp(40px,min(4.1vw,8.2svh),60px)] lg:leading-[1.06]"
+                          : "text-[clamp(34px,6svh,44px)] leading-[1.08] sm:text-[clamp(42px,8svh,58px)] lg:text-[clamp(44px,min(4.8vw,9svh),72px)]")}>
                         <Headline text={s.headline} emphasis={s.headlineEmphasis} />
                       </Title>
                       <p style={{ "--i": 1 } as React.CSSProperties} className="max-w-xl text-[clamp(15px,2.3svh,17px)] leading-relaxed text-white/90 md:text-[clamp(16px,2.5svh,19px)]">

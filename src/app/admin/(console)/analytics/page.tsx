@@ -3,7 +3,7 @@ import { PageHeader, Panel, StatCard } from "@/components/shared/blocks";
 import { getAnalytics } from "@/lib/data";
 import { formatCompactINR, formatNumber } from "@/lib/utils";
 
-export const metadata = { title: "Analytics" };
+export const metadata = { title: "Traffic" };
 
 export default async function AnalyticsPage() {
   const a = await getAnalytics();
@@ -11,7 +11,7 @@ export default async function AnalyticsPage() {
   const conv = (a.funnel.at(-1)!.value / a.funnel[0].value) * 100;
   return (
     <>
-      <PageHeader title="Analytics" subtitle="Last 30 days · all sellers" />
+      <PageHeader title="Traffic" subtitle="Sample figures — real visitor data appears once web analytics (GA4 or Vercel Analytics) is connected. Sales numbers are on Business analysis." />
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <StatCard label="Revenue" value={formatCompactINR(sum(a.revenue))} delta={8.4} />
         <StatCard label="Orders" value={formatNumber(sum(a.orders))} delta={5.1} />

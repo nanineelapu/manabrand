@@ -1,80 +1,83 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useRef } from "react";
 
 /**
- * Freestanding 3D Illuminated Brand Showcase
- * Designed specifically for Hero Slide 1:
- * - Freestanding ManaBrand emblem with luminous Majestic Pink back-glow
- * - No bounding cards or boxes - pure, high-end, iconic brand emblem
- * - Synchronized floor shadow reflection and ambient light waves
- * - Optimized with z-index to never occlude or clip foreground typography
+ * Hero slide 1 — the ManaBrand logo is the hero.
+ *  - a luminous glass disc holds the logo, so its red mark pops instead of drowning in a dark glow
+ *  - a slow rotating pink light ring, a few orbiting sparks and a soft floor reflection
+ *  - behind everything, rows of small logos flow continuously across a tilted 3D plane
+ *  - on desktop the stage leans gently towards the pointer (skipped for reduced motion)
+ * Everything is decorative (aria-hidden) and sits behind the headline, so text contrast is never affected.
  */
+const ROW_DIRS = ["hbf-row-a", "hbf-row-b", "hbf-row-a", "hbf-row-b", "hbf-row-a", "hbf-row-b"];
+
 export function HeroBrandFlow({ active }: { active: boolean }) {
+  const tilt = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = tilt.current;
+    if (!el || !active) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !window.matchMedia("(hover: hover)").matches) return;
+    let raf = 0;
+    const onMove = (e: PointerEvent) => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const x = e.clientX / window.innerWidth - 0.5, y = e.clientY / window.innerHeight - 0.5;
+        el.style.setProperty("--ry", `${(x * 14).toFixed(2)}deg`);
+        el.style.setProperty("--rx", `${(-y * 10).toFixed(2)}deg`);
+      });
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => { window.removeEventListener("pointermove", onMove); cancelAnimationFrame(raf); };
+  }, [active]);
+
   return (
-    <div
-      className="absolute inset-0 size-full overflow-hidden select-none -z-20 bg-[#06070a]"
-      aria-hidden="true"
-    >
-      {/* Deep Obsidian & Majestic Pink Aurora Glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_75%_55%_at_78%_42%,rgba(224,36,122,0.22)_0%,rgba(14,16,22,0.65)_50%,#06070a_100%)]" />
+    <div className="absolute inset-0 -z-20 size-full select-none overflow-hidden bg-[#07060a]" aria-hidden="true">
+      {/* aurora: pink on the logo side, a cool violet counter-light bottom-left */}
+      <div className="absolute inset-0 bg-[radial-gradient(60%_70%_at_74%_46%,rgba(224,36,122,0.30),transparent_62%),radial-gradient(50%_60%_at_8%_105%,rgba(98,64,255,0.22),transparent_60%)]" />
 
-      {/* Subtle Luxury Mesh Grid */}
-      <div
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
-        }}
-      />
+      {/* continuous flow of logos across a tilted 3D plane */}
+      <div className="hbf-plane absolute inset-0 opacity-[0.16] [mask-image:radial-gradient(70%_65%_at_62%_48%,#000_10%,transparent_78%)]">
+        <div className="hbf-plane-inner">
+          {ROW_DIRS.map((dir, r) => (
+            <div key={r} className={`hbf-row ${dir}`} style={{ animationDuration: `${46 + r * 7}s`, marginLeft: r % 2 ? "-6rem" : 0 }}>
+              {Array.from({ length: 24 }, (_, i) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={i} src="/logo-dark.png" alt="" width={46} height={58} loading="lazy" decoding="async" className="h-14 w-auto shrink-0 opacity-90" />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
 
-      {/* Ambient Pulsing Glow Orbs */}
-      <div className="pointer-events-none absolute right-[18%] top-[25%] size-80 rounded-full bg-[radial-gradient(circle,rgba(224,36,122,0.28)_0%,transparent_70%)] blur-3xl animate-pulse" />
-      <div className="pointer-events-none absolute right-[5%] bottom-[15%] size-96 rounded-full bg-[radial-gradient(circle,rgba(255,42,133,0.15)_0%,transparent_70%)] blur-3xl animate-pulse" />
-
-      {/* Desktop Freestanding 3D Brand Emblem (Right side of hero) */}
-      <div className="pointer-events-none absolute right-[5%] top-1/2 -translate-y-1/2 hidden lg:flex flex-col items-center justify-center w-[460px] xl:w-[540px]">
-        {/* Soft Orbital Light Rings */}
-        <div className="absolute size-[420px] xl:size-[480px] rounded-full border border-[rgb(224_36_122/0.25)] animate-[spin_40s_linear_infinite]" />
-        <div className="absolute size-[500px] xl:size-[560px] rounded-full border border-dashed border-white/10 animate-[spin_60s_linear_infinite_reverse]" />
-
-        {/* Freestanding Levitating Logo */}
-        <div className="relative z-10 flex flex-col items-center hero-logo-levitate">
-          <div className="relative">
-            {/* Luminous backlight aura */}
-            <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(224,36,122,0.45)_0%,transparent_70%)] blur-2xl scale-125" />
-            <Image
-              src="/logo-dark.png"
-              alt="ManaBrand"
-              width={819}
-              height={1024}
-              priority={active}
-              className="relative z-10 h-80 xl:h-96 w-auto object-contain filter drop-shadow-[0_16px_40px_rgba(224,36,122,0.45)]"
-            />
+      {/* the stage */}
+      <div className="pointer-events-none absolute left-1/2 top-[clamp(72px,9svh,100px)] -translate-x-1/2 lg:left-auto lg:right-[6%] lg:top-1/2 lg:-translate-y-1/2 lg:translate-x-0 xl:right-[8%]">
+        <div ref={tilt} className="hbf-tilt relative grid place-items-center">
+          <div className="relative grid size-[min(224px,25svh)] place-items-center sm:size-[min(300px,30svh)] lg:size-[min(440px,56svh)] xl:size-[min(500px,60svh)]">
+            {/* rotating light ring */}
+            <span className="hbf-ring absolute inset-[-10px] rounded-full" />
+            {/* glass disc */}
+            <span className="absolute inset-0 rounded-full border border-white/20 bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0.20),rgba(255,255,255,0.05)_58%,rgba(224,36,122,0.10))] shadow-[inset_0_0_60px_rgba(255,255,255,0.08),0_30px_90px_-20px_rgba(224,36,122,0.55)] backdrop-blur-[2px]" />
+            {/* orbiting sparks */}
+            <span className="hbf-orbit absolute inset-[-26px]" style={{ animationDuration: "22s" }}><i className="absolute left-1/2 top-0 size-2 -translate-x-1/2 rounded-full bg-[#ff5fb0] shadow-[0_0_14px_#ff5fb0]" /></span>
+            <span className="hbf-orbit absolute inset-[-44px]" style={{ animationDuration: "34s", animationDirection: "reverse" }}><i className="absolute bottom-[12%] left-[6%] size-1.5 rounded-full bg-white shadow-[0_0_12px_white]" /></span>
+            <span className="hbf-orbit absolute inset-[-8px]" style={{ animationDuration: "16s" }}><i className="absolute right-[10%] top-[16%] size-1.5 rounded-full bg-[#ffd0ea] shadow-[0_0_10px_#ff8cc8]" /></span>
+            {/* the logo */}
+            <div className="hbf-float relative z-10">
+              <Image src="/logo-dark.png" alt="" width={819} height={1024} priority={active} quality={90} sizes="(min-width:1024px) 420px, 240px"
+                className="h-[min(166px,18.5svh)] w-auto object-contain drop-shadow-[0_14px_30px_rgba(0,0,0,0.45)] sm:h-[min(224px,22svh)] lg:h-[min(330px,42svh)] xl:h-[min(376px,46svh)]" />
+            </div>
           </div>
-          {/* Subtle floor shadow reflection */}
-          <div className="mt-8 h-3 w-56 xl:w-72 rounded-full bg-[radial-gradient(ellipse,rgba(224,36,122,0.55)_0%,transparent_75%)] blur-md" />
+          {/* floor reflection */}
+          <span className="mt-7 hidden h-3 w-72 rounded-full bg-[radial-gradient(ellipse,rgba(224,36,122,0.65),transparent_72%)] blur-md lg:block" />
         </div>
       </div>
 
-      {/* Mobile Subtle Ambient Watermark (Behind text for rich brand presence) */}
-      <div className="pointer-events-none absolute inset-0 flex lg:hidden items-center justify-center opacity-20 -translate-y-6">
-        <div className="relative size-72">
-          <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(224,36,122,0.4)_0%,transparent_70%)] blur-2xl animate-pulse" />
-          <Image
-            src="/logo-dark.png"
-            alt="ManaBrand"
-            width={819}
-            height={1024}
-            className="size-full object-contain filter drop-shadow-[0_0_35px_rgba(224,36,122,0.6)]"
-          />
-        </div>
-      </div>
-
-      {/* Dark Vignettes to guarantee text contrast */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/50" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/85 via-black/40 to-transparent lg:w-3/5" />
+      {/* legibility: text side darkens, bottom blends into the controls */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/25 to-transparent max-lg:hidden lg:w-[62%]" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent lg:via-transparent" />
     </div>
   );
 }

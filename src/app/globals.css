@@ -553,3 +553,24 @@ html[data-preloaded] #preloader { display: none; }  /* repeat visit: set by the 
 /* rebuild 1794749227 */
 /* rebuild 1794750769 */
 /* rebuild 1794755257 */
+
+/* ============================================ hero slide 1 — brand stage (hero-brand-flow.tsx) */
+.hbf-plane { perspective: 1100px; }
+.hbf-plane-inner { position: absolute; inset: -30% -20%; display: flex; flex-direction: column; justify-content: center; gap: 2.2rem; transform: rotateX(58deg) rotateZ(-24deg) scale(1.5); transform-style: preserve-3d; }
+.hbf-row { display: flex; gap: 3.5rem; width: max-content; will-change: transform; }
+.hbf-row-a { animation: hbf-flow-a linear infinite; }
+.hbf-row-b { animation: hbf-flow-b linear infinite; }
+@keyframes hbf-flow-a { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes hbf-flow-b { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+
+.hbf-tilt { transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 0.35s ease-out; transform-style: preserve-3d; }
+.hbf-ring { background: conic-gradient(from 0deg, transparent 0 62%, rgba(255, 95, 176, 0.95) 84%, transparent 100%); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px)); animation: hbf-spin 9s linear infinite; }
+.hbf-orbit { animation: hbf-spin linear infinite; }
+@keyframes hbf-spin { to { transform: rotate(360deg); } }
+.hbf-float { animation: hbf-float 7s ease-in-out infinite; }
+@keyframes hbf-float { 0%, 100% { transform: translateY(0) rotateY(-7deg); } 50% { transform: translateY(-14px) rotateY(7deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .hbf-row, .hbf-ring, .hbf-orbit, .hbf-float { animation: none; }
+  .hbf-tilt { transition: none; }
+}

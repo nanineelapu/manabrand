@@ -6,6 +6,7 @@
  *  - pub()  → cookie-less client for public catalogue reads (cache/static friendly)
  *  - sb()   → client bound to the signed-in user's session; Row-Level Security decides what comes back
  */
+import { HIDDEN_CATEGORY_SLUGS } from "@/lib/fashion";
 import { mergePermissions } from "@/lib/permissions";
 import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
@@ -97,7 +98,7 @@ function mapCoupon(r: any): Coupon {
 }
 function mapBanner(r: any): Banner {
   return { id: r.id, title: r.title, subtitle: r.subtitle, cta: r.cta, href: r.href, placement: r.placement, status: r.status,
-    tone: ["#e4ebf3", "#2a5db0"], photo: (r.photo_kind ?? "decor") as PhotoKind, starts: r.starts_on ?? "", ends: r.ends_on ?? "" };
+    tone: ["#e4ebf3", "#2a5db0"], photo: (r.photo_kind ?? "dress") as PhotoKind, starts: r.starts_on ?? "", ends: r.ends_on ?? "" };
 }
 function mapReview(r: any): Review {
   return { id: r.id, productId: r.product_id, author: r.author_name ?? "Customer", city: r.author_city ?? "", rating: r.rating, title: r.title, body: r.body,
@@ -195,14 +196,14 @@ export async function getCategories(): Promise<Category[]> {
   ]);
   const n: Record<string, number> = {};
   (counts.data ?? []).forEach((p: any) => { n[p.category_id] = (n[p.category_id] ?? 0) + 1; });
-  return ok(cats, []).map((c: any) => ({ id: c.id, slug: c.slug, name: c.name, tagline: c.tagline, tone: ["#e7efe9", "#9ec3b0"] as [string, string], photo: c.photo_kind as PhotoKind, productCount: n[c.id] ?? 0 }));
+  return ok(cats, []).filter((c: any) => !HIDDEN_CATEGORY_SLUGS.has(c.slug)).map((c: any) => ({ id: c.id, slug: c.slug, name: c.name, tagline: c.tagline, tone: ["#e7efe9", "#9ec3b0"] as [string, string], photo: c.photo_kind as PhotoKind, productCount: n[c.id] ?? 0 }));
 }
 export const getCategory = async (slug: string) => (await getCategories()).find((c) => c.slug === slug);
 
 export async function getSubcategoryMap(): Promise<Record<string, string[]>> {
   const rows = ok(await pub().from("subcategories").select("name, sort, categories(slug)").order("sort"), []) as any[];
   const out: Record<string, string[]> = {};
-  rows.forEach((r) => { (out[r.categories.slug] ??= []).push(r.name); });
+  rows.forEach((r) => { if (!HIDDEN_CATEGORY_SLUGS.has(r.categories.slug)) (out[r.categories.slug] ??= []).push(r.name); });
   return out;
 }
 export const getSubcategories = async (slug: string) => (await getSubcategoryMap())[slug] ?? [];
@@ -288,7 +289,7 @@ export async function getCoupon(code: string) {
   const r = ok(await pub().from("coupons").select("*").ilike("code", code.trim()).maybeSingle());
   return r ? mapCoupon(r) : undefined;
 }
-export const getTrendingSearches = async () => ["Wireless earbuds", "Silk saree", "Sneakers", "Smart watch", "Sofa", "Vitamin C serum"];
+export const getTrendingSearches = async () => ["Silk saree", "Sneakers", "Kurta", "Denim jacket", "Handbag", "Watch"];
 
 export async function getFollowState(sellerId: string) {
   const db = await sb(); const me = await uid();

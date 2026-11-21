@@ -2,7 +2,7 @@
 
 import {
   BarChart3, Boxes, ImageIcon, LayoutDashboard, MessageSquareWarning, Package, RotateCcw, Settings, ShoppingCart,
-  Store, Layers, Tag, TicketPercent, Users, Wallet, PenSquare,
+  Store, Layers, Tag, TicketPercent, TrendingUp, Users, Wallet, PenSquare,
 } from "lucide-react";
 import { AppShell, type ShellConfig } from "@/components/shared/app-shell";
 import type { AppNotification } from "@/types";
@@ -14,7 +14,7 @@ export function AdminShell({ notifications, badges, user, children }: { notifica
     searchPlaceholder: "Search orders, customers, SKUs…", searchTarget: "/admin/orders",
     viewSite: { href: "/", label: "View storefront" },
     groups: [
-      { items: [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard }, { href: "/admin/analytics", label: "Analytics", icon: BarChart3 }] },
+      { items: [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard }, { href: "/admin/business", label: "Business analysis", icon: TrendingUp }, { href: "/admin/analytics", label: "Traffic", icon: BarChart3 }] },
       { label: "Commerce", items: [
         { href: "/admin/orders", label: "Orders", icon: ShoppingCart, badge: badges.orders },
         { href: "/admin/products", label: "Products", icon: Package },

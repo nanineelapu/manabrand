@@ -1,5 +1,7 @@
 "use client";
 
+/* Local blob: previews of just-picked files can't go through next/image. */
+/* eslint-disable @next/next/no-img-element */
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import { ImagePlus, Plus, Star, Trash2, X } from "lucide-react";
@@ -52,7 +54,7 @@ export function ProductForm({
 
   const price = Number(v.price) || 0, mrp = Number(v.mrp) || 0;
   const subs = subcategories[v.cat] ?? [];
-  const sil = categories.find((c) => c.slug === v.cat)?.photo ?? "decor";
+  const sil = categories.find((c) => c.slug === v.cat)?.photo ?? "dress";
   const totalStock = useMemo(() => sizes.reduce((a, s) => a + (Number(stock[s]) || 0), 0), [sizes, stock]);
 
   const toggleSize = (s: string) => setSizes((l) => (l.includes(s) ? l.filter((x) => x !== s) : [...l, s]));
@@ -120,7 +122,7 @@ export function ProductForm({
       <div className="space-y-5">
         <Panel title="Basic information">
           <div className="space-y-4">
-            <Field label="Product name" htmlFor="pn" error={errs.name}><Input id="pn" value={v.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g. Wireless Noise-cancelling Headphones" invalid={!!errs.name} /></Field>
+            <Field label="Product name" htmlFor="pn" error={errs.name}><Input id="pn" value={v.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g. Cotton Block-print Kurta" invalid={!!errs.name} /></Field>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Category" htmlFor="pc" error={errs.cat}><Select id="pc" value={v.cat} onChange={(e) => { set("cat", e.target.value); set("sub", ""); }} invalid={!!errs.cat}><option value="">Select category</option>{categories.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}</Select></Field>
               <Field label="Sub-category" htmlFor="ps" optional><Select id="ps" value={v.sub} onChange={(e) => set("sub", e.target.value)} disabled={!subs.length}><option value="">Select</option>{subs.map((s) => <option key={s}>{s}</option>)}</Select></Field>
@@ -141,7 +143,6 @@ export function ProductForm({
             ))}
             {fresh.map((p, i) => (
               <div key={p.key} className="group relative aspect-[3/4] overflow-hidden border border-line">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={p.preview} alt="" className="size-full object-cover" />
                 {saved.length + i === 0 && <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 bg-ink px-2 py-0.5 text-[10px] font-semibold text-white"><Star className="size-3 fill-current" /> Cover</span>}
                 <span className="absolute bottom-1.5 left-1.5 bg-gold-500 px-1.5 py-0.5 text-[10px] font-semibold text-ink">New</span>
@@ -223,7 +224,7 @@ export function ProductForm({
         <div className="sticky top-24 space-y-3">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Storefront preview</p>
           <div className="rounded-card border border-line bg-card p-3 shadow-card">
-            <div className="aspect-[3/4] overflow-hidden rounded-ctl">{fresh[0] && saved.length === 0 ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={fresh[0].preview} alt="" className="size-full object-cover" /> : <ProductImage photo={sil} src={saved[0]?.url} color={colors[0]?.hex ?? "#cc4a33"} />}</div>
+            <div className="aspect-[3/4] overflow-hidden rounded-ctl">{fresh[0] && saved.length === 0 ? <img src={fresh[0].preview} alt="" className="size-full object-cover" /> : <ProductImage photo={sil} src={saved[0]?.url} color={colors[0]?.hex ?? "#cc4a33"} />}</div>
             <div className="px-1 pb-1 pt-3"><p className="truncate text-[15px] font-medium">{v.name || "Product name"}</p><Price price={price || 0} mrp={mrp || undefined} className="mt-1" />
               <div className="mt-2 flex gap-1">{colors.map((c) => <span key={c.name} className="size-3.5 rounded-full border border-black/10" style={{ background: c.hex }} />)}</div></div>
           </div>

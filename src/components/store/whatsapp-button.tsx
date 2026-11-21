@@ -14,6 +14,7 @@ export function WhatsAppButton() {
 
   return (
     <aside
+      data-round
       aria-label="WhatsApp Support"
       className="fixed bottom-[calc(var(--tabbar-h)+14px+env(safe-area-inset-bottom,0px))] right-4 z-40 flex items-center gap-2.5 lg:bottom-6 lg:right-6"
     >

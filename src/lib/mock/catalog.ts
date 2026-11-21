@@ -6,20 +6,12 @@ import { mulberry32 } from "@/lib/utils";
 /* ============================================================ Categories */
 export const categories: Category[] = [
   { id: "c1", slug: "fashion", name: "Fashion", tagline: "Clothing & footwear for everyone", tone: ["#e7efe9", "#9ec3b0"], photo: "dress", productCount: 0 },
-  { id: "c2", slug: "electronics", name: "Electronics", tagline: "Phones, audio, laptops & more", tone: ["#e4ebf3", "#9db6d3"], photo: "headphones", productCount: 0 },
-  { id: "c3", slug: "home", name: "Home", tagline: "Furniture, decor and kitchen", tone: ["#f1ebdf", "#d1bd93"], photo: "sofa", productCount: 0 },
-  { id: "c4", slug: "beauty", name: "Beauty", tagline: "Skincare, makeup, fragrance", tone: ["#f3e6e6", "#d7a9a9"], photo: "skincare", productCount: 0 },
-  { id: "c5", slug: "accessories", name: "Accessories", tagline: "Bags, jewellery, watches", tone: ["#efe9dc", "#d0bd8a"], photo: "jewellery", productCount: 0 },
-  { id: "c6", slug: "gourmet", name: "Gourmet", tagline: "Coffee, tea, spices & treats", tone: ["#f0e8dd", "#c9a77c"], photo: "coffee", productCount: 0 },
+  { id: "c2", slug: "accessories", name: "Accessories", tagline: "Bags, jewellery, watches & eyewear", tone: ["#efe9dc", "#d0bd8a"], photo: "jewellery", productCount: 0 },
 ];
 
 export const subcategories: Record<string, string[]> = {
   fashion: ["Women's wear", "Men's wear", "Ethnic wear", "Footwear"],
-  electronics: ["Audio", "Laptops & Tablets", "Gaming", "Cameras"],
-  home: ["Furniture", "Decor", "Kitchen", "Bedding"],
-  beauty: ["Skincare", "Makeup", "Fragrance"],
   accessories: ["Bags", "Jewellery", "Watches", "Eyewear"],
-  gourmet: ["Tea & Coffee", "Spices", "Snacks"],
 };
 
 /* =============================================================== Sellers */
@@ -32,10 +24,6 @@ export const sellers: Seller[] = [
   seller({ id: "s5", slug: "stride-lab", name: "Stride Lab", owner: "Naina Kapoor", city: "Ichapuram", state: "Andhra Pradesh", email: "hi@stridelab.in", phone: "+91 98110 90552", joined: "2025-06-30", status: "active", rating: 4.4, followers: 4120, totalSales: 1260000, commissionPct: 14, tone: ["#efe6f3", "#8b6bb0"], blurb: "Comfort-first sneakers, bags and eyewear, sold locally in Ichapuram.", kyc: "verified", gstin: "07AAMCS1190D1ZK" }),
   seller({ id: "s6", slug: "saanjh-studio", name: "Saanjh Studio", owner: "Priya Nair", city: "Ichapuram", state: "Andhra Pradesh", email: "studio@saanjh.in", phone: "+91 94470 66120", joined: "2026-09-18", status: "pending", rating: 0, followers: 0, totalSales: 0, commissionPct: 12, tone: ["#f3ead9", "#c9a45a"], blurb: "Festive and contemporary wear stitched by Ichapuram tailors.", kyc: "pending", gstin: "32AAJFS4433Q1ZX" }),
   seller({ id: "s7", slug: "tarang-weaves", name: "Tarang Weaves", owner: "Sanjay Patil", city: "Ichapuram", state: "Andhra Pradesh", email: "tarang@weaves.in", phone: "+91 98220 17788", joined: "2026-10-04", status: "pending", rating: 0, followers: 0, totalSales: 0, commissionPct: 12, tone: ["#e4e8ef", "#6b7a99"], blurb: "Festive wear from local Ichapuram tailors.", kyc: "pending", gstin: "27AAFCT7790R1ZE" }),
-  seller({ id: "s8", slug: "voltedge", name: "VoltEdge", owner: "Rahul Anand", city: "Ichapuram", state: "Andhra Pradesh", email: "sell@voltedge.in", phone: "+91 98860 12044", joined: "2025-04-08", status: "active", rating: 4.6, followers: 16900, totalSales: 14200000, commissionPct: 8, tone: ["#dbe5f3", "#2a5db0"], blurb: "Ichapuram’s authorised reseller of phones, audio and laptops, with 1-year brand warranty.", kyc: "verified", gstin: "29AABCV3321K1ZB" }),
-  seller({ id: "s9", slug: "hearth-and-home", name: "Hearth & Home", owner: "Sunita Joshi", city: "Ichapuram", state: "Andhra Pradesh", email: "care@hearthhome.in", phone: "+91 98290 55601", joined: "2025-07-19", status: "active", rating: 4.5, followers: 7340, totalSales: 5100000, commissionPct: 11, tone: ["#f1e6d3", "#a8764a"], blurb: "Local furniture, decor and kitchenware to make a house feel like home.", kyc: "verified", gstin: "08AAFCH6678L1ZR" }),
-  seller({ id: "s10", slug: "glow-theory", name: "Glow Theory", owner: "Tara Menon", city: "Ichapuram", state: "Andhra Pradesh", email: "hello@glowtheory.in", phone: "+91 98200 31877", joined: "2025-08-25", status: "active", rating: 4.6, followers: 11200, totalSales: 3800000, commissionPct: 12, tone: ["#f6e3e3", "#c98a8a"], blurb: "Dermatologist-tested skincare, makeup and fragrance, available in Ichapuram.", kyc: "verified", gstin: "27AAGCG2210M1ZT" }),
-  seller({ id: "s11", slug: "spice-route", name: "Spice Route Pantry", owner: "Vikram Pillai", city: "Ichapuram", state: "Andhra Pradesh", email: "orders@spiceroute.in", phone: "+91 94960 22310", joined: "2025-09-03", status: "active", rating: 4.7, followers: 6050, totalSales: 2300000, commissionPct: 10, tone: ["#f3e7d3", "#b9772b"], blurb: "Single-origin coffee, estate teas and whole spices, packed at an Ichapuram pantry.", kyc: "verified", gstin: "32AAHCS5543N1ZV" }),
 ];
 
 /* ============================================================== Products */
@@ -90,50 +78,11 @@ const seeds: Seed[] = [
   // ---- Accessories
   ["Market Tote Bag", "accessories", "Bags", "bag", "s5", 1499, 2199, [C.tan, C.ink, C.vermilion], O.one, "Size", "b"],
   ["Slouchy Leather Shoulder Bag", "accessories", "Bags", "bag", "s5", 3299, 4999, [C.tan, C.maroon], O.one, "Size", "ns"],
-  ["Pearl Strand Necklace", "accessories", "Jewellery", "jewellery", "s3", 1899, 2999, [C.ivory], O.one, "Size", "bn"],
-  ["Gold-tone Hoop Earrings", "accessories", "Jewellery", "jewellery", "s3", 799, 1299, [C.gold], O.one, "Size", "bs"],
+  ["Pearl Strand Necklace", "accessories", "Jewellery", "jewellery", "s2", 1899, 2999, [C.ivory], O.one, "Size", "bn"],
+  ["Gold-tone Hoop Earrings", "accessories", "Jewellery", "jewellery", "s2", 799, 1299, [C.gold], O.one, "Size", "bs"],
   ["Polki Statement Earrings", "accessories", "Jewellery", "jewellery", "s3", 2499, 3999, [C.gold, C.silver], O.one, "Size", "l"],
-  ["Classic Steel Watch", "accessories", "Watches", "watch", "s8", 4999, 7999, [C.silver, C.ink, C.rosegold], O.std, "Standard", "b"],
-  ["Smart Fitness Watch", "accessories", "Watches", "watch", "s8", 5999, 8999, [C.ink, C.silver], O.std, "Standard", "n"],
-  ["Aviator Sunglasses", "accessories", "Eyewear", "sunglasses", "s5", 1299, 2199, [C.ink, C.gold], O.std, "Standard", "s"],
-  // ---- Electronics
-  ["ANC Wireless Headphones", "electronics", "Audio", "headphones", "s8", 6999, 10999, [C.ink, C.silver], O.std, "Standard", "bs"],
-  ["TrueSound Earbuds", "electronics", "Audio", "earbuds", "s8", 2999, 4999, [C.white, C.ink], O.std, "Standard", "b"],
-  ["Portable Bluetooth Speaker", "electronics", "Audio", "speaker", "s8", 3499, 4999, [C.ink, C.ocean], O.std, "Standard", "s"],
-  ["Smart Home Speaker", "electronics", "Audio", "speaker", "s8", 4499, 5999, [C.white, C.charcoal], O.std, "Standard", "n"],
-  ["UltraBook 14 Laptop", "electronics", "Laptops & Tablets", "laptop", "s8", 64999, 74999, [C.silver, C.grey], O.config, "Config", "b"],
-  ["Creator Laptop Pro", "electronics", "Laptops & Tablets", "laptop", "s8", 99999, 119999, [C.grey], O.config, "Config", "l"],
-  ["10-inch Slate Tablet", "electronics", "Laptops & Tablets", "tablet", "s8", 19999, 24999, [C.silver, C.ink], O.storage, "Storage", "n"],
-  ["Instant Print Camera", "electronics", "Cameras", "camera", "s8", 8999, 11999, [C.white], O.std, "Standard", "s"],
-  ["Gaming Starter Kit", "electronics", "Gaming", "gaming", "s8", 5999, 8499, [C.ink], O.std, "Standard", "b"],
-  // ---- Home
-  ["Emerald Velvet Sofa", "home", "Furniture", "sofa", "s9", 38999, 52999, [C.emerald, C.grey], O.std, "Standard", "l"],
-  ["Solid Oak Side Stool", "home", "Furniture", "furniture", "s9", 3499, 4999, [C.oak], O.std, "Standard", "b"],
-  ["Cream Accent Armchair", "home", "Furniture", "furniture", "s9", 12999, 17999, [C.ivory, C.sand], O.std, "Standard", "n"],
-  ["Gallery Wall Decor Set", "home", "Decor", "decor", "s9", 1999, 3299, [C.std], O.std, "Standard", "b"],
-  ["Soy Wax Scented Candle", "home", "Decor", "candle", "s2", 699, 999, [C.std], O.candle, "Weight", "bs"],
-  ["Potted Aloe Planter", "home", "Decor", "plant", "s9", 599, 899, [C.mint, C.white], O.std, "Standard", "n"],
-  ["Stoneware Dinner Set", "home", "Kitchen", "kitchen", "s9", 3299, 4999, [C.white, C.sand], O.std, "Standard", "s"],
-  ["Glass Jar Blender", "home", "Kitchen", "kitchen", "s9", 2599, 3799, [C.silver], O.std, "Standard", "b"],
-  ["Insulated Steel Bottle", "home", "Kitchen", "bottle", "s9", 899, 1299, [C.forest, C.ink, C.sand], O.std, "Standard", "b"],
-  ["Cotton Percale Bedsheet", "home", "Bedding", "bedding", "s9", 1799, 2799, [C.white, C.sky, C.sand], O.bed, "Size", "bs"],
-  ["Hotel Pillow (Set of 2)", "home", "Bedding", "bedding", "s9", 1299, 1999, [C.white], O.std, "Standard", "s"],
-  // ---- Beauty
-  ["Barrier Repair Moisturiser", "beauty", "Skincare", "skincare", "s10", 799, 1199, [C.std], O.vol, "Volume", "bs"],
-  ["Vitamin C Brightening Serum", "beauty", "Skincare", "skincare", "s10", 999, 1499, [C.std], O.vol, "Volume", "b"],
-  ["Gentle Foaming Cleanser", "beauty", "Skincare", "skincare", "s10", 599, 899, [C.std], O.vol, "Volume", "n"],
-  ["Repair Hair Mask", "beauty", "Skincare", "skincare", "s10", 749, 1099, [C.std], O.vol, "Volume", "n"],
-  ["Everyday Makeup Kit", "beauty", "Makeup", "makeup", "s10", 1499, 2499, [C.rose, C.sand], O.std, "Standard", "s"],
-  ["Blush & Highlighter Duo", "beauty", "Makeup", "makeup", "s10", 899, 1399, [C.rose, C.rosegold], O.std, "Standard", "n"],
-  ["Eau de Parfum Noir", "beauty", "Fragrance", "perfume", "s2", 2999, 4499, [C.std], O.perf, "Volume", "b"],
-  ["Citrus Cologne", "beauty", "Fragrance", "perfume", "s10", 1999, 2999, [C.std], O.perf, "Volume", "n"],
-  // ---- Gourmet
-  ["Single-origin Coffee Beans", "gourmet", "Tea & Coffee", "coffee", "s11", 599, 799, [C.std], O.pack, "Pack", "b"],
-  ["Assam Black Tea", "gourmet", "Tea & Coffee", "tea", "s11", 449, 649, [C.std], O.pack, "Pack", "n"],
-  ["Whole Spice Collection", "gourmet", "Spices", "spices", "s11", 899, 1299, [C.std], O.std, "Standard", "b"],
-  ["Garam Masala Blend", "gourmet", "Spices", "spices", "s11", 299, 449, [C.std], O.pack, "Pack", "n"],
-  ["Dark Chocolate Gift Box", "gourmet", "Snacks", "snacks", "s2", 799, 1099, [C.std], O.std, "Standard", "bs"],
-  ["Roasted Nut & Berry Mix", "gourmet", "Snacks", "snacks", "s11", 549, 799, [C.std], O.pack, "Pack", ""],
+  ["Classic Steel Watch", "accessories", "Watches", "watch", "s2", 4999, 7999, [C.silver, C.ink, C.rosegold], O.std, "Standard", "b"],
+  ["Aviator Sunglasses", "accessories", "Eyewear", "sunglasses", "s2", 1299, 2199, [C.ink, C.gold], O.std, "Standard", "s"],
 ];
 
 const copy: Record<string, { desc: string[]; spec: (s: Seed) => string; care: string[]; details: string[] }> = {
@@ -148,30 +97,6 @@ const copy: Record<string, { desc: string[]; spec: (s: Seed) => string; care: st
     spec: (s) => ({ bag: "Vegan leather with cotton lining", jewellery: "Gold-plated brass, hypoallergenic", watch: "Stainless steel, sapphire-coated glass", sunglasses: "UV400 polarised lenses" } as Record<string, string>)[s[3]] ?? "Premium materials",
     care: ["Store in the pouch provided", "Wipe clean with a soft dry cloth", "Avoid contact with perfume"],
     details: ["Gift-ready packaging", "6-month warranty on defects", "Authenticity card included"],
-  },
-  electronics: {
-    desc: ["Genuine product with full manufacturer warranty, sold and shipped by a verified authorised seller."],
-    spec: () => "1-year brand warranty · GST invoice included · Box: device, charger, cable",
-    care: ["Keep away from water unless rated", "Use the original charger", "Update firmware regularly"],
-    details: ["1-year manufacturer warranty", "7-day replacement for defects", "No-cost EMI available"],
-  },
-  home: {
-    desc: ["Thoughtfully made for everyday living. Sturdy materials and a timeless look that settles into any room."],
-    spec: (s) => ({ sofa: "Kiln-dried wood frame, high-density foam, velvet upholstery", furniture: "Solid wood / engineered frame", decor: "Mixed materials, ready to hang", candle: "100% soy wax, cotton wick, 40-hour burn", plant: "Live plant in ceramic pot", kitchen: "Food-safe, dishwasher-safe materials", bottle: "Double-wall 304 stainless steel, 24h cold", bedding: "100% cotton percale, 200 thread count" } as Record<string, string>)[s[3]] ?? "Quality materials",
-    care: ["Wipe with a damp cloth", "Avoid direct sunlight for long periods", "Follow the included care card"],
-    details: ["Assembly support on request", "7-day return policy", "Made in India"],
-  },
-  beauty: {
-    desc: ["Dermatologist-tested formulas made without parabens or sulphates. Suitable for all skin types."],
-    spec: () => "Cruelty-free · Paraben-free · Dermatologist tested",
-    care: ["Patch-test before first use", "Store in a cool, dry place", "Use within 12 months of opening"],
-    details: ["Sealed & batch-coded", "Genuine product guarantee", "Not returnable once opened"],
-  },
-  gourmet: {
-    desc: ["Sourced directly from growers and packed fresh in small batches — no preservatives or artificial flavours."],
-    spec: () => "Freshly packed · No preservatives · Vegetarian",
-    care: ["Store in an airtight container", "Keep away from moisture and heat", "Best consumed within 6 months"],
-    details: ["Best-before printed on pack", "FSSAI licensed kitchen", "Free shipping above ₹1,499"],
   },
 };
 
@@ -205,9 +130,9 @@ sellers.forEach((s) => { s.productCount = products.filter((p) => p.sellerId === 
 const byNames = (...names: string[]) => products.filter((p) => names.some((n) => p.name.startsWith(n))).map((p) => p.id);
 export const collections: Collection[] = [
   { id: "col1", slug: "wedding-edit", name: "The Wedding Edit", story: "Silk sarees, statement jewellery and festive wear for the season of shaadis.", tone: ["#f3e6e6", "#b13a26"], photo: "saree", productIds: byNames("Kanjivaram", "Banarasi", "Natural-dye", "Polki", "Pearl", "Hand-block Kurta Set", "Chikankari") },
-  { id: "col2", slug: "work-from-home", name: "Work From Home", story: "Laptops, headphones and desk essentials to build a setup you enjoy.", tone: ["#e4ebf3", "#2a5db0"], photo: "laptop", productIds: byNames("UltraBook", "ANC Wireless", "10-inch", "Solid Oak", "Insulated", "Portable Bluetooth", "TrueSound") },
-  { id: "col3", slug: "gift-guide", name: "The Gift Guide", story: "Perfume, candles, chocolates and watches — presents people actually want.", tone: ["#f0e6dc", "#a8764a"], photo: "perfume", productIds: byNames("Eau de Parfum", "Citrus", "Soy Wax", "Dark Chocolate", "Smart Fitness", "Gold-tone", "Single-origin") },
-  { id: "col4", slug: "home-refresh", name: "Home Refresh", story: "Sofas, decor and bedding to give any room a fresh start.", tone: ["#efe9dc", "#0f6b52"], photo: "decor", productIds: byNames("Emerald", "Cream Accent", "Gallery Wall", "Cotton Percale", "Potted Aloe", "Stoneware", "Hotel Pillow") },
+  { id: "col2", slug: "street-style", name: "Street Style", story: "Shirts, denim and layers for everyday menswear.", tone: ["#e4ebf3", "#2a5db0"], photo: "jacket", productIds: byNames("Slim Fit Oxford", "Chambray", "Linen Camp", "Selvedge", "Washed Denim Trucker", "Quilted Bomber", "Heavyweight Boxy") },
+  { id: "col3", slug: "gifts-to-wear", name: "Gifts to Wear", story: "Jewellery, watches and bags — presents people actually wear.", tone: ["#f0e6dc", "#a8764a"], photo: "jewellery", productIds: byNames("Pearl", "Gold-tone", "Classic Steel", "Market Tote", "Aviator", "Slouchy") },
+  { id: "col4", slug: "everyday-comfort", name: "Everyday Comfort", story: "Soft tees, easy dresses and sneakers for every day.", tone: ["#efe9dc", "#0f6b52"], photo: "tee", productIds: byNames("Soft Knit", "Oversized Fleece", "Floral Wrap", "Ribbed Wrap", "High-rise Mom", "Cloudstep", "Canvas Court") },
 ];
 
 /* ================================================================ Lookups */

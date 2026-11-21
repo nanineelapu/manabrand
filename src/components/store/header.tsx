@@ -21,7 +21,7 @@ const capsule = "flex h-14 items-center rounded-full border border-white/10 bg-b
 export function StoreHeader({ items, accountLabel = "Account" }: Props) {
   const mounted = useMounted();
   const pathname = usePathname();
-  const { setMenu, setSearch, setCart } = useUi();
+  const { setMenu, setSearch } = useUi();
   const bag = useCart((s) => s.lines.reduce((a, l) => a + l.qty, 0));
   const wish = useWishlist((s) => s.ids.length);
 

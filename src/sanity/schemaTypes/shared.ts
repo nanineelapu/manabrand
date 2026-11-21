@@ -15,7 +15,7 @@ export const linkFields = [
     validation: (r) => r.custom((v, ctx) => ((ctx.parent as { kind?: string })?.kind !== "custom" && !v ? "Choose a page" : true)),
   }),
   defineField({
-    name: "url", title: "Path or address", type: "string", description: "Examples: /shop, /category/electronics, /sale, https://example.com",
+    name: "url", title: "Path or address", type: "string", description: "Examples: /shop, /category/accessories, /sale, https://example.com",
     hidden: ({ parent }) => parent?.kind !== "custom",
     validation: (r) => r.custom((v, ctx) => {
       if ((ctx.parent as { kind?: string })?.kind !== "custom") return true;

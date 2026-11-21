@@ -63,9 +63,8 @@ export function resolveHeader(nav: CmsNav, categories: Category[], subs: Record<
   if (nav.headerLinks?.length) {
     return nav.headerLinks.map((l) => ({ label: l.label, href: l.href, accent: l.accent, showOn: l.showOn ?? "all", dropdown: drop(l.dropdownCategory) }));
   }
-  const HIDDEN = new Set(["electronics", "beauty"]); // not shown in the automatic menu (still reachable from the home page + shop)
   return [
-    ...categories.filter((c) => !HIDDEN.has(c.slug)).map((c): HeaderItem => ({ label: c.name, href: `/category/${c.slug}`, showOn: "all", dropdown: drop(c.slug) })),
+    ...categories.map((c): HeaderItem => ({ label: c.name, href: `/category/${c.slug}`, showOn: "all", dropdown: drop(c.slug) })),
     { label: "Collections", href: "/collections", showOn: "mobile" },
     { label: "Sale", href: "/sale", accent: true, showOn: "all" },
   ];

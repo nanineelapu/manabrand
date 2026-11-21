@@ -3,7 +3,7 @@ import { createHmac } from "node:crypto";
 import { emailError, normalizeEmail, normalizePhone, passwordError, pinError, safeNext } from "../src/lib/auth/validation";
 
 let pass = 0, fail = 0;
-const t = (name: string, cond: boolean) => { cond ? pass++ : fail++; console.log(`${cond ? "PASS" : "FAIL"}  ${name}`); };
+const t = (name: string, cond: boolean) => { if (cond) pass++; else fail++; console.log(`${cond ? "PASS" : "FAIL"}  ${name}`); };
 
 // phone
 t("10 digits → +91", normalizePhone("9876543210") === "+919876543210");

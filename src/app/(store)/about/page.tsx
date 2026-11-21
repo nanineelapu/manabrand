@@ -16,8 +16,8 @@ export default async function AboutPage() {
   const cms = await getCmsPage("about");
   if (cms) return <CmsPageView page={cms} />;
   return (
-    <InfoPage title="Our story" intro="ManaBrand takes its name from “mana” — heart, spirit, the thing you put into what you make. We built ManaBrand as a marketplace where verified sellers across India — from handloom studios to electronics retailers — can reach the people who love what they make."
-      aside={<div className="aspect-[3/4] overflow-hidden rounded-[28px]"><ProductImage photo="decor" seed="about" /></div>}>
+    <InfoPage title="Our story" intro="ManaBrand takes its name from “mana” — heart, spirit, the thing you put into what you make. We built ManaBrand as a marketplace where verified sellers across India — from handloom studios to footwear and jewellery shops — can reach the people who love what they make."
+      aside={<div className="aspect-[3/4] overflow-hidden rounded-[28px]"><ProductImage photo="saree" seed="about" /></div>}>
       <section>
         <h2>Why we started</h2>
         <p>Good products and trustworthy sellers are scattered across the country, but finding them online meant sifting through endless look-alike listings. We wanted one place with honest photos, honest specs and a real seller behind every item.</p>

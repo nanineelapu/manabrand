@@ -9,7 +9,8 @@ import { ProductImage } from "@/components/brand/product-image";
 import { SectionHeader } from "@/components/ui/display";
 import { ProductRail } from "@/components/store/product-card";
 import { getHomeContent, getSiteContent } from "@/lib/cms";
-import { getCategories, getNewArrivals, getTrending } from "@/lib/data";
+import { getNewArrivals, getSubcategoryMap, getTrending } from "@/lib/data";
+import { SUB_PHOTO } from "@/lib/fashion";
 
 /** Home tab title comes from the CMS (Site settings → Home page title). */
 export async function generateMetadata() {
@@ -17,19 +18,22 @@ export async function generateMetadata() {
 }
 
 const PROMOS = [
-  { title: "Local Favourites", text: "Unique products from the shops around Ichapuram — tea, coffee, spices and more.", href: "/category/gourmet", photo: "coffee" },
-  { title: "Home, Made Easy", text: "Furniture, decor and kitchen picks, delivered within 48 hours.", href: "/category/home", photo: "sofa" },
+  { title: "The Wedding Edit", text: "Silk sarees, statement jewellery and festive wear for the season of shaadis.", href: "/collections/wedding-edit", photo: "saree" },
+  { title: "Street Style", text: "Shirts, denim and layers for everyday menswear — from local studios.", href: "/collections/street-style", photo: "jacket" },
 ] as const;
 
 export default async function HomePage() {
-  const [cats, trending, fresh, c, site] = await Promise.all([
-    getCategories(), getTrending(8), getNewArrivals(8), getHomeContent(), getSiteContent(),
+  const [subs, trending, fresh, c, site] = await Promise.all([
+    getSubcategoryMap(), getTrending(8), getNewArrivals(8), getHomeContent(), getSiteContent(),
   ]);
+  const tiles = Object.entries(subs).flatMap(([cat, list]) => list.map((name) => ({
+    name, href: `/category/${cat}?sub=${encodeURIComponent(name)}`, photo: SUB_PHOTO[name as keyof typeof SUB_PHOTO] ?? "dress",
+  })));
 
   return (
     <>
       <Hero c={c} slides={c.slides} site={site} />
-      <PopularCategories title={c.categoriesCardTitle} eyebrow={c.categoriesTitle} cats={cats} />
+      <PopularCategories title={c.categoriesCardTitle} eyebrow={c.categoriesTitle} tiles={tiles} />
       <section aria-labelledby="tr-h" data-round className="bg-white">
         <div className="container-page py-12 md:py-16">
           <Reveal><SectionHeader id="tr-h" eyebrow="Handpicked" title={c.trendingTitle} href="/shop" /></Reveal>
@@ -37,10 +41,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* two promo cards — edit the text, photo and link here */}
+      {/* two collection cards — edit the text, photo and link here */}
       <section aria-labelledby="col-h" data-round className="bg-neutral-50">
         <div className="container-page py-12 md:py-16">
-          <Reveal><SectionHeader id="col-h" eyebrow="Shop local" title="Local favourites" href="/shop" /></Reveal>
+          <Reveal><SectionHeader id="col-h" eyebrow="Curated" title="Fashion edits" href="/collections" hrefLabel="All collections" /></Reveal>
           <Reveal className="mt-7 grid gap-4 md:grid-cols-2 md:gap-6">
             {PROMOS.map((promo) => (
               <Link key={promo.title} href={promo.href} className="group relative isolate aspect-[16/10] overflow-hidden rounded-[28px] md:aspect-[16/9] md:rounded-[36px]">
@@ -69,7 +73,7 @@ export default async function HomePage() {
       {/* Mana Deal Box: Exclusive VIP membership club */}
       <ManaDealBox />
 
-      {/* sits right above the big "Find your next pick" card (rendered by the layout) */}
+      {/* sits right above the big "Find your next look" card (rendered by the layout) */}
       <WhySection />
     </>
   );

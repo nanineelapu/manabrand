@@ -59,7 +59,7 @@ const dataset = [
   const cats = [{ slug: "fashion", name: "Fashion", photo: "fashion" }, { slug: "electronics", name: "Electronics", photo: "tech" }] as any;
   const subs = { fashion: ["Women"], electronics: ["Phones", "Audio"] };
   const auto = resolveHeader(DEFAULT_NAV, cats, subs);
-  ok("auto menu: categories (no New / Electronics / Beauty) · Collections(mobile) · Sale", auto.map((i) => i.label).join("|") === "Fashion|Collections|Sale" && auto[0].dropdown?.subs[0] === "Women" && auto.find((i) => i.label === "Collections")?.showOn === "mobile");
+  ok("auto menu: every category given (hiding retired ones happens in the data layer) · Collections(mobile) · Sale", auto.map((i) => i.label).join("|") === "Fashion|Electronics|Collections|Sale" && auto[0].dropdown?.subs[0] === "Women" && auto.find((i) => i.label === "Collections")?.showOn === "mobile");
   const custom = resolveHeader(mergedNav, cats, subs);
   ok("editor menu replaces the auto one", custom.length === 2 && custom[0].href === "/gift-cards");
   ok("editor menu: dropdown pulls the category's sub-categories", custom[1].dropdown?.subs.join() === "Phones,Audio" && custom[1].accent === true);
