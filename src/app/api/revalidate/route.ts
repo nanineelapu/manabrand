@@ -7,7 +7,7 @@ import { parseBody } from "next-sanity/webhook";
  * Secure it with SANITY_REVALIDATE_SECRET (same value in the webhook's "Secret" field). Without the secret every request is refused.
  */
 export async function POST(req: NextRequest) {
-  const secret = process.env.SANITY_REVALIDATE_SECRET;
+  const secret = process.env.SANITY_REVALIDATE_SECRET?.trim();
   if (!secret) return NextResponse.json({ ok: false, error: "SANITY_REVALIDATE_SECRET is not set" }, { status: 500 });
   try {
     const { isValidSignature, body } = await parseBody<{ _type?: string }>(req, secret);

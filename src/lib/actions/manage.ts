@@ -82,7 +82,7 @@ export async function addTeamMember(input: { name: string; email: string; passwo
     const role = ["Super admin", "Operations", "Support", "Marketing"].includes(input.role) ? input.role : "Support";
     const { error } = await db.auth.admin.createUser({ email, password: input.password, email_confirm: true,
       user_metadata: { full_name: clampStr(input.name, 80) }, app_metadata: { provisioned_by: "mana-server", role: "admin", admin_role: role } });
-    if (error) return { ok: false, error: /already|registered/i.test(error.message) ? "That email already has an account." : "We couldn’t create the account." };
+    if (error) { console.error("[team] could not create the account:", error.message); return { ok: false, error: /already|registered/i.test(error.message) ? "That email already has an account." : "We couldn’t create the account — the database setup may be incomplete (see Vercel logs)." }; }
     bust("/admin"); return { ok: true };
   });
 }
@@ -573,7 +573,10 @@ export async function registerSeller(input: {
       email: email!, password: input.password, email_confirm: true,
       user_metadata: { full_name: input.owner.trim() }, app_metadata: { provisioned_by: "mana-server", role: "seller" },
     });
-    if (error || !created.user) return { ok: false, error: "We couldn’t create your account. Please try again." };
+    if (error || !created.user) {
+      console.error("[seller register] could not create the account:", error?.message, error?.status ?? "");
+      return { ok: false, error: /database error/i.test(error?.message ?? "") ? "Sign-up isn’t fully set up on our side yet. Please try again a little later, or message us on WhatsApp." : "We couldn’t create your account. Please try again." };
+    }
 
     const { error: sErr } = await admin.from("sellers").insert({
       owner_id: created.user.id, slug: slugify(input.store), name: clampStr(input.store, 60), owner_name: clampStr(input.owner, 80), email, phone, city: clampStr(input.city, 60),

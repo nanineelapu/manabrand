@@ -10,11 +10,11 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  */
 const API = "https://api.razorpay.com/v1";
 
-export const razorpayConfigured = () => Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+export const razorpayConfigured = () => Boolean(process.env.RAZORPAY_KEY_ID?.trim() && process.env.RAZORPAY_KEY_SECRET?.trim());
 /** Online payment is available only when it has been switched on AND the keys are present. */
-export const onlinePaymentsLive = () => process.env.PAYMENT_MODE === "live" && razorpayConfigured();
+export const onlinePaymentsLive = () => process.env.PAYMENT_MODE?.trim() === "live" && razorpayConfigured();
 
-const basic = () => "Basic " + Buffer.from(`${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`).toString("base64");
+const basic = () => "Basic " + Buffer.from(`${process.env.RAZORPAY_KEY_ID?.trim()}:${process.env.RAZORPAY_KEY_SECRET?.trim()}`).toString("base64");
 
 async function post<T>(path: string, body: Record<string, unknown>): Promise<{ ok: true; data: T } | { ok: false; error: string }> {
   try {
@@ -42,13 +42,13 @@ const safeEqual = (a: string, b: string) => { const x = Buffer.from(a), y = Buff
 
 /** The signature Razorpay returns to the browser after a successful payment. */
 export function verifyCheckoutSignature(rzpOrderId: string, paymentId: string, signature: string) {
-  const expected = createHmac("sha256", process.env.RAZORPAY_KEY_SECRET ?? "").update(`${rzpOrderId}|${paymentId}`).digest("hex");
+  const expected = createHmac("sha256", process.env.RAZORPAY_KEY_SECRET?.trim() ?? "").update(`${rzpOrderId}|${paymentId}`).digest("hex");
   return safeEqual(expected, signature);
 }
 
 /** The X-Razorpay-Signature header on webhook calls (HMAC of the raw body with the webhook secret). */
 export function verifyWebhookSignature(rawBody: string, signature: string) {
-  const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET?.trim();
   if (!secret) return false;
   return safeEqual(createHmac("sha256", secret).update(rawBody).digest("hex"), signature);
 }

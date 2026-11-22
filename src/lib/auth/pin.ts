@@ -12,7 +12,7 @@ import { createHmac } from "node:crypto";
  * The same derivation MUST be used at register, login and reset.
  */
 export function passwordFromPin(pin: string, phoneE164: string): string {
-  const pepper = process.env.PIN_PEPPER;
+  const pepper = process.env.PIN_PEPPER?.trim();
   if (!pepper || pepper.length < 32 || pepper.startsWith("replace-with")) {
     throw new Error("PIN_PEPPER must be set to a random string of at least 32 characters");
   }

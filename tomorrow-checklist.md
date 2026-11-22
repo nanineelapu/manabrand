@@ -89,6 +89,7 @@ Variables starting with `NEXT_PUBLIC_` only take effect after a redeploy.
 | `NEXT_PUBLIC_SANITY_PROJECT_ID`, `NEXT_PUBLIC_SANITY_DATASET` | from sanity.io/manage |
 | `SANITY_API_READ_TOKEN`, `SANITY_REVALIDATE_SECRET` | from Sanity (see step 7) |
 
+- [ ] Paste **only the value** — no quotes, no `NAME=` in front, and no space or new line before or after it (a stray space in `CRON_SECRET` makes the Vercel build fail with `INVALID_CRON_SECRET`).
 - [ ] Add them all, **Redeploy**.
 
 ## 6. Razorpay — online payments (the client does this)

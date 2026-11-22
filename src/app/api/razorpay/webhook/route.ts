@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   const raw = await req.text();
   const sig = req.headers.get("x-razorpay-signature") ?? "";
-  if (!process.env.RAZORPAY_WEBHOOK_SECRET) return Response.json({ error: "Webhook not configured" }, { status: 503 });
+  if (!process.env.RAZORPAY_WEBHOOK_SECRET?.trim()) return Response.json({ error: "Webhook not configured" }, { status: 503 });
   if (!verifyWebhookSignature(raw, sig)) return Response.json({ error: "Bad signature" }, { status: 400 });
 
   let event: { event?: string; payload?: { payment?: { entity?: { id?: string; order_id?: string } }; refund?: { entity?: { payment_id?: string } } } };

@@ -5,7 +5,7 @@ const client = createClient({
   projectId: projectId || "unconfigured",
   dataset, apiVersion,
   useCdn: false,                            // webhook revalidation needs fresh reads, not CDN-cached ones
-  token: process.env.SANITY_API_READ_TOKEN, // only needed if the dataset is private
+  token: process.env.SANITY_API_READ_TOKEN?.trim(), // only needed if the dataset is private
 });
 
 /** Cached read. Tagged so the /api/revalidate webhook can refresh exactly what changed. Never throws: returns null on any failure. */

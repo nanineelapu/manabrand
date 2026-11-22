@@ -16,7 +16,7 @@ export type AuthResult =
 const GENERIC_LOGIN_ERROR = "Incorrect mobile number or PIN.";
 // shown to shoppers while the database isn't connected (owner: add the Supabase keys + PIN_PEPPER, see docs/SUPABASE_SETUP.md)
 const NOT_CONFIGURED = "Accounts aren’t switched on yet — the store is still being set up. Please check back soon.";
-const ready = () => isSupabaseConfigured() && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY) && Boolean(process.env.PIN_PEPPER);
+const ready = () => isSupabaseConfigured() && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) && Boolean(process.env.PIN_PEPPER?.trim());
 const lockedMsg = (m: number) => `Too many attempts. Try again in ${m} minute${m === 1 ? "" : "s"}, or reset your PIN by email.`;
 
 /* ============================================================== REGISTER */
@@ -57,8 +57,10 @@ export async function registerCustomer(input: {
     app_metadata: { provisioned_by: "mana-server", role: "customer" }, // server-only: a client can't forge this
   });
   if (error) {
+    console.error("[register] could not create the account:", error.message, error.status ?? "");   // visible in Vercel → Logs
     const dup = /already|registered|duplicate|unique/i.test(error.message);
-    return { ok: false, error: dup ? "An account with these details already exists." : "We couldn’t create your account. Please try again." };
+    const setup = /database error/i.test(error.message);   // the database trigger refused it: the SQL setup is incomplete
+    return { ok: false, error: dup ? "An account with these details already exists." : setup ? "Sign-up isn’t fully set up on our side yet. Please try again a little later, or message us on WhatsApp." : "We couldn’t create your account. Please try again." };
   }
 
   // sign in right away (sets the session cookies)

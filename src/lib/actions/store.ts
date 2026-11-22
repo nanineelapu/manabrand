@@ -232,7 +232,7 @@ export async function startPayment(orderId: string): Promise<Result<{ key: strin
     await createAdminClient().from("orders").update({ payment_ref: rz.data.id }).eq("id", o.id);   // until paid, payment_ref holds the Razorpay order id
     const { data: prof } = await supabase.from("profiles").select("full_name, email, phone").eq("id", actor.id).single();
     const p = prof as { full_name: string; email: string; phone: string | null } | null;
-    return { ok: true, key: process.env.RAZORPAY_KEY_ID!, rzpOrderId: rz.data.id, amount: rz.data.amount, number: o.number, name: p?.full_name ?? "", email: p?.email ?? "", phone: p?.phone ?? "" };
+    return { ok: true, key: (process.env.RAZORPAY_KEY_ID?.trim() ?? ""), rzpOrderId: rz.data.id, amount: rz.data.amount, number: o.number, name: p?.full_name ?? "", email: p?.email ?? "", phone: p?.phone ?? "" };
   });
 }
 

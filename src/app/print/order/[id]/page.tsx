@@ -27,11 +27,11 @@ export default async function PrintOrderPage({ params, searchParams }: { params:
 
       <header className="flex items-start justify-between gap-6 border-b-2 border-black pb-4">
         <div>
-          <p className="text-2xl font-black tracking-tight">{process.env.BUSINESS_NAME || "ManaBrand"}</p>
-          <p className="mt-1 text-neutral-600">Ichapuram, Srikakulam, Andhra Pradesh 532312<br />care@manabrand.in · +91 831 765 8309{process.env.BUSINESS_GSTIN && !slip ? <><br />GSTIN: <b>{process.env.BUSINESS_GSTIN}</b></> : null}</p>
+          <p className="text-2xl font-black tracking-tight">{process.env.BUSINESS_NAME?.trim() || "ManaBrand"}</p>
+          <p className="mt-1 text-neutral-600">Ichapuram, Srikakulam, Andhra Pradesh 532312<br />care@manabrand.in · +91 831 765 8309{process.env.BUSINESS_GSTIN?.trim() && !slip ? <><br />GSTIN: <b>{process.env.BUSINESS_GSTIN?.trim()}</b></> : null}</p>
         </div>
         <div className="text-right">
-          <p className="text-lg font-extrabold uppercase tracking-wide">{slip ? "Packing slip" : process.env.BUSINESS_GSTIN ? "Tax invoice" : "Invoice"}</p>
+          <p className="text-lg font-extrabold uppercase tracking-wide">{slip ? "Packing slip" : process.env.BUSINESS_GSTIN?.trim() ? "Tax invoice" : "Invoice"}</p>
           <p className="mt-1">Order <b>{o.number}</b></p>
           <p className="text-neutral-600">{formatDate(o.createdAt)}</p>
         </div>

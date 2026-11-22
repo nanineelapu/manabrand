@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 export type Result<T extends object = object> = ({ ok: true } & T) | { ok: false; error: string; demo?: boolean };
 
 export const demoResult = (): Result => ({ ok: false, error: "Demo mode — connect Supabase to save changes.", demo: true });
-export const live = () => isSupabaseConfigured() && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+export const live = () => isSupabaseConfigured() && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY?.trim());
 
 /** Turn Postgres / PostgREST errors into something a person can read. */
 export function friendly(message: string): string {

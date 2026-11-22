@@ -28,7 +28,7 @@ export async function createClient() {
  * be able to do themselves (create accounts, read login_attempts, look up phone → email).
  */
 export function createAdminClient() {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
   if (!key) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set");
   return createSupabaseClient(supabaseUrl, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
