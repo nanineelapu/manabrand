@@ -103,7 +103,7 @@ function mapBanner(r: any): Banner {
 }
 function mapReview(r: any): Review {
   return { id: r.id, productId: r.product_id, author: r.author_name ?? "Customer", city: r.author_city ?? "", rating: r.rating, title: r.title, body: r.body,
-    date: r.created_at, verified: r.verified, helpful: r.helpful, images: r.images ?? [], status: r.status };
+    date: r.created_at, verified: r.verified, helpful: r.helpful, images: r.images ?? [], sellerReply: r.seller_reply ?? undefined, status: r.status };
 }
 
 /* ================================================================ catalogue */

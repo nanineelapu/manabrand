@@ -1,30 +1,46 @@
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Circle, PackageCheck, PackageOpen, RotateCcw, ShoppingBag, Sparkles, Truck, Wallet } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, PackageCheck, PackageOpen, RotateCcw, ShoppingBag, Truck, Wallet } from "lucide-react";
 import { ProductImage } from "@/components/brand/product-image";
 import { BarChart } from "@/components/shared/charts";
 import { Panel } from "@/components/shared/blocks";
 import { StatusBadge } from "@/components/shared/status";
 import { Button } from "@/components/ui/button";
 import { Progress, Rating } from "@/components/ui/display";
-import { getAnalytics, getSellerDashboard } from "@/lib/data";
+import { AutoRefresh } from "@/components/shared/auto-refresh";
+import { analyse } from "@/lib/analysis";
+import { getOrdersForSeller, getSellerDashboard, getSellerPayouts, getSellerProducts, getSellerReviews } from "@/lib/data";
 import { formatCompactINR, formatDate, formatINR, timeAgo } from "@/lib/utils";
 
 export const metadata = { title: "Home" };
 
 export default async function SellerHome() {
-  const [d, an] = await Promise.all([getSellerDashboard(), getAnalytics()]);
+  const [d, orders, products, reviews, payouts] = await Promise.all([getSellerDashboard(), getOrdersForSeller(), getSellerProducts(), getSellerReviews(), getSellerPayouts()]);
+  // everything below is worked out from this store's own orders, reviews and payouts
+  const daily = analyse({ orders, products, sellers: [], customers: [], returns: [], range: "30" }).daily;
+  const last28 = daily.revenue.slice(-28);
+  const weekly = [0, 1, 2, 3].map((i) => last28.slice(i * 7, i * 7 + 7).reduce((a, b) => a + b, 0));
+  const weekLabels = ["Wk 1", "Wk 2", "Wk 3", "Wk 4"];
+  const shippedOrders = orders.filter((o) => o.timeline.some((e) => e.status === "shipped"));
+  const onTime = shippedOrders.filter((o) => { const placed = o.timeline.find((e) => e.status === "placed")?.at ?? o.createdAt; const shipped = o.timeline.find((e) => e.status === "shipped")!.at; return +new Date(shipped) - +new Date(placed) <= 48 * 3600e3; }).length;
+  const unanswered = reviews.filter((r) => !r.sellerReply).length;
+  const nextPayout = payouts.filter((p) => p.status === "scheduled" || p.status === "processing").sort((a, b) => +new Date(a.date) - +new Date(b.date))[0];
   const tasks = [
     { href: "/seller/orders?status=placed", icon: ShoppingBag, n: d.toConfirm, label: "New orders", hint: "Confirm to start", tone: "bg-gold-100 text-gold-500" },
     { href: "/seller/orders?status=processing", icon: PackageOpen, n: d.toPack, label: "To pack", hint: "Ready to be packed", tone: "bg-info-bg text-info" },
     { href: "/seller/orders?status=processing", icon: Truck, n: d.toShip, label: "To ship", hint: "Awaiting pickup", tone: "bg-accent-soft text-accent-soft-fg" },
     { href: "/seller/returns", icon: RotateCcw, n: d.returnsOpen, label: "Returns", hint: "Need your reply", tone: "bg-danger-bg text-danger" },
   ];
-  const weekly = an.weeklyRevenue.map((n) => Math.round(n * 0.085));
-  const health = [{ t: "Store profile complete", ok: true }, { t: "10+ products listed", ok: d.seller.productCount >= 10 }, { t: "Ship within 48 hours", ok: true }, { t: "Reply to 3 new reviews", ok: false }];
+  const health = [
+    { t: "Store profile complete", ok: Boolean(d.seller.blurb && d.seller.pickupAddress && d.seller.kyc === "verified") },
+    { t: `10+ products listed (${d.seller.productCount})`, ok: d.seller.productCount >= 10 },
+    { t: shippedOrders.length ? `Ship within 48 hours (${onTime} of ${shippedOrders.length} on time)` : "Ship within 48 hours", ok: shippedOrders.length === 0 || onTime / shippedOrders.length >= 0.8 },
+    { t: unanswered ? `Reply to ${unanswered} review${unanswered === 1 ? "" : "s"}` : "All reviews answered", ok: unanswered === 0 },
+  ];
   const done = health.filter((h) => h.ok).length;
 
   return (
     <>
+      <AutoRefresh seconds={30} />
       <header className="mb-5 md:mb-7">
         <p className="text-sm font-medium text-muted">{new Intl.DateTimeFormat("en-IN", { weekday: "long", day: "numeric", month: "long", timeZone: "Asia/Kolkata" }).format(new Date())}</p>
         <h1 className="font-display text-[30px] font-semibold leading-tight tracking-tight md:text-4xl">Namaste, {d.seller.owner.split(" ")[0]} 👋</h1>
@@ -55,7 +71,7 @@ export default async function SellerHome() {
               </div>
             ))}
           </div>
-          <BarChart data={weekly} labels={an.weeks} formatY={formatCompactINR} highlightLast ariaLabel="Your weekly sales for the last 7 weeks" height={190} className="mt-5" />
+          <BarChart data={weekly} labels={weekLabels} formatY={formatCompactINR} highlightLast ariaLabel="Your weekly sales for the last 4 weeks" height={190} className="mt-5" />
         </Panel>
 
         <div className="space-y-5">
@@ -64,7 +80,7 @@ export default async function SellerHome() {
             <Wallet className="absolute -right-3 -top-3 size-24 rotate-12 text-white/20" />
             <p className="text-sm font-medium text-ink/70">Next payout</p>
             <p className="mt-1 font-display text-4xl font-semibold tabular">{formatINR(d.pendingPayout)}</p>
-            <p className="mt-1 text-sm text-ink/70">Arrives by {formatDate("2026-11-18", { day: "numeric", month: "long" })} · HDFC ••4821</p>
+            <p className="mt-1 text-sm text-ink/70">{nextPayout ? `${nextPayout.status === "processing" ? "On its way" : "Scheduled"} · ${formatDate(nextPayout.date, { day: "numeric", month: "long" })}` : "Nothing scheduled yet — payouts are made from delivered orders."}</p>
             <Button href="/seller/earnings" variant="primary" size="sm" className="mt-4 rounded-full">View earnings <ArrowRight className="size-4" /></Button>
           </section>
 
@@ -74,7 +90,6 @@ export default async function SellerHome() {
             <ul className="space-y-3">
               {health.map((h) => <li key={h.t} className="flex items-center gap-3 text-sm">{h.ok ? <CheckCircle2 className="size-5 shrink-0 text-success" /> : <Circle className="size-5 shrink-0 text-line-strong" />}<span className={h.ok ? "text-muted line-through decoration-line-strong" : "font-medium"}>{h.t}</span></li>)}
             </ul>
-            <p className="mt-4 flex items-start gap-2 rounded-ctl bg-accent-soft p-3 text-[13px] text-accent-soft-fg"><Sparkles className="mt-0.5 size-4 shrink-0" />Stores that reply to reviews within 24h get 18% more repeat buyers.</p>
           </Panel>
         </div>
       </div>

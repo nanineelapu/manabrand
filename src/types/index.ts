@@ -67,6 +67,8 @@ export interface Review {
   helpful: number;
   /** photos the customer attached (public URLs) */
   images?: string[];
+  /** the seller's public reply, if any */
+  sellerReply?: string;
   status: "published" | "pending" | "flagged";
 }
 

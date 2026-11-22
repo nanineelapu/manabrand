@@ -8,8 +8,8 @@ import { clock, magicLabel, magicState, type DealBoxConfig } from "@/lib/magic-h
 import { ProductRail } from "@/components/store/product-card";
 import type { Product } from "@/types";
 
-const perks = (label: string) => [
-  { icon: Gift, title: "Daily magic-hour deal", desc: `A fresh members-only fashion deal box opens every day, ${label}.` },
+const perks = (label: string, allDay: boolean) => [
+  { icon: Gift, title: allDay ? "Deal box open 24/7" : "Daily magic-hour deal", desc: allDay ? "A members-only fashion deal box, open any time of day, every day of the week." : `A fresh members-only fashion deal box opens every day, ${label}.` },
   { icon: Truck, title: "Free delivery", desc: "No delivery fee on any order, all year." },
   { icon: Zap, title: "Early access", desc: "First look at new styles and festive drops." },
 ] as const;
@@ -25,6 +25,18 @@ function MagicClock({ cfg }: { cfg: DealBoxConfig }) {
     return () => clearInterval(t);
   }, [cfg]);
   const MAGIC_LABEL = magicLabel(cfg);
+  if (cfg.allDay) {
+    return (
+      <div className="flex min-w-0 items-center gap-3.5 rounded-[22px] bg-black p-4 text-white md:p-5" role="status">
+        <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-white/10"><Clock className="size-[22px]" strokeWidth={1.8} /></span>
+        <div className="min-w-0 flex-1">
+          <p className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.14em] text-white/60"><span className="size-2 rounded-full bg-emerald-400" /> Live now</p>
+          <p className="mt-0.5 text-[13px] text-white/75">The Deal Box is open all day, every day</p>
+        </div>
+        <p className="shrink-0 text-3xl font-black leading-none tracking-tight md:text-4xl">24/7</p>
+      </div>
+    );
+  }
   return (
     <div className="flex min-w-0 flex-col gap-3 rounded-[22px] bg-black p-4 text-white sm:flex-row sm:items-center sm:gap-4 md:p-5" role="timer" aria-live="off">
       <div className="flex min-w-0 flex-1 items-center gap-3.5">
@@ -55,14 +67,14 @@ export function ManaDealBox({ config, picks = [] }: { config: DealBoxConfig; pic
   return (
     <section aria-labelledby="dealbox-heading" data-round className="bg-white text-black">
       <div className="container-page py-12 md:py-16">
-        <Reveal><SectionHeader id="dealbox-heading" eyebrow="Members only · Daily" title="Mana Deal Box" subtitle={`Opens every day in the magic hours, ${label}.`} /></Reveal>
+        <Reveal><SectionHeader id="dealbox-heading" eyebrow={config.allDay ? "Members only · 24/7" : "Members only · Daily"} title="Mana Deal Box" subtitle={config.allDay ? "Open 24/7 — members’ deals any time, every day." : `Opens every day in the magic hours, ${label}.`} /></Reveal>
 
         <div className="mt-7 grid grid-cols-[minmax(0,1fr)] gap-5 md:mt-9 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-stretch lg:gap-8">
           {/* perks */}
           <div className="grid min-w-0 gap-3">
           <MagicClock cfg={config} />
           <ul className="grid min-w-0 gap-3">
-            {perks(label).map((k, i) => (
+            {perks(label, config.allDay).map((k, i) => (
               <li key={k.title}>
                 <Reveal delay={i * 70}>
                   <div className="flex items-center gap-4 rounded-[22px] border border-black/10 bg-white p-4 transition-colors hover:border-primary md:p-5">
@@ -87,7 +99,7 @@ export function ManaDealBox({ config, picks = [] }: { config: DealBoxConfig; pic
               <p className="mt-1 text-[13px] font-medium text-primary">That’s about ₹{Math.round(p.price / 12)} a month.</p>
 
               <ul className="mt-5 space-y-2 text-[14px] text-black/75">
-                {[`Daily deal box, ${label}`, "Free delivery on every order", "Early access to limited drops"].map((t) => (
+                {[config.allDay ? "Deal box open 24/7" : `Daily deal box, ${label}`, "Free delivery on every order", "Early access to limited drops"].map((t) => (
                   <li key={t} className="flex items-center gap-2.5"><Check className="size-4 shrink-0 text-primary" strokeWidth={3} />{t}</li>
                 ))}
               </ul>

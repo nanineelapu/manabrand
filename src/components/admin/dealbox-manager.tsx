@@ -17,7 +17,7 @@ export function DealBoxManager({ initial, products }: { initial: DealBoxConfig; 
   const [c, setC] = useState(initial);
   const [q, setQ] = useState("");
   const { act, busy } = useAct();
-  const bad = c.endHour <= c.startHour ? "The closing hour must be later than the opening hour." : "";
+  const bad = !c.allDay && c.endHour <= c.startHour ? "The closing hour must be later than the opening hour." : "";
   const shown = products.filter((p) => !q || `${p.name} ${p.category}`.toLowerCase().includes(q.toLowerCase()));
   const toggle = (id: string) => setC((s) => ({ ...s, productIds: s.productIds.includes(id) ? s.productIds.filter((x) => x !== id) : s.productIds.length >= 12 ? s.productIds : [...s.productIds, id] }));
 
@@ -26,12 +26,13 @@ export function DealBoxManager({ initial, products }: { initial: DealBoxConfig; 
       <Panel title="Settings">
         <div className="space-y-5">
           <div className="flex items-center gap-3"><Switch label="Show the Deal Box on the home page" checked={c.enabled} onChange={(v) => setC({ ...c, enabled: v })} /><span className="text-sm font-medium">Show the Deal Box on the home page</span></div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center gap-3"><Switch label="Open 24/7" checked={c.allDay} onChange={(v) => setC({ ...c, allDay: v })} /><span className="text-sm font-medium">Open 24/7 (all day, every day)</span></div>
+          <div className={cn("grid grid-cols-2 gap-4", c.allDay && "pointer-events-none opacity-45")} aria-disabled={c.allDay}>
             <Field label="Opens (India time)" htmlFor="db-s"><Select id="db-s" value={c.startHour} onChange={(e) => setC({ ...c, startHour: Number(e.target.value) })}>{HOURS.slice(0, 23).map((o) => <option key={o.h} value={o.h}>{o.label}</option>)}</Select></Field>
             <Field label="Closes (India time)" htmlFor="db-e" error={bad}><Select id="db-e" value={c.endHour} onChange={(e) => setC({ ...c, endHour: Number(e.target.value) })}>{HOURS.slice(1).map((o) => <option key={o.h} value={o.h}>{o.label}</option>)}</Select></Field>
           </div>
           <Field label="Yearly pass price (₹)" htmlFor="db-p"><Input id="db-p" inputMode="numeric" value={String(c.price)} onChange={(e) => setC({ ...c, price: Number(e.target.value.replace(/\D/g, "")) || 0 })} /></Field>
-          <p className="rounded-ctl bg-bg-subtle p-3 text-[13px] text-muted">Shoppers will see: <b className="text-fg">Opens every day, {magicLabel(c)}</b> · <b className="text-fg">₹{c.price} / year</b>.</p>
+          <p className="rounded-ctl bg-bg-subtle p-3 text-[13px] text-muted">Shoppers will see: <b className="text-fg">{c.allDay ? "Open 24/7" : `Opens every day, ${magicLabel(c)}`}</b> · <b className="text-fg">₹{c.price} / year</b>.</p>
           <Button loading={busy} disabled={!!bad} onClick={() => act(() => saveSetting("dealbox", c as unknown as Record<string, unknown>), { success: "Deal Box saved", refresh: true })}>Save Deal Box</Button>
         </div>
       </Panel>

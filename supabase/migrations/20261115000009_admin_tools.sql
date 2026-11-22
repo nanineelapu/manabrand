@@ -9,7 +9,7 @@ alter table public.products
   add column if not exists seo_description text check (seo_description is null or char_length(seo_description) <= 170);
 
 insert into public.settings (key, value) values
-  ('dealbox', '{"enabled":true,"startHour":20,"endHour":22,"price":699,"productIds":[]}')
+  ('dealbox', '{"enabled":true,"allDay":true,"startHour":20,"endHour":22,"price":699,"productIds":[]}')
 on conflict (key) do nothing;
 
 -- shoppers may read the shipping + payments + dealbox settings (everything else stays admin-only)
