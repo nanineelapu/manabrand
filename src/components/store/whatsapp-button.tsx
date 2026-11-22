@@ -20,7 +20,7 @@ export function WhatsAppButton() {
     <aside
       data-round
       aria-label="WhatsApp Support"
-      className={cn("fixed bottom-[calc(var(--tabbar-h)+14px+env(safe-area-inset-bottom,0px))] right-4 z-40 flex items-center gap-2.5 lg:bottom-6 lg:right-6", hideOnPhone && "max-lg:hidden")}
+      className={cn("fixed bottom-[calc(max(0.75rem,env(safe-area-inset-bottom,0px))+4.75rem)] right-4 z-40 flex items-center gap-2.5 lg:bottom-6 lg:right-6", hideOnPhone && "max-lg:hidden")}
     >
       {/* Floating Chat Pill on Desktop / Mobile */}
       {showTooltip && (

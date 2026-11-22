@@ -26,6 +26,7 @@ export function StoreHeader({ items, accountLabel = "Account" }: Props) {
 
   // below lg the header slides away while reading (scroll down) and returns on any scroll up
   const [hidden, setHidden] = useState(false);
+  useEffect(() => { document.documentElement.dataset.header = hidden ? "hidden" : "shown"; }, [hidden]);   // the sticky Filter / Sort bar reads this
   useEffect(() => {
     let last = window.scrollY, raf = 0;
     const onScroll = () => {

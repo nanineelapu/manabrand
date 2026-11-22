@@ -485,6 +485,11 @@ export async function getSellerDashboard(sellerId?: string) {
   };
 }
 
+/** Admin: every address a customer has saved (needs the admin-read policy from migration 0013). */
+export async function getAddressesForCustomer(userId: string): Promise<Address[]> {
+  return (ok(await (await sb()).from("addresses").select("*").eq("user_id", userId).order("is_default", { ascending: false }).order("created_at"), []) as any[])
+    .map((a) => ({ id: a.id, label: a.label, name: a.name, phone: a.phone, line1: a.line1, line2: a.line2 ?? undefined, city: a.city, state: a.state, pincode: a.pincode, isDefault: a.is_default }));
+}
 export async function getDealBox() {
   const row = ok(await pub().from("settings").select("value").eq("key", "dealbox").maybeSingle()) as { value: Record<string, unknown> } | null;
   return normalizeDealBox(row?.value as never);

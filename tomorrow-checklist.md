@@ -21,9 +21,10 @@ Open **Supabase → SQL Editor → New query**. For each file: open it in VS Cod
 - [ ] `…000010_payments_alerts_reviews.sql`  (back-in-stock alerts, cart reminders, review photos)
 - [ ] `…000011_own_delivery.sql`  (no more made-up tracking numbers — delivery is "ManaBrand Delivery", tracking typed by hand)
 - [ ] `…000012_new_user_trigger.sql`  (fixes "Database error creating new user" — run this BEFORE creating the admin)
+- [ ] `…000013_admin_read_addresses.sql`  (lets the admin see customers' saved addresses and towns)
 
 If a file says something "already exists", that's fine — go on to the next.
-If you already ran 0001–0008 earlier, you only need 0009 to 0012.
+If you already ran 0001–0008 earlier, you only need 0009 to 0013.
 
 Then load the fashion catalogue:
 

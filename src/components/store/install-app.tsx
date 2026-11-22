@@ -26,8 +26,11 @@ const isIOS = () => typeof navigator !== "undefined" && /iphone|ipad|ipod/i.test
 /** What the page can offer: a real install prompt (Chrome / Edge / Android) or, on iPhone / iPad, the Share-sheet steps. */
 export function useInstallApp() {
   useSyncExternalStore(subscribe, version, () => "00");
-  const standalone = isStandalone();
-  const ios = isIOS();
+  // read the browser only after mount: on the server (and the first client render) these are false, so the HTML always matches
+  const [env, setEnv] = useState({ standalone: false, ios: false });
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { setEnv({ standalone: isStandalone(), ios: isIOS() }); }, []);
+  const { standalone, ios } = env;
   const canPrompt = !!deferred && !standalone && !installed;
   return {
     canPrompt,

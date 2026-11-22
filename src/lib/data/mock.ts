@@ -192,6 +192,10 @@ export interface SettingsData {
 export interface PromoRow { id: string; name: string; off: number; scope: string; ends: string; on: boolean; orders: number }
 export interface TicketRow { id: string; subject: string; status: string; at: string }
 
+export const getAddressesForCustomer = async (id: string) => {
+  const c = customers.find((x) => x.id === id);
+  return c ? [{ id: `a-${id}`, label: "Home" as const, name: c.name, phone: c.phone, line1: "Door No. 4-112, Main Road", line2: undefined as string | undefined, city: c.city, state: "Andhra Pradesh", pincode: "532312", isDefault: true }] : [];
+};
 export const getDealBox = async () => normalizeDealBox(undefined);
 export const getSettings = async (): Promise<SettingsData> => ({
   shipping: { freeAbove: 9999999, standardFee: 99, expressFee: 149, codFee: 40 }, payments: { upi: true, card: true, netbanking: true, cod: true, wallet: false },

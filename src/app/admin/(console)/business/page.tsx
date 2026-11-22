@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AutoRefresh } from "@/components/shared/auto-refresh";
 import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
 import { AreaChart, BarChart, Donut, HBars, Legend } from "@/components/shared/charts";
 import { PageHeader, Panel, StatCard } from "@/components/shared/blocks";
@@ -20,6 +21,7 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
 
   return (
     <>
+      <AutoRefresh seconds={30} />
       <PageHeader
         title="Business analysis"
         subtitle="Sales, customers, sellers and stock — worked out from your real orders."
@@ -86,6 +88,24 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
               <Donut data={a.payments} center={<div><p className="text-lg font-semibold">{a.codShare.toFixed(0)}%</p><p className="text-xs text-muted">COD</p></div>} />
               <div className="w-full flex-1"><Legend data={a.payments.map((p) => ({ label: p.label, value: `${p.value}` }))} /></div>
             </div>
+          ) : <Empty />}
+        </Panel>
+      </div>
+
+      <div className="mt-5 grid gap-5 lg:grid-cols-2">
+        <Panel title="Top towns" action={<span className="text-xs text-muted">by delivery address</span>}>
+          {a.towns.length ? <HBars rows={a.towns.map((t) => ({ label: t.label, value: t.value, sub: `${t.orders} order${t.orders === 1 ? "" : "s"}${t.pincodes ? ` · ${t.pincodes}` : ""}` }))} format={money} /> : <Empty />}
+        </Panel>
+        <Panel title="Orders: how far they get">
+          {a.funnel[0].value ? (
+            <ol className="space-y-3">
+              {a.funnel.map((s, i) => (
+                <li key={s.label}>
+                  <div className="mb-1 flex justify-between text-sm"><span className="font-medium">{s.label}</span><span className="tabular text-muted">{s.value}{i > 0 && a.funnel[i - 1].value > 0 && <span className="ml-2 text-xs">({Math.round((s.value / a.funnel[i - 1].value) * 100)}%)</span>}</span></div>
+                  <div className="h-6 overflow-hidden rounded-lg bg-bg-subtle"><div className="h-full rounded-lg bg-accent" style={{ width: `${(s.value / a.funnel[0].value) * 100}%`, opacity: 1 - i * 0.16 }} /></div>
+                </li>
+              ))}
+            </ol>
           ) : <Empty />}
         </Panel>
       </div>

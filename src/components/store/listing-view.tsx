@@ -48,7 +48,7 @@ export async function ListingView({
       )}
 
       {/* Toolbar: sticky under header on mobile so Filter/Sort stay in thumb reach */}
-      <div className="sticky top-[84px] z-30 -mx-4 mt-5 flex items-center gap-2.5 border-b border-line bg-bg/95 px-4 py-2.5 backdrop-blur lg:static lg:top-auto lg:mx-0 lg:border-0 lg:bg-transparent lg:px-0 lg:py-0 lg:backdrop-blur-none">
+      <div className="sticky top-[84px] z-30 -mx-4 mt-5 flex items-center gap-2.5 border-y border-line bg-bg px-4 py-2.5 shadow-[0_6px_14px_-12px_rgba(0,0,0,0.25)] transition-[top] duration-300 [html[data-header=hidden]_&]:top-0 lg:static lg:top-auto lg:mx-0 lg:border-0 lg:bg-transparent lg:px-0 lg:py-0 lg:shadow-none lg:transition-none">
         <p className="hidden text-sm text-muted lg:block lg:flex-1"><b className="text-fg">{total}</b> {total === 1 ? "product" : "products"}</p>
         <FilterSheetButton facets={facets} subs={hideSubFilter ? undefined : subs} total={total} />
         <SortSelect options={SORTS} />

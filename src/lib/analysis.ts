@@ -107,6 +107,18 @@ export function analyse(input: { orders: Order[]; products: Product[]; sellers: 
   const topSeller = top(bySeller, (v) => v.revenue, 1)[0];
   const topSellerShare = topSeller ? pct(topSeller[1].revenue, gross) : 0;
 
+  // ---- towns: where the orders go (delivery address), and how far orders get through the process
+  const townName = (c: string) => c.trim().replace(/\s+/g, " ").toLowerCase().replace(/(^|[\s–-])([a-z])/g, (_m, a: string, b: string) => a + b.toUpperCase());
+  const byTown = new Map<string, { orders: number; revenue: number; pins: Set<string> }>();
+  booked.forEach((o) => {
+    const t = townName(o.address.city || "Unknown");
+    const row = byTown.get(t) ?? { orders: 0, revenue: 0, pins: new Set<string>() };
+    row.orders += 1; row.revenue += o.total; if (o.address.pincode) row.pins.add(o.address.pincode); byTown.set(t, row);
+  });
+  const rank: Record<string, number> = { placed: 0, confirmed: 1, packed: 2, shipped: 3, out_for_delivery: 4, delivered: 5 };
+  const reached = (min: number) => booked.filter((o) => (rank[o.status] ?? (o.status === "returned" ? 5 : -1)) >= min).length;
+  const funnel = [{ label: "Orders placed", value: inRange.length }, { label: "Confirmed", value: reached(1) }, { label: "Shipped", value: reached(3) }, { label: "Delivered", value: reached(5) }];
+
   // ---- plain-language read-out
   const insights: Insight[] = [];
   if (!booked.length) insights.push({ tone: "warn", title: "No orders in this period", body: "Try a longer range, or push traffic with a coupon or a homepage banner." });
@@ -132,6 +144,8 @@ export function analyse(input: { orders: Order[]; products: Product[]; sellers: 
     payments: [...pay.entries()].sort((a, b) => b[1] - a[1]).map(([label, value]) => ({ label: label === "cod" ? "Cash on delivery" : label.toUpperCase() === "UPI" ? "UPI" : label.charAt(0).toUpperCase() + label.slice(1), value })),
     statuses: [...statusCount.entries()].sort((a, b) => b[1] - a[1]).map(([label, value]) => ({ label: label.replace(/_/g, " "), value })),
     returnReasons: [...reasons.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([label, value]) => ({ label, value })),
+    towns: [...byTown.entries()].sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 8).map(([label, v]) => ({ label, value: v.revenue, orders: v.orders, pincodes: [...v.pins].slice(0, 3).join(", ") })),
+    funnel,
     topCustomers,
     inventory: { live: live.length, drafts: products.filter((p) => p.status === "draft").length, pendingReview, outOfStock: outOfStock.length, low: lowStock.slice(0, 6).map((p) => ({ id: p.id, name: p.name, left: stockOf(p) })), noSales: noSales.length },
     insights,

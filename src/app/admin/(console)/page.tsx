@@ -7,18 +7,23 @@ import { PageHeader, Panel, StatCard } from "@/components/shared/blocks";
 import { StatusBadge, statusLabel } from "@/components/shared/status";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/brand/product-image";
-import { getAdminDashboard, getAllProducts, getAnalytics, getNotifications } from "@/lib/data";
+import { AutoRefresh } from "@/components/shared/auto-refresh";
+import { analyse } from "@/lib/analysis";
+import { getAdminDashboard, getAllOrders, getAllProducts, getNotifications } from "@/lib/data";
 import { chart } from "@/lib/design/tokens";
 import { formatCompactINR, formatINR, formatNumber, timeAgo } from "@/lib/utils";
 
 export const metadata = { title: "Dashboard" };
 
 const last = (a: number[], n: number, off = 0) => a.slice(a.length - n - off, a.length - off).reduce((x, y) => x + y, 0);
-const delta = (a: number[]) => ((last(a, 7) - last(a, 7, 7)) / last(a, 7, 7)) * 100;
+const delta = (a: number[]) => { const before = last(a, 7, 7); return before > 0 ? ((last(a, 7) - before) / before) * 100 : undefined; };
 const spark = (a: number[]) => a.slice(-14);
 
 export default async function AdminDashboard() {
-  const [d, an, me, products, feed] = await Promise.all([getAdminDashboard(), getAnalytics(), getSessionProfile(), getAllProducts(), getNotifications()]);
+  const [d, orders, me, products, feed] = await Promise.all([getAdminDashboard(), getAllOrders(), getSessionProfile(), getAllProducts(), getNotifications()]);
+  const daily = analyse({ orders, products: [], sellers: [], customers: [], returns: [], range: "30" }).daily;   // real orders, last 30 days
+  const an = { days: daily.labels, revenue: daily.revenue, orders: daily.orders };
+  const delivered = d.statusCounts.find((x) => x.status === "delivered")?.count ?? 0;
   const toShip = d.statusCounts.filter((s) => s.status === "confirmed" || s.status === "packed").reduce((a, s) => a + s.count, 0);
   const toReview = products.filter((p) => p.status === "pending_review").length;
   const now = new Date();
@@ -39,6 +44,7 @@ export default async function AdminDashboard() {
 
   return (
     <>
+      <AutoRefresh seconds={30} />
       <PageHeader title={`${greeting}${me ? `, ${me.name.split(" ")[0]}` : ""}`} subtitle={`Here’s what’s happening across ManaBrand today · ${today}`}
         actions={<><Button variant="outline" size="sm" href="/" ><Eye className="size-4" /> Storefront</Button><Button size="sm" href="/admin/business"><Download className="size-4" /> Business report</Button></>} />
 
@@ -56,8 +62,8 @@ export default async function AdminDashboard() {
       <section aria-label="Key metrics" className="grid grid-cols-2 gap-3 xl:grid-cols-4 xl:gap-4">
         <StatCard label="Revenue (30d)" value={formatCompactINR(d.revenue30)} delta={delta(an.revenue)} spark={spark(an.revenue)} icon={<IndianRupee />} />
         <StatCard label="Orders (30d)" value={formatNumber(d.orders30)} delta={delta(an.orders)} spark={spark(an.orders)} icon={<Package />} />
-        <StatCard label="Avg. order value" value={formatINR(d.aov)} delta={3.4} spark={[3, 4, 3.6, 4.4, 4, 4.8, 5, 4.7]} icon={<ShoppingCart />} />
-        <StatCard label="Visitors (30d)" value={formatCompactINR(d.visitors30).replace("₹", "")} delta={delta(an.visitors)} spark={spark(an.visitors)} icon={<Users />} />
+        <StatCard label="Avg. order value" value={formatINR(d.aov)} hint="Per order" icon={<ShoppingCart />} />
+        <StatCard label="Delivered orders" value={formatNumber(delivered)} hint="All time" icon={<Users />} />
       </section>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[1.7fr_1fr]">
