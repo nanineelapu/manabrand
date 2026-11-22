@@ -85,3 +85,22 @@ The studio is protected by Sanity's own sign-in — it is **not** tied to the Ma
 - Content layer (queries, merge with built-in defaults): `src/lib/cms/` — change the built-in copy in `src/lib/cms/defaults.ts`
 - Cached 2 min and tagged `sanity:<type>`; `/api/revalidate` expires the tag on publish.
 - `npm run cms:test` checks every query against a sample dataset (no Sanity account needed).
+
+---
+
+## Live site on Vercel (manabrand.vercel.app)
+
+`.env.local` only works on your computer. The live site reads its own copy of the settings in Vercel.
+
+1. **Vercel → your project → Settings → Environment Variables.** Add (for Production, Preview and Development):
+   | Name | Value |
+   |---|---|
+   | `NEXT_PUBLIC_SANITY_PROJECT_ID` | the Project ID from sanity.io/manage (e.g. `ab12cd34`) |
+   | `NEXT_PUBLIC_SANITY_DATASET` | `production` |
+   | `SANITY_REVALIDATE_SECRET` | the same long random string you use in the Sanity webhook |
+   | `SANITY_API_READ_TOKEN` | only if the dataset is **private** (Sanity → API → Tokens → Viewer) |
+2. **Redeploy** (Deployments → the latest → ⋯ → Redeploy). `NEXT_PUBLIC_…` values are baked in when the site is built, so a new deployment is required after adding them.
+3. **Sanity → API → CORS origins:** add `https://manabrand.vercel.app` with **Allow credentials** ticked (and `http://localhost:3000` for local work).
+4. **Sanity → API → Webhooks:** URL `https://manabrand.vercel.app/api/revalidate`, secret = `SANITY_REVALIDATE_SECRET`, on create / update / delete.
+5. Open `https://manabrand.vercel.app/studio` and sign in with the Google/GitHub/email account that is a member of the Sanity project.
+

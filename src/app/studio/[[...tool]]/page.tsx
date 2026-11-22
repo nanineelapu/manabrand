@@ -11,7 +11,7 @@ export default function StudioPage() {
     return (
       <main className="mx-auto max-w-xl px-5 py-16">
         <h1 className="font-display text-3xl font-semibold">Content editor not connected yet</h1>
-        <p className="mt-3 text-muted">Add <code>NEXT_PUBLIC_SANITY_PROJECT_ID</code> to <code>.env.local</code> and restart the dev server. Step-by-step: <code>docs/SANITY_SETUP.md</code>.</p>
+        <p className="mt-3 text-muted">Add <code>NEXT_PUBLIC_SANITY_PROJECT_ID</code> to <code>.env.local</code> (and restart the dev server), or on the live site to Vercel → Settings → Environment Variables, then redeploy. Step-by-step: <code>docs/SANITY_SETUP.md</code>.</p>
         <p className="mt-3 text-muted">Until then the site shows its built-in content, so nothing is broken.</p>
       </main>
     );
