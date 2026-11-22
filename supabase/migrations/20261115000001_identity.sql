@@ -73,20 +73,21 @@ create table public.login_attempts (
 );
 create index login_attempts_lookup on public.login_attempts (identifier, created_at desc);
 
--- ---- new-user hook: ONLY the server may create accounts ---------------------
--- Accounts are created by our server action through the admin API, which sets
--- raw_app_meta_data.provisioned_by = 'mana-server'. Anyone calling Supabase's
--- public signUp() directly is rejected, so PIN rules and phone verification of
--- uniqueness can't be bypassed. Role comes from app_metadata (server-only),
--- never from user_metadata (which a client can set).
+-- ---- new-user hook: ONLY accounts created by our server get a profile ----------
+-- Accounts are created by our server action through the admin API, which marks them with
+-- raw_app_meta_data.provisioned_by = 'mana-server'. A bare Supabase signUp() creates no profile and so can do nothing.
+-- ALSO switch "Allow new users to sign up" OFF in the Supabase dashboard (Authentication > Sign In / Providers) so a
+-- public signUp() is refused outright. Role comes from app_metadata (server-only), never from user_metadata.
 create or replace function public.handle_new_user() returns trigger
 language plpgsql security definer set search_path = public as $$
 declare
   v_role public.user_role;
 begin
-  if coalesce(new.raw_app_meta_data ->> 'provisioned_by', '') <> 'mana-server' then
-    raise exception 'Direct sign-ups are disabled' using errcode = '42501';
-  end if;
+  -- Only accounts our own server created get a profile. The server marks them with app_metadata.provisioned_by.
+  -- (Supabase Auth may save the user first and attach app_metadata a moment later, so this runs on INSERT and on the
+  -- metadata UPDATE; whichever sees the mark first creates the profile, the other does nothing.)
+  if coalesce(new.raw_app_meta_data ->> 'provisioned_by', '') <> 'mana-server' then return new; end if;
+  if exists (select 1 from public.profiles where id = new.id) then return new; end if;
 
   v_role := coalesce(nullif(new.raw_app_meta_data ->> 'role', ''), 'customer')::public.user_role;
 
@@ -107,7 +108,11 @@ begin
   return new;
 end $$;
 
+drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created after insert on auth.users
+  for each row execute function public.handle_new_user();
+drop trigger if exists on_auth_user_provisioned on auth.users;
+create trigger on_auth_user_provisioned after update of raw_app_meta_data on auth.users
   for each row execute function public.handle_new_user();
 
 -- keep profile.email in sync if the auth email ever changes

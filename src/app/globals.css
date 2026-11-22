@@ -537,3 +537,7 @@ html[data-preloaded] #preloader { display: none; }  /* repeat visit: set by the 
   .hbf-row, .hbf-ring, .hbf-orbit, .hbf-float { animation: none; }
   .hbf-tilt { transition: none; }
 }
+
+/* Hide the browser's scrollbars across the whole site (scrolling itself still works with wheel, touch and keyboard). */
+html, body, * { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display: none; width: 0; height: 0; }

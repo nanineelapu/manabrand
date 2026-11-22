@@ -32,6 +32,7 @@ async function main() {
     create table storage.buckets (id text primary key, name text, public boolean default false, file_size_limit bigint, allowed_mime_types text[]);
     create table storage.objects (id uuid primary key default gen_random_uuid(), bucket_id text references storage.buckets(id), name text, owner uuid default auth.uid());
     alter table storage.objects enable row level security;
+    create function storage.foldername(name text) returns text[] language sql immutable as $$ select (string_to_array(name, '/'))[1:greatest(array_length(string_to_array(name, '/'), 1) - 1, 0)] $$;
     grant usage on schema storage to anon, authenticated, service_role;
     grant all on storage.objects to authenticated, service_role; grant select on storage.buckets to anon, authenticated, service_role;
   `);
@@ -48,8 +49,13 @@ async function main() {
 
   // ---- account creation ---------------------------------------------------------
   const server = JSON.stringify({ provisioned_by: "mana-server" });
-  await mustFail("direct sign-up (no server flag) is rejected",
-    () => db.query(`insert into auth.users (email, raw_user_meta_data) values ('x@y.com', '{"phone":"+919800000000","full_name":"Mallory"}')`), /Direct sign-ups are disabled/);
+  await db.query(`insert into auth.users (email, raw_user_meta_data) values ('x@y.com', '{"phone":"+919800000000","full_name":"Mallory"}')`);
+  ok("a bare sign-up (no server flag) gets NO profile, so it can do nothing", (await one(`select 1 from profiles where email = 'x@y.com'`)).length === 0);
+  // Supabase Auth can attach app_metadata AFTER inserting the user — the profile must appear on that update too
+  const lateId = (await one<{ id: string }>(`insert into auth.users (email, raw_user_meta_data) values ('late@y.com', '{"phone":"+919876500123","full_name":"Late Mark"}') returning id`))[0].id;
+  ok("no profile before the server mark arrives", (await one(`select 1 from profiles where id = $1`, [lateId])).length === 0);
+  await db.query(`update auth.users set raw_app_meta_data = '{"provisioned_by":"mana-server","role":"customer"}'::jsonb where id = $1`, [lateId]);
+  ok("profile is created when the server mark arrives after the insert", (await one(`select 1 from profiles where id = $1 and role = 'customer'`, [lateId])).length === 1);
 
   const mk = async (email: string, phone: string | null, name: string, app = server, user: object = {}) =>
     (await one<{ id: string }>(`insert into auth.users (email, raw_app_meta_data, raw_user_meta_data) values ($1, $2::jsonb, $3::jsonb) returning id`,
@@ -80,7 +86,7 @@ async function main() {
   await mustFail("customer cannot change tier", () => db.exec(`update profiles set tier='VIP' where id='${anita}'`), /protected profile fields/);
   await mustFail("customer cannot change phone", () => db.exec(`update profiles set phone='+919899999999' where id='${anita}'`), /protected profile fields/);
   await as("authenticated", admin);
-  ok("admin can read all profiles", (await one(`select id from profiles`)).length === 4);
+  ok("admin can read all profiles", (await one(`select id from profiles`)).length === 5);
 
   // ---- server-only tables -------------------------------------------------------
   await as("service_role");
@@ -233,7 +239,7 @@ async function main() {
   await mustFail("seller cannot mark delivered", () => setSt(o2.order_id, "delivered"), /one step at a time/);
   await setSt(o2.order_id, "packed"); await setSt(o2.order_id, "shipped");
   const shipped = (await one<{ awb: string; courier: string }>(`select awb, courier from seller_orders where order_id=$1 limit 1`, [o2.order_id]))[0];
-  ok("shipping assigns an AWB + courier", !!shipped.awb && !!shipped.courier);
+  ok("shipping sets the delivery to ManaBrand Delivery and invents no tracking number", shipped.courier === "ManaBrand Delivery" && !shipped.awb);
   await mustFail("cannot move an order backwards", () => setSt(o2.order_id, "packed"), /backwards/);
   await as("authenticated", admin);
   await setSt(o2.order_id, "out_for_delivery"); await setSt(o2.order_id, "delivered");
@@ -287,7 +293,7 @@ async function main() {
 
   // storage
   await as("postgres");
-  ok("4 storage buckets created, KYC bucket is private", (await one(`select 1 from storage.buckets`)).length === 4 && (await one(`select public from storage.buckets where id='seller-kyc'`))[0].public === false);
+  ok("5 storage buckets created, KYC bucket is private", (await one(`select 1 from storage.buckets`)).length === 5 && (await one(`select public from storage.buckets where id='seller-kyc'`))[0].public === false);
   await as("authenticated", selOwner);
   await db.query(`insert into storage.objects (bucket_id, name) values ('product-images', $1)`, [`${sellerB}/p1/a.jpg`]);
   ok("seller can upload product images into THEIR folder", true);

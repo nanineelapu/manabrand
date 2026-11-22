@@ -26,8 +26,9 @@ function MagicClock({ cfg }: { cfg: DealBoxConfig }) {
   }, [cfg]);
   const MAGIC_LABEL = magicLabel(cfg);
   return (
-    <div className="flex items-center gap-4 rounded-[22px] bg-black p-4 text-white md:p-5" role="timer" aria-live="off">
-      <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-white/10"><Clock className="size-[22px]" strokeWidth={1.8} /></span>
+    <div className="flex min-w-0 flex-col gap-3 rounded-[22px] bg-black p-4 text-white sm:flex-row sm:items-center sm:gap-4 md:p-5" role="timer" aria-live="off">
+      <div className="flex min-w-0 flex-1 items-center gap-3.5">
+      <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-white/10"><Clock className="size-[22px]" strokeWidth={1.8} /></span>
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.14em] text-white/60">
           {st?.live && <span className="size-2 rounded-full bg-emerald-400" />}
@@ -35,7 +36,8 @@ function MagicClock({ cfg }: { cfg: DealBoxConfig }) {
         </p>
         <p className="mt-0.5 text-[13px] text-white/75">{st ? (st.live ? "Today’s deal box is open — ends in" : "Next deal box opens in") : "Every day, for a limited time"}</p>
       </div>
-      <p className="shrink-0 text-2xl font-black tabular-nums tracking-tight md:text-3xl">{st ? clock(st.msLeft) : "--:--:--"}</p>
+            </div>
+      <p className="w-full rounded-xl bg-white/10 py-2 text-center text-[32px] font-black tabular-nums leading-none tracking-tight sm:w-auto sm:shrink-0 sm:bg-transparent sm:py-0 sm:text-2xl md:text-3xl">{st ? clock(st.msLeft) : "--:--:--"}</p>
     </div>
   );
 }
@@ -55,11 +57,11 @@ export function ManaDealBox({ config, picks = [] }: { config: DealBoxConfig; pic
       <div className="container-page py-12 md:py-16">
         <Reveal><SectionHeader id="dealbox-heading" eyebrow="Members only · Daily" title="Mana Deal Box" subtitle={`Opens every day in the magic hours, ${label}.`} /></Reveal>
 
-        <div className="mt-7 grid gap-5 md:mt-9 lg:grid-cols-[1.15fr_1fr] lg:items-stretch lg:gap-8">
+        <div className="mt-7 grid grid-cols-[minmax(0,1fr)] gap-5 md:mt-9 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-stretch lg:gap-8">
           {/* perks */}
-          <div className="grid gap-3">
+          <div className="grid min-w-0 gap-3">
           <MagicClock cfg={config} />
-          <ul className="grid gap-3">
+          <ul className="grid min-w-0 gap-3">
             {perks(label).map((k, i) => (
               <li key={k.title}>
                 <Reveal delay={i * 70}>

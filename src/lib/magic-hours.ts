@@ -21,10 +21,11 @@ export function normalizeDealBox(raw: Partial<DealBoxConfig> | null | undefined)
 
 const IST = 5.5 * 3600e3;
 const DAY = 86400e3;
-const h12 = (h: number) => `${h % 12 === 0 ? 12 : h % 12} ${h < 12 ? "AM" : "PM"}`;
+/** (non-breaking spaces, so "8 PM – 10 PM" never splits across two lines) */
+const h12 = (h: number) => `${h % 12 === 0 ? 12 : h % 12}\u00a0${h < 12 ? "AM" : "PM"}`;
 
 /** "8 PM – 10 PM" */
-export const magicLabel = (c: Pick<DealBoxConfig, "startHour" | "endHour">) => `${h12(c.startHour)} – ${h12(c.endHour)}`;
+export const magicLabel = (c: Pick<DealBoxConfig, "startHour" | "endHour">) => `${h12(c.startHour)}\u00a0–\u00a0${h12(c.endHour)}`;
 
 /** Whether the magic hours are on right now, and how many ms until they end (if on) or next start (if off). */
 export function magicState(c: Pick<DealBoxConfig, "startHour" | "endHour">, now = Date.now()): { live: boolean; msLeft: number } {
