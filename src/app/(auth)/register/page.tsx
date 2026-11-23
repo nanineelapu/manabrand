@@ -9,7 +9,7 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
   const sp = await searchParams;
   const next = safeNext(Array.isArray(sp.next) ? sp.next[0] : sp.next, "");
   return (
-    <AuthShell title="Create your account" subtitle="Your mobile number is your login. Your email is for updates and PIN reset."
+    <AuthShell title="Create your account" subtitle="Your mobile number is your login. Your email is for updates and PIN reset. Join today and get ₹500 in your wallet."
       footer={<>Already have an account? <Link href="/login" className="font-semibold text-fg underline underline-offset-4">Sign in</Link></>}>
       <RegisterForm next={next || undefined} />
     </AuthShell>

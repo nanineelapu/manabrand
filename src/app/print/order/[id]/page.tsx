@@ -17,7 +17,8 @@ export default async function PrintOrderPage({ params, searchParams }: { params:
   if (!o) notFound();
   const slip = sp.type === "slip";
   const a = o.address;
-  const other = Math.max(0, o.total - (o.subtotal - o.discount + o.shipping));
+  const wallet = o.walletUsed ?? 0;
+  const other = Math.max(0, o.total + wallet - (o.subtotal - o.discount + o.shipping));
   const qty = o.items.reduce((n, i) => n + i.qty, 0);
 
   return (
@@ -80,6 +81,7 @@ export default async function PrintOrderPage({ params, searchParams }: { params:
           {o.discount > 0 && <div className="flex justify-between"><dt>Discount{o.couponCode ? ` (${o.couponCode})` : ""}</dt><dd className="tabular-nums">− {formatINR(o.discount)}</dd></div>}
           <div className="flex justify-between"><dt>Delivery</dt><dd className="tabular-nums">{o.shipping ? formatINR(o.shipping) : "Free"}</dd></div>
           {other > 0 && <div className="flex justify-between"><dt>Other charges</dt><dd className="tabular-nums">{formatINR(other)}</dd></div>}
+          {wallet > 0 && <div className="flex justify-between"><dt>Wallet credit</dt><dd className="tabular">− {formatINR(wallet)}</dd></div>}
           <div className="flex justify-between border-t-2 border-black pt-1.5 text-base font-extrabold"><dt>Total</dt><dd className="tabular-nums">{formatINR(o.total)}</dd></div>
         </dl>
       )}

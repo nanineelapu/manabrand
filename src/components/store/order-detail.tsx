@@ -70,6 +70,7 @@ export async function OrderDetail({ order: o }: { order: Order }) {
               <DetailRow label="Subtotal"><span className="tabular">{formatINR(o.subtotal)}</span></DetailRow>
               {o.discount > 0 && <DetailRow label={`Coupon ${o.couponCode ?? ""}`}><span className="tabular text-success">− {formatINR(o.discount)}</span></DetailRow>}
               <DetailRow label="Shipping"><span className="tabular">{o.shipping ? formatINR(o.shipping) : "Free"}</span></DetailRow>
+              {(o.walletUsed ?? 0) > 0 && <DetailRow label="Wallet credit"><span className="tabular text-success">− {formatINR(o.walletUsed ?? 0)}</span></DetailRow>}
               <DetailRow label="Total paid"><span className="text-base font-semibold tabular">{formatINR(o.total)}</span></DetailRow>
               <DetailRow label="Method">{payLabel[o.payment.method]}</DetailRow>
               <DetailRow label="Status"><StatusBadge status={o.payment.status} /></DetailRow>

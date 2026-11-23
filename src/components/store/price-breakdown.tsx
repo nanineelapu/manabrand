@@ -56,10 +56,10 @@ export function CouponBox() {
   );
 }
 
-export function PriceBreakdown({ cod, express, className }: { cod?: boolean; express?: boolean; className?: string }) {
+export function PriceBreakdown({ cod, express, wallet = 0, className }: { cod?: boolean; express?: boolean; wallet?: number; className?: string }) {
   const cart = useCartPricing();
   const extra = (cod ? COD_FEE : 0) + (express ? 149 : 0);
-  const total = cart.total + extra;
+  const total = Math.max(0, cart.total + extra - wallet);
   const row = "flex items-center justify-between text-sm";
   return (
     <dl className={cn("space-y-3", className)}>
@@ -69,6 +69,7 @@ export function PriceBreakdown({ cod, express, className }: { cod?: boolean; exp
       <div className={row}><dt className="text-muted">Shipping</dt><dd className="tabular">{cart.shipping === 0 ? <span className="font-medium text-success">Free</span> : formatINR(cart.shipping)}</dd></div>
       {express && <div className={row}><dt className="text-muted">Express delivery</dt><dd className="tabular">{formatINR(149)}</dd></div>}
       {cod && <div className={row}><dt className="text-muted">Cash on delivery fee</dt><dd className="tabular">{formatINR(COD_FEE)}</dd></div>}
+      {wallet > 0 && <div className={row}><dt className="text-muted">Wallet credit</dt><dd className="tabular text-success">− {formatINR(wallet)}</dd></div>}
       <div className="flex items-baseline justify-between border-t border-line pt-3.5">
         <dt className="text-[15px] font-semibold">Total</dt><dd className="text-xl font-semibold tabular">{formatINR(total)}</dd>
       </div>

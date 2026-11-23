@@ -43,14 +43,16 @@ const p = (t: string) => `<p style="margin:0 0 14px">${t}</p>`;
 export const welcomeEmail = (name: string, siteUrl: string): Mail => mail("Welcome to ManaBrand", layout({
   title: "Welcome to ManaBrand", preheader: "Your account is ready — start shopping local fashion.", siteUrl,
   body: h(`Welcome, ${esc(name.split(" ")[0])} 👋`) + p("Your ManaBrand account is ready. Sign in any time with your <b>mobile number and 4-digit PIN</b>.") +
-    p("Order updates and receipts will come to this email address.") + button(`${siteUrl}/shop`, "Start shopping"),
+    p("Order updates and receipts will come to this email address.") +
+    `<div style="margin:6px 0 14px;padding:14px 16px;border:2px dashed ${BRAND.pink};border-radius:12px;text-align:center"><div style="font-size:13px;color:${BRAND.muted}">A welcome gift is waiting in your wallet</div><div style="font-size:26px;font-weight:900;color:${BRAND.pink}">₹500</div><div style="font-size:13px;color:${BRAND.muted}">It is used automatically at checkout.</div></div>` +
+    button(`${siteUrl}/shop`, "Start shopping"),
 }));
 
 export interface OrderMail {
   name: string; number: string; total: number; paymentMethod: string; siteUrl: string;
   items: { name: string; qty: number; price: number; size?: string; color?: string }[];
   address?: { name?: string; line1?: string; line2?: string; city?: string; state?: string; pincode?: string; phone?: string };
-  subtotal?: number; shipping?: number; discount?: number;
+  subtotal?: number; shipping?: number; discount?: number; wallet?: number;
 }
 const PAY: Record<string, string> = { cod: "Cash on delivery", upi: "UPI", card: "Card", netbanking: "Net banking", wallet: "Wallet" };
 
@@ -64,7 +66,7 @@ export const orderConfirmedEmail = (o: OrderMail): Mail => {
     reason: "You are receiving this because you placed an order on ManaBrand.",
     body: h("Thank you — your order is placed ✅") + p(`Hi ${esc(o.name.split(" ")[0])}, we have received order <b>${esc(o.number)}</b>. It will be delivered within <b>48 hours</b>.`) +
       `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 10px">${rows}</table>` +
-      `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px">${o.subtotal != null ? line("Items", inr(o.subtotal)) : ""}${o.discount ? line("Discount", "− " + inr(o.discount)) : ""}${o.shipping != null ? line("Delivery", o.shipping ? inr(o.shipping) : "Free") : ""}${line("Total", inr(o.total), true)}</table>` +
+      `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px">${o.subtotal != null ? line("Items", inr(o.subtotal)) : ""}${o.discount ? line("Discount", "− " + inr(o.discount)) : ""}${o.shipping != null ? line("Delivery", o.shipping ? inr(o.shipping) : "Free") : ""}${o.wallet ? line("Wallet credit", "− " + inr(o.wallet)) : ""}${line("Total", inr(o.total), true)}</table>` +
       p(`<b>Payment:</b> ${esc(PAY[o.paymentMethod] ?? o.paymentMethod)}${o.paymentMethod === "cod" ? " — please keep " + inr(o.total) + " ready at delivery." : ""}`) +
       (addr ? p(`<b>Delivering to</b><br>${addr}`) : "") + button(`${o.siteUrl}/account/orders`, "Track your order"),
   }));

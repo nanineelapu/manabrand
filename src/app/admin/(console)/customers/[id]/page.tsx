@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { WalletAdjust } from "@/components/admin/wallet-adjust";
 import { AutoRefresh } from "@/components/shared/auto-refresh";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { CustomerActions } from "@/components/admin/customer-actions";
@@ -6,7 +7,7 @@ import { PageHeader, Panel, StatCard } from "@/components/shared/blocks";
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge } from "@/components/shared/status";
 import { Avatar, Badge } from "@/components/ui/display";
-import { getAddressesForCustomer, getCustomerById, getOrdersForCustomer } from "@/lib/data";
+import { getAddressesForCustomer, getCustomerById, getOrdersForCustomer, getWalletForCustomer } from "@/lib/data";
 import { formatDate, formatDateTime, formatINR } from "@/lib/utils";
 
 export const metadata = { title: "Customer" };
@@ -14,7 +15,7 @@ export const metadata = { title: "Customer" };
 export default async function CustomerPage({ params }: PageProps<"/admin/customers/[id]">) {
   const c = await getCustomerById((await params).id);
   if (!c) notFound();
-  const [orders, addresses] = await Promise.all([getOrdersForCustomer(c.id), getAddressesForCustomer(c.id)]);
+  const [orders, addresses, wallet] = await Promise.all([getOrdersForCustomer(c.id), getAddressesForCustomer(c.id), getWalletForCustomer(c.id)]);
   return (
     <>
       <AutoRefresh seconds={60} />
@@ -33,6 +34,15 @@ export default async function CustomerPage({ params }: PageProps<"/admin/custome
         <StatCard label="Avg. order" value={formatINR(Math.round(c.spent / Math.max(1, c.orders)))} hint="Lifetime" />
         <StatCard label="Customer since" value={formatDate(c.joined, { month: "short", year: "numeric" })} hint="Registered" />
       </div>
+      <Panel title={`Wallet · ${formatINR(wallet.balance)}`} className="mt-5" action={<WalletAdjust userId={c.id} name={c.name} />}>
+        {wallet.history.length ? (
+          <ul className="divide-y divide-line text-sm">
+            {wallet.history.slice(0, 6).map((t) => (
+              <li key={t.id} className="flex items-center justify-between gap-3 py-2.5"><span className="min-w-0"><span className="block truncate font-medium">{t.note || t.kind}</span><span className="text-xs text-muted">{formatDateTime(t.createdAt)}</span></span><span className={`shrink-0 font-semibold tabular ${t.amount > 0 ? "text-success" : ""}`}>{t.amount > 0 ? "+" : "−"} {formatINR(Math.abs(t.amount))}</span></li>
+            ))}
+          </ul>
+        ) : <p className="text-sm text-muted">No wallet activity yet.</p>}
+      </Panel>
       <Panel title={`Saved addresses (${addresses.length})`} className="mt-5">
         {addresses.length ? (
           <ul className="grid gap-3 md:grid-cols-2">

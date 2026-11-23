@@ -184,6 +184,17 @@ export interface Order {
   awb?: string;
   courier?: string;
   couponCode?: string;
+  /** how much of the total was paid from the customer's wallet (total is already reduced by it) */
+  walletUsed?: number;
+}
+
+export interface WalletTx {
+  id: string;
+  /** + credit, − spent */
+  amount: number;
+  kind: "welcome" | "order" | "refund" | "adjust";
+  note: string;
+  createdAt: string;
 }
 
 export interface ReturnRequest {

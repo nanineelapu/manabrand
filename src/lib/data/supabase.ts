@@ -14,8 +14,7 @@ import { createClient } from "@/lib/supabase/server";
 import { analytics as mockAnalytics } from "@/lib/mock/ops";
 import type {
   Address, AppNotification, Banner, Category, Collection, Coupon, Customer, Order, OrderStatus, Payout, Product,
-  ProductStatus, ReturnRequest, Review, Seller,
-} from "@/types";
+  ProductStatus, ReturnRequest, Review, Seller, WalletTx } from "@/types";
 import type { PhotoKind } from "@/lib/images";
 import { discountPct, formatDate } from "@/lib/utils";
 import type { ProductQuery } from "./mock";
@@ -76,7 +75,7 @@ function mapOrder(r: any): Order {
     createdAt: r.created_at,
     timeline: [...(r.order_events ?? [])].sort((x: any, y: any) => +new Date(x.created_at) - +new Date(y.created_at))
       .map((e: any) => ({ status: e.status as OrderStatus, at: e.created_at, note: e.note })),
-    awb: r.awb ?? undefined, courier: r.courier ?? undefined, couponCode: r.coupon_code ?? undefined,
+    awb: r.awb ?? undefined, courier: r.courier ?? undefined, couponCode: r.coupon_code ?? undefined, walletUsed: r.wallet_used ?? 0,
   };
 }
 const ORDER_SELECT = "*, order_items(*), order_events(status, note, created_at), profiles(full_name)";
@@ -483,6 +482,20 @@ export async function getSellerDashboard(sellerId?: string) {
     bestSellers: [...products].sort((a, b) => b.sold - a.sold).slice(0, 4),
     pendingPayout: d.pendingPayout, returnsOpen: d.returnsOpen, weekly: d.weekly as { week: string; sales: number }[],
   };
+}
+
+const mapWallet = (rows: any[]) => ({
+  balance: rows.reduce((a, r) => a + r.amount, 0),
+  history: rows.map((r) => ({ id: r.id, amount: r.amount, kind: r.kind, note: r.note, createdAt: r.created_at })) as WalletTx[],
+});
+/** The signed-in customer's wallet: balance (sum of the ledger) and history. */
+export async function getWallet() {
+  const me = await uid(); if (!me) return { balance: 0, history: [] as WalletTx[] };
+  return mapWallet(ok(await (await sb()).from("wallet_transactions").select("*").eq("user_id", me).order("created_at", { ascending: false }).limit(1000), []) as any[]);
+}
+/** Admin: a customer's wallet (needs the admin-read policy from migration 0014). */
+export async function getWalletForCustomer(userId: string) {
+  return mapWallet(ok(await (await sb()).from("wallet_transactions").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(1000), []) as any[]);
 }
 
 /** Admin: every address a customer has saved (needs the admin-read policy from migration 0013). */

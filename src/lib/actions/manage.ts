@@ -1,5 +1,6 @@
 "use server";
 
+import { signUpErrorMessage } from "@/lib/auth/errors";
 import { normalizeDealBox } from "@/lib/magic-hours";
 import { revalidatePath } from "next/cache";
 import { passwordError, normalizeEmail, normalizePhone, nameError } from "@/lib/auth/validation";
@@ -68,6 +69,24 @@ export async function setShipment(orderId: string, courier: string, tracking: st
     const { error } = await db.from("orders").update({ courier: clampStr(courier, 60) || "ManaBrand Delivery", awb: clampStr(tracking, 60) || null }).eq("id", orderId);
     if (error) throw new Error(error.message);
     bust("/admin", "/seller", "/account"); return { ok: true };
+  });
+}
+/** Admin: add (positive) or take away (negative) wallet money for a customer, with a note. Never below zero. */
+export async function adjustWallet(userId: string, amount: number, note: string): Promise<Result> {
+  return guarded(["admin"], async () => {
+    const n = Math.trunc(Number(amount));
+    if (!isUuid(userId) || !Number.isFinite(n) || n === 0 || Math.abs(n) > 100000) return { ok: false, error: "Enter an amount between ₹1 and ₹1,00,000." };
+    const why = clampStr(note, 120);
+    if (why.length < 3) return { ok: false, error: "Add a short reason." };
+    const db = createAdminClient();
+    if (n < 0) {
+      const { data } = await db.from("wallet_transactions").select("amount").eq("user_id", userId);
+      const bal = ((data ?? []) as { amount: number }[]).reduce((a, r) => a + r.amount, 0);
+      if (bal + n < 0) return { ok: false, error: `The wallet only has ₹${bal}.` };
+    }
+    const { error } = await db.from("wallet_transactions").insert({ user_id: userId, amount: n, kind: "adjust", note: why });
+    if (error) throw new Error(error.message);
+    bust("/admin", "/account"); return { ok: true };
   });
 }
 /** Add a teammate who can sign in to the admin panel. Only a "Super admin" may do this. */
@@ -575,7 +594,7 @@ export async function registerSeller(input: {
     });
     if (error || !created.user) {
       console.error("[seller register] could not create the account:", error?.message, error?.status ?? "");
-      return { ok: false, error: /database error/i.test(error?.message ?? "") ? "Sign-up isn’t fully set up on our side yet. Please try again a little later, or message us on WhatsApp." : "We couldn’t create your account. Please try again." };
+      return { ok: false, error: signUpErrorMessage(error) };
     }
 
     const { error: sErr } = await admin.from("sellers").insert({

@@ -196,6 +196,8 @@ export const getAddressesForCustomer = async (id: string) => {
   const c = customers.find((x) => x.id === id);
   return c ? [{ id: `a-${id}`, label: "Home" as const, name: c.name, phone: c.phone, line1: "Door No. 4-112, Main Road", line2: undefined as string | undefined, city: c.city, state: "Andhra Pradesh", pincode: "532312", isDefault: true }] : [];
 };
+export const getWallet = async () => ({ balance: 500, history: [{ id: "w1", amount: 500, kind: "welcome" as const, note: "Welcome gift", createdAt: new Date(MOCK_NOW - 5 * 86400000).toISOString() }] });
+export const getWalletForCustomer = async (id: string) => (id ? getWallet() : getWallet());
 export const getDealBox = async () => normalizeDealBox(undefined);
 export const getSettings = async (): Promise<SettingsData> => ({
   shipping: { freeAbove: 9999999, standardFee: 99, expressFee: 149, codFee: 40 }, payments: { upi: true, card: true, netbanking: true, cod: true, wallet: false },

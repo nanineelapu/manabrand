@@ -215,6 +215,33 @@ async function main() {
   const sMid = await stockOf(A.id, A.v);
   await db.query(`select cancel_order($1, 'Changed my mind')`, [o1.order_id]);
   ok("cancel_order restores stock", (await stockOf(A.id, A.v)) === sMid + 1);
+
+  // ---- wallet: ₹500 welcome credit, spending it at checkout, never overspending, refund on cancel
+  await as("postgres");
+  const custN = (await one<{ n: number }>(`select count(*)::int n from profiles where role = 'customer'`))[0].n;
+  const welcomeN = (await one<{ n: number }>(`select count(*)::int n from wallet_transactions where kind = 'welcome' and amount = 500`))[0].n;
+  ok("every new customer got the ₹500 welcome credit", custN > 0 && welcomeN === custN);
+  ok("staff accounts get no welcome credit", (await one(`select 1 from wallet_transactions w join profiles p on p.id = w.user_id where p.role <> 'customer'`)).length === 0);
+  const bal = async () => (await one<{ b: number }>(`select coalesce(sum(amount), 0)::int b from wallet_transactions where user_id = $1`, [shopper]))[0].b;
+  const before = await bal();
+  await as("authenticated", shopper);
+  const wl = (await one<{ order_id: string; order_number: string; total: number }>(`select * from place_order_wallet($1::jsonb, $2::jsonb, 'cod'::payment_method, null, false, 300)`, [JSON.stringify([{ product_id: A.id, option_value: A.v, qty: 1 }]), JSON.stringify(ADDR)]))[0];
+  ok("wallet lowers the order total by what was used", wl.total === A.price + 99 + 40 - 300, `(got ${wl.total}, expected ${A.price + 99 + 40 - 300})`);
+  await as("postgres");
+  ok("the spend is recorded in the ledger and on the order", (await bal()) === before - 300 && (await one<{ w: number }>(`select wallet_used w from orders where id = $1`, [wl.order_id]))[0].w === 300);
+  await as("authenticated", shopper);
+  const over = (await one<{ order_id: string; total: number }>(`select * from place_order_wallet($1::jsonb, $2::jsonb, 'cod'::payment_method, null, false, 99999)`, [JSON.stringify([{ product_id: B.id, option_value: B.v, qty: 1 }]), JSON.stringify(ADDR)]))[0];
+  await as("postgres");
+  ok("the wallet can never go below zero (spend is capped at the balance)", (await bal()) === Math.max(0, before - 300 - Math.min(before - 300, B.price + 99 + 40)) && (await bal()) >= 0);
+  const afterOver = await bal();
+  await as("service_role");   // only the server (or an admin) may refund
+  await db.query(`select wallet_refund_order($1)`, [wl.order_id]); await db.query(`select wallet_refund_order($1)`, [wl.order_id]);
+  await as("postgres");
+  ok("cancelling gives the wallet money back — once, even if asked twice", (await bal()) === afterOver + 300);
+  await as("authenticated", other2);
+  ok("a customer cannot see someone else's wallet", (await one(`select 1 from wallet_transactions where user_id = $1`, [shopper])).length === 0);
+  void over;
+  await as("authenticated", shopper);
   ok("order is cancelled with an event", (await one(`select 1 from orders o join order_events e on e.order_id=o.id where o.id=$1 and o.status='cancelled' and e.status='cancelled'`, [o1.order_id])).length === 1);
   await mustFail("cancelled order cannot be cancelled again", () => db.query(`select cancel_order($1)`, [o1.order_id]), /no longer be cancelled/);
 

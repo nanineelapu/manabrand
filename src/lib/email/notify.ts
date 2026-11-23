@@ -19,13 +19,13 @@ async function buyerOf(userId: string): Promise<Buyer | null> {
 /** Order placed → confirmation with items, totals and address. (Transactional: sent even if marketing mail is off.) */
 export const notifyOrderPlaced = (orderId: string) => safe(async () => {
   const { data: o } = await createAdminClient().from("orders")
-    .select("number, total, subtotal, discount, shipping_fee, payment_method, address, user_id, order_items(name, qty, price, color, option_value)").eq("id", orderId).single();
+    .select("number, total, subtotal, discount, shipping_fee, wallet_used, payment_method, address, user_id, order_items(name, qty, price, color, option_value)").eq("id", orderId).single();
   if (!o) return;
   const b = await buyerOf(o.user_id); if (!b) return;
   const items = (o.order_items ?? []) as { name: string; qty: number; price: number; color: string | null; option_value: string }[];
   await sendEmail({ to: b.email, ...t.orderConfirmedEmail({
     name: b.full_name, number: o.number, total: o.total, paymentMethod: o.payment_method, siteUrl: siteUrl(), address: o.address,
-    subtotal: o.subtotal, discount: o.discount, shipping: o.shipping_fee,
+    subtotal: o.subtotal, discount: o.discount, shipping: o.shipping_fee, wallet: o.wallet_used || undefined,
     items: items.map((i) => ({ name: i.name, qty: i.qty, price: i.price, size: i.option_value, color: i.color ?? undefined })),
   }) });
 });

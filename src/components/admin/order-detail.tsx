@@ -76,6 +76,7 @@ export function OrderManager({ order, base, role }: { order: Order; base: string
               <DetailRow label="Subtotal"><span className="tabular">{formatINR(o.subtotal)}</span></DetailRow>
               {o.discount > 0 && <DetailRow label={`Discount ${o.couponCode ?? ""}`}><span className="tabular text-success">− {formatINR(o.discount)}</span></DetailRow>}
               <DetailRow label="Shipping"><span className="tabular">{o.shipping ? formatINR(o.shipping) : "Free"}</span></DetailRow>
+              {(o.walletUsed ?? 0) > 0 && <DetailRow label="Wallet credit"><span className="tabular text-success">− {formatINR(o.walletUsed ?? 0)}</span></DetailRow>}
               <DetailRow label="Total"><span className="text-base font-semibold tabular">{formatINR(o.total)}</span></DetailRow>
             </dl>
           </Panel>

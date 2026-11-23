@@ -19,7 +19,7 @@ export interface AddressInput { name: string; phone: string; line1: string; line
  * decided by the database. The browser only says WHAT it wants, never how much it costs.
  */
 export async function placeOrder(input: {
-  lines: CartLineInput[]; address: AddressInput; method: "upi" | "card" | "cod" | "netbanking"; coupon?: string | null; express?: boolean;
+  lines: CartLineInput[]; address: AddressInput; method: "upi" | "card" | "cod" | "netbanking"; coupon?: string | null; express?: boolean; wallet?: number;
 }): Promise<Result<{ orderId: string; number: string; total: number; paymentStatus: "paid" | "pending" }>> {
   return guarded(["customer"], async () => {
     const supabase = await createClient();
@@ -30,10 +30,11 @@ export async function placeOrder(input: {
     if (!inServiceArea(String(input.address.pincode ?? ""))) return { ok: false, error: OUT_OF_AREA };
     if (input.method !== "cod" && !onlinePaymentsLive()) return { ok: false, error: "Online payment isn’t available yet — please choose Cash on delivery." };
 
-    const { data, error } = await supabase.rpc("place_order", {
-      p_items: items, p_address: { ...input.address, phone }, p_payment_method: input.method,
-      p_coupon: input.coupon ?? null, p_express: Boolean(input.express),
-    });
+    const walletAsk = Math.max(0, Math.floor(Number(input.wallet) || 0));   // how much of the wallet to spend (the database caps it at the balance and the order total)
+    const args = { p_items: items, p_address: { ...input.address, phone }, p_payment_method: input.method, p_coupon: input.coupon ?? null, p_express: Boolean(input.express) };
+    const { data, error } = walletAsk > 0
+      ? await supabase.rpc("place_order_wallet", { ...args, p_wallet: walletAsk })
+      : await supabase.rpc("place_order", args);
     if (error) throw new Error(error.message);
     const row = (Array.isArray(data) ? data[0] : data) as { order_id: string; order_number: string; total: number };
 
@@ -52,6 +53,7 @@ export async function cancelOrder(orderId: string, reason: string): Promise<Resu
     const { error } = await (await createClient()).rpc("cancel_order", { p_order: orderId, p_reason: clampStr(reason, 200) });
     if (error) throw new Error(error.message);
     void refundOrderIfPaid(orderId); // paid online? the money goes back automatically
+    void createAdminClient().rpc("wallet_refund_order", { p_order: orderId });   // wallet money used on this order goes back to the wallet
     void notifyOrderStatus(orderId, "cancelled");
     revalidatePath("/account/orders"); revalidatePath("/admin/orders");
     return { ok: true };

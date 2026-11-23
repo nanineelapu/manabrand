@@ -1,5 +1,6 @@
 "use server";
 
+import { signUpErrorMessage } from "@/lib/auth/errors";
 import { redirect } from "next/navigation";
 import { sendEmail } from "@/lib/email/send";
 import { welcomeEmail } from "@/lib/email/templates";
@@ -58,9 +59,7 @@ export async function registerCustomer(input: {
   });
   if (error) {
     console.error("[register] could not create the account:", error.message, error.status ?? "");   // visible in Vercel → Logs
-    const dup = /already|registered|duplicate|unique/i.test(error.message);
-    const setup = /database error/i.test(error.message);   // the database trigger refused it: the SQL setup is incomplete
-    return { ok: false, error: dup ? "An account with these details already exists." : setup ? "Sign-up isn’t fully set up on our side yet. Please try again a little later, or message us on WhatsApp." : "We couldn’t create your account. Please try again." };
+    return { ok: false, error: signUpErrorMessage(error) };
   }
 
   // sign in right away (sets the session cookies)

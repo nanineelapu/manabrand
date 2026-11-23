@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight, Heart, LogOut, MapPin, Package, User, LifeBuoy } from "lucide-react";
+import { ChevronRight, Heart, LogOut, MapPin, Package, User, LifeBuoy, Wallet } from "lucide-react";
 import { SignOutButton } from "@/components/shared/sign-out-button";
 import { cn } from "@/lib/utils";
 
 export const accountLinks = [
   { href: "/account/orders", label: "My orders", icon: Package, hint: "Track or buy again" },
+  { href: "/account/wallet", label: "Wallet", icon: Wallet, hint: "Balance and history" },
   { href: "/wishlist", label: "Wishlist", icon: Heart, hint: "Pieces you’ve saved" },
   { href: "/account/addresses", label: "Addresses", icon: MapPin, hint: "Manage delivery addresses" },
   { href: "/account/profile", label: "Profile & security", icon: User, hint: "Name, email, phone" },

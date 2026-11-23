@@ -1,15 +1,16 @@
 "use client";
 
+import { walletToUse } from "@/lib/wallet";
 import { payWithRazorpay } from "@/lib/payments/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Banknote, Building2, Check, ChevronDown, CreditCard, Lock, MapPin, Plus, Smartphone, Truck } from "lucide-react";
+import { Banknote, Building2, Wallet, Check, ChevronDown, CreditCard, Lock, MapPin, Plus, Smartphone, Truck } from "lucide-react";
 import { ProductImage } from "@/components/brand/product-image";
 import { Stepper } from "@/components/shared/blocks";
 import { Button } from "@/components/ui/button";
 import { EmptyState, Skeleton } from "@/components/ui/display";
-import { Field, Input, Radio, Select } from "@/components/ui/form";
+import { Field, Input, Radio, Select, Switch } from "@/components/ui/form";
 import { Sheet } from "@/components/ui/sheet";
 import { COD_FEE } from "@/lib/cart";
 import { toast, useCart } from "@/lib/stores";
@@ -24,7 +25,10 @@ import { ShoppingBag } from "lucide-react";
 type Pay = "upi" | "card" | "cod" | "netbanking";
 const STEPS = ["Address", "Delivery", "Payment"];
 
-export function CheckoutFlow({ addresses: initial, onlinePayments = true, gateway = false }: { addresses: Address[]; onlinePayments?: boolean; gateway?: boolean }) {
+/** Demo mode only (no database): a made-up order number. */
+const demoOrderNumber = () => `MB-${10500 + Math.floor(Math.random() * 400)}`;
+
+export function CheckoutFlow({ addresses: initial, onlinePayments = true, gateway = false, walletBalance = 0 }: { addresses: Address[]; onlinePayments?: boolean; gateway?: boolean; walletBalance?: number }) {
   const router = useRouter();
   const mounted = useMounted();
   const cart = useCartPricing();
@@ -35,6 +39,7 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
   const [addrs, setAddrs] = useState(initial);
   const [addrId, setAddrId] = useState(initial.find((a) => a.isDefault)?.id ?? initial[0]?.id ?? "");
   const [adding, setAdding] = useState(false);
+  const [useWallet, setUseWallet] = useState(true);   // wallet money is used by default; the shopper can switch it off
   const express = false; // every order is delivered within 48 hours — there is no express tier
   const [pay, setPay] = useState<Pay>(onlinePayments ? "upi" : "cod");
   const [f, setF] = useState({ vpa: "", card: "", name: "", exp: "", cvv: "", bank: "" });
@@ -70,12 +75,12 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
     const res = await placeOrder({
       lines: cart.lines.map((l) => ({ productId: l.productId, color: l.color, size: l.size, qty: l.qty })),
       address: { name: addr.name, phone: addr.phone, line1: addr.line1, line2: addr.line2, city: addr.city, state: addr.state, pincode: addr.pincode },
-      method: pay, coupon: couponCode, express,
+      method: pay, coupon: couponCode, express, wallet: walletUse,
     });
     let number: string, total: number;
     if (res.ok) {
       number = res.number; total = res.total;
-      if (pay !== "cod") {   // online payment: open Razorpay for the order we just created
+      if (pay !== "cod" && res.total > 0) {   // online payment: open Razorpay for what is left after the wallet
         const pr = await payWithRazorpay(res.orderId);
         if (pr.status !== "paid") {
           clear();   // the order exists — keep the bag empty and let the customer finish paying from the order page
@@ -87,8 +92,8 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
     }
     else if (res.demo) {   // no database connected: simulate so the demo flow still works
       await new Promise((r) => setTimeout(r, 1100));
-      number = `MB-${10500 + Math.floor(Math.random() * 400)}`;
-      total = cart.total + (pay === "cod" ? COD_FEE : 0) + (express ? 149 : 0);
+      number = demoOrderNumber();
+      total = finalTotal;
     } else {
       setPlacing(false);
       if (/sign in/i.test(res.error)) { router.push("/login?next=/checkout"); return; }
@@ -120,7 +125,9 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
     { id: "cod", label: "Cash on delivery", sub: `₹${COD_FEE} handling fee`, icon: <Banknote className="size-5" /> },
   ];
 
-  const finalTotal = cart.total + (pay === "cod" ? COD_FEE : 0) + (express ? 149 : 0);
+  const beforeWallet = cart.total + (pay === "cod" ? COD_FEE : 0) + (express ? 149 : 0);
+  const walletUse = useWallet ? walletToUse(walletBalance, beforeWallet) : 0;
+  const finalTotal = beforeWallet - walletUse;
 
   return (
     <div className="container-page pb-32 pt-4 md:pb-12 md:pt-8">
@@ -133,7 +140,7 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
       {/* mobile summary toggle */}
       <details open={summaryOpen} onToggle={(e) => setSummaryOpen((e.target as HTMLDetailsElement).open)} className="mb-5 rounded-card border border-line bg-card lg:hidden">
         <summary className="flex min-h-14 cursor-pointer items-center justify-between px-4 text-sm font-medium"><span>Order summary · {cart.count} items</span><span className="flex items-center gap-2 font-semibold tabular">{formatINR(finalTotal)}<ChevronDown className="size-4 text-muted" /></span></summary>
-        <div className="border-t border-line p-4"><PriceBreakdown cod={pay === "cod"} express={express} /></div>
+        <div className="border-t border-line p-4"><PriceBreakdown cod={pay === "cod"} express={express} wallet={walletUse} /></div>
       </details>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_380px] lg:gap-12">
@@ -164,6 +171,13 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
 
           {panel(2, "Payment", null, (
             <div className="space-y-3">
+              {walletBalance > 0 && (
+                <div className="flex items-center gap-3 rounded-ctl border border-line bg-bg-subtle p-3.5">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-accent"><Wallet className="size-5" /></span>
+                  <div className="min-w-0 flex-1"><p className="text-sm font-semibold">Use wallet balance</p><p className="text-xs text-muted">{formatINR(walletBalance)} available{useWallet && walletUse > 0 ? ` · ${formatINR(walletUse)} will be used` : ""}</p></div>
+                  <Switch label="Use wallet balance" checked={useWallet} onChange={setUseWallet} />
+                </div>
+              )}
               {!onlinePayments && <p className="rounded-ctl bg-bg-subtle px-4 py-3 text-[13px] text-muted">Pay when your order arrives — online payments are coming soon.</p>}
               {payOptions.filter((o) => onlinePayments || o.id === "cod").map((o) => (
                 <div key={o.id}>
@@ -206,7 +220,7 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
                 </li>
               ))}
             </ul>
-            <PriceBreakdown cod={pay === "cod"} express={express} className="border-t border-line pt-4" />
+            <PriceBreakdown cod={pay === "cod"} express={express} wallet={walletUse} className="border-t border-line pt-4" />
             {addr && <p className="flex gap-2 rounded-ctl bg-bg-subtle p-3 text-xs text-muted"><MapPin className="mt-0.5 size-4 shrink-0" /> Delivering to {addr.name}, {addr.city} {addr.pincode}</p>}
           </div>
         </aside>

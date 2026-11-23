@@ -2,14 +2,14 @@ import Link from "next/link";
 import { ChevronRight, Package, Wallet } from "lucide-react";
 import { AccountMenuList } from "@/components/store/account-nav";
 import { OrderCard } from "@/components/store/order-card";
-import { Avatar, Badge } from "@/components/ui/display";
-import { getCurrentCustomer, getMyOrders } from "@/lib/data";
+import { Avatar } from "@/components/ui/display";
+import { getCurrentCustomer, getMyOrders, getWallet } from "@/lib/data";
 import { formatDate, formatINR } from "@/lib/utils";
 
 export const metadata = { title: "My account" };
 
 export default async function AccountPage() {
-  const [me, orders] = await Promise.all([getCurrentCustomer(), getMyOrders()]);
+  const [me, orders, wallet] = await Promise.all([getCurrentCustomer(), getMyOrders(), getWallet()]);
   const active = orders.filter((o) => !["delivered", "cancelled", "returned"].includes(o.status));
   return (
     <div className="space-y-6">
@@ -20,18 +20,15 @@ export default async function AccountPage() {
           <h1 className="truncate font-display text-2xl font-semibold md:text-3xl">{me.name}</h1>
           <p className="truncate text-sm text-white/60">{me.email} · Member since {formatDate(me.joined, { month: "short", year: "numeric" })}</p>
         </div>
-        <Badge tone="accent" className="hidden bg-gold-400 text-ink sm:inline-flex">{me.tier} member</Badge>
       </section>
 
       <div className="grid grid-cols-2 gap-3">
-        {[[Package, "Orders", String(orders.length)], [Wallet, "Spent", formatINR(me.spent)]].map(([I, l, v]) => {
-          const Icon = I as typeof Package;
-          return (
-            <div key={l as string} className="rounded-card border border-line bg-card p-3.5 text-center shadow-card md:p-5">
-              <Icon className="mx-auto size-5 text-accent" /><p className="mt-2 text-lg font-semibold tabular md:text-xl">{v as string}</p><p className="text-xs text-muted">{l as string}</p>
-            </div>
-          );
-        })}
+        <Link href="/account/orders" className="rounded-card border border-line bg-card p-3.5 text-center shadow-card transition-colors hover:border-line-strong md:p-5">
+          <Package className="mx-auto size-5 text-accent" /><p className="mt-2 text-lg font-semibold tabular md:text-xl">{orders.length}</p><p className="text-xs text-muted">Orders</p>
+        </Link>
+        <Link href="/account/wallet" className="rounded-card border border-line bg-card p-3.5 text-center shadow-card transition-colors hover:border-line-strong md:p-5">
+          <Wallet className="mx-auto size-5 text-accent" /><p className="mt-2 text-lg font-semibold tabular md:text-xl">{formatINR(wallet.balance)}</p><p className="text-xs text-muted">Wallet balance</p>
+        </Link>
       </div>
 
       <AccountMenuList />

@@ -73,6 +73,8 @@ export const getSellerReviews = pick("getSellerReviews");
 
 export const getSettings = pick("getSettings");
 export const getDealBox = pick("getDealBox");
+export const getWallet = pick("getWallet");
+export const getWalletForCustomer = pick("getWalletForCustomer");
 export const getAddressesForCustomer = pick("getAddressesForCustomer");
 export const getSellerPromotions = pick("getSellerPromotions");
 export const getSellerTickets = pick("getSellerTickets");
