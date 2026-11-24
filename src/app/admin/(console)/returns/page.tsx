@@ -8,7 +8,7 @@ export default async function ReturnsPage() {
   const r = await getAllReturns();
   return (
     <>
-      <PageHeader title="Returns & refunds" subtitle={`${r.filter((x) => x.status === "requested").length} requests need a decision`} />
+      <PageHeader title="Returns & exchanges" subtitle={`${r.filter((x) => x.status === "requested").length} requests need a decision`} />
       <ReturnsView returns={r} />
     </>
   );

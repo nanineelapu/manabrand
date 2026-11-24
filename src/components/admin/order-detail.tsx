@@ -10,7 +10,7 @@ import { ProductImage } from "@/components/brand/product-image";
 import { Avatar, DetailRow } from "@/components/ui/display";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea } from "@/components/ui/form";
-import { addOrderNote, refundOrderPayment, setOrderStatus, setShipment } from "@/lib/actions/manage";
+import { addOrderNote, setOrderStatus, setShipment } from "@/lib/actions/manage";
 import { cancelOrder } from "@/lib/actions/store";
 import { useAct } from "@/lib/actions/use-act";
 import { formatDateTime, formatINR } from "@/lib/utils";
@@ -49,13 +49,12 @@ export function OrderManager({ order, base, role }: { order: Order; base: string
           <div className="mr-auto min-w-0"><div className="flex items-center gap-2.5"><h2 className="text-xl font-semibold">{o.number}</h2><StatusBadge status={o.status} /></div><p className="mt-0.5 text-[13px] text-muted">Placed {formatDateTime(o.createdAt)} · {o.items.length} line{o.items.length > 1 ? "s" : ""}</p></div>
           <div className="order-2 flex w-full gap-2 md:order-3 md:w-auto">
           {step && <Button size="sm" variant="accent" className="flex-1 md:flex-none" onClick={() => advance(step.to)}>{step.label}</Button>}
-          {["placed", "confirmed"].includes(o.status) && <Button size="sm" variant="outline" className="flex-1 text-danger md:flex-none" onClick={() => advance("cancelled", "Cancelled by " + role)}>Cancel</Button>}
+          {((role === "admin" && ["placed", "confirmed", "packed"].includes(o.status)) || (role === "seller" && ["placed", "confirmed"].includes(o.status))) && <Button size="sm" variant="outline" className="flex-1 text-danger md:flex-none" onClick={() => advance("cancelled", "Cancelled by " + role)}>Cancel</Button>}
           </div>
           <div className="no-scrollbar order-3 -mx-4 flex w-[calc(100%+2rem)] gap-2 overflow-x-auto px-4 md:order-2 md:mx-0 md:w-auto md:overflow-visible md:px-0">
           {role === "admin" && <Button variant="outline" size="sm" className="shrink-0" href={`/print/order/${o.id}?type=invoice`} target="_blank"><Printer className="size-4" /> Invoice</Button>}
           <Button variant="outline" size="sm" className="shrink-0" href={`/print/order/${o.id}?type=slip`} target="_blank"><Printer className="size-4" /> Packing slip</Button>
           {role === "admin" && <Button variant="outline" size="sm" className="shrink-0" href={orderUpdateLink({ phone: o.address.phone, name: o.customerName, number: o.number, status: o.status, awb: o.awb, courier: o.courier })} target="_blank"><MessageCircle className="size-4" /> WhatsApp customer</Button>}
-          {role === "admin" && o.payment.status === "paid" && o.payment.method !== "cod" && <Button variant="outline" size="sm" className="shrink-0 text-danger" onClick={() => { if (window.confirm(`Refund ${formatINR(o.total)} to the customer for ${o.number}?`)) act(() => refundOrderPayment(o.id), { success: "Refund sent to the customer", refresh: true }); }}>Refund payment</Button>}
           </div>
         </div>
       </div>
@@ -92,7 +91,7 @@ export function OrderManager({ order, base, role }: { order: Order; base: string
               <Button size="sm" variant="secondary" className="mt-3" onClick={() => act(() => setShipment(o.id, ship.courier, ship.awb), { success: "Delivery details saved", onOk: () => setO((p) => ({ ...p, courier: ship.courier || undefined, awb: ship.awb || undefined })), onDemo: () => setO((p) => ({ ...p, courier: ship.courier || undefined, awb: ship.awb || undefined })), refresh: false })}>Save delivery details</Button>
             </div>
             <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
-              <Field label="Update status manually" htmlFor="fs"><Select id="fs" value={force} onChange={(e) => setForce(e.target.value as OrderStatus)}><option value="">Choose status…</option>{(["placed", "confirmed", "packed", "shipped", "out_for_delivery", "delivered", "cancelled", "returned"] as OrderStatus[]).map((s) => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}</Select></Field>
+              <Field label="Update status manually" htmlFor="fs"><Select id="fs" value={force} onChange={(e) => setForce(e.target.value as OrderStatus)}><option value="">Choose status…</option>{(["placed", "confirmed", "packed", "shipped", "out_for_delivery", "delivered", "cancelled"] as OrderStatus[]).map((s) => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}</Select></Field>
               <Button variant="outline" disabled={!force} onClick={() => { advance(force as OrderStatus, "Manual update"); setForce(""); }}>Apply</Button>
             </div>
             <Field label="Internal note" htmlFor="nt" className="mt-4" hint="Only visible to staff."><Textarea id="nt" value={note} onChange={(e) => setNote(e.target.value)} rows={3} /></Field>

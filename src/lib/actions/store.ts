@@ -28,8 +28,6 @@ export async function placeOrder(input: {
     const phone = normalizePhone(input.address.phone);
     if (!phone) return { ok: false, error: "Enter a valid delivery phone number." };
     if (!inServiceArea(String(input.address.pincode ?? ""))) return { ok: false, error: OUT_OF_AREA };
-    if (input.method !== "cod" && !onlinePaymentsLive()) return { ok: false, error: "Online payment isn’t available yet — please choose Cash on delivery." };
-
     const walletAsk = Math.max(0, Math.floor(Number(input.wallet) || 0));   // how much of the wallet to spend (the database caps it at the balance and the order total)
     const args = { p_items: items, p_address: { ...input.address, phone }, p_payment_method: input.method, p_coupon: input.coupon ?? null, p_express: Boolean(input.express) };
     const { data, error } = walletAsk > 0
@@ -37,6 +35,7 @@ export async function placeOrder(input: {
       : await supabase.rpc("place_order", args);
     if (error) throw new Error(error.message);
     const row = (Array.isArray(data) ? data[0] : data) as { order_id: string; order_number: string; total: number };
+    if (row.total > 0 && input.method !== "cod" && !onlinePaymentsLive()) return { ok: false, error: "Online payment isn’t available yet — please choose Cash on delivery." };
 
     // PAYMENTS: cash on delivery is "pending" until delivery. Online methods only reach here when a gateway is live
     // (PAYMENT_MODE=live) — the gateway's webhook then calls confirm_payment(order, payment_id).
@@ -52,15 +51,15 @@ export async function cancelOrder(orderId: string, reason: string): Promise<Resu
     if (!isUuid(orderId)) return { ok: false, error: "Order not found." };
     const { error } = await (await createClient()).rpc("cancel_order", { p_order: orderId, p_reason: clampStr(reason, 200) });
     if (error) throw new Error(error.message);
-    void refundOrderIfPaid(orderId); // paid online? the money goes back automatically
-    void createAdminClient().rpc("wallet_refund_order", { p_order: orderId });   // wallet money used on this order goes back to the wallet
+    await refundOrderIfPaid(orderId); // paid online? the money goes back automatically
+    await createAdminClient().rpc("wallet_refund_order", { p_order: orderId });   // wallet money used on this order goes back to the wallet
     void notifyOrderStatus(orderId, "cancelled");
     revalidatePath("/account/orders"); revalidatePath("/admin/orders");
     return { ok: true };
   });
 }
 
-export async function requestReturn(input: { orderId: string; itemId: string; type: "return" | "exchange" | "refund"; reason: string; note?: string }): Promise<Result> {
+export async function requestReturn(input: { orderId: string; itemId: string; type: "return" | "exchange"; reason: string; note?: string }): Promise<Result> {
   return guarded(["customer"], async () => {
     if (!isUuid(input.orderId) || !isUuid(input.itemId)) return { ok: false, error: "Item not found." };
     const { error } = await (await createClient()).rpc("request_return", {

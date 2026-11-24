@@ -76,7 +76,7 @@ const STATUS_COPY: Record<string, { subject: string; head: string; body: string 
   shipped: { subject: "is on its way", head: "Your order is on its way 🚚", body: "Your order is on its way with the ManaBrand delivery team." },
   out_for_delivery: { subject: "is out for delivery", head: "Out for delivery today 📦", body: "Your order will reach you today. Please keep your phone nearby." },
   delivered: { subject: "was delivered", head: "Delivered — enjoy! 🎉", body: "Your order has been delivered. We hope you love it." },
-  cancelled: { subject: "was cancelled", head: "Your order was cancelled", body: "Your order has been cancelled. If you paid online, the refund goes back to the same method." },
+  cancelled: { subject: "was cancelled", head: "Your order was cancelled", body: "Your order has been cancelled. Any wallet credit used has been restored to your wallet." },
   returned: { subject: "was returned", head: "Return received", body: "We have received your returned order." },
 };
 /** Statuses that are worth an email (the quiet in-between steps — confirmed, packed — are not). */
@@ -95,7 +95,7 @@ export const orderStatusEmail = (o: { name: string; number: string; status: stri
 const RETURN_COPY: Record<string, string> = {
   approved: "Your request has been approved. We will arrange the pickup shortly.",
   picked_up: "We have picked up your item and it is on its way back to the seller.",
-  refunded: "Your refund has been processed. It can take a few working days to show in your account.",
+  refunded: "Your return has been received and processed successfully.",
   rejected: "We could not approve this request. Write to us if you would like us to look at it again.",
 };
 export const returnUpdateEmail = (o: { name: string; number: string; status: string; siteUrl: string }): Mail | null => {

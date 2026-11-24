@@ -13,6 +13,6 @@ export default async function CheckoutPage() {
   // Real orders: cash on delivery only, until a payment gateway is connected (PAYMENT_MODE=live). The demo (no database) shows every method.
   const gateway = isSupabaseConfigured() && onlinePaymentsLive();   // Razorpay collects the card / UPI / bank details itself
   const onlinePayments = !isSupabaseConfigured() || gateway;
-  const wallet = isSupabaseConfigured() ? await getWallet() : { balance: 0 };   // (demo mode has no database, so no wallet)
+  const wallet = await getWallet();
   return <CheckoutFlow addresses={await getMyAddresses()} onlinePayments={onlinePayments} gateway={gateway} walletBalance={wallet.balance} />;
 }

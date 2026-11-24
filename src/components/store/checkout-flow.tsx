@@ -47,6 +47,13 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
   const [placing, setPlacing] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
 
+  const orderBase = cart.total + (express ? 149 : 0);
+  const fullyCoveredByWallet = useWallet && walletBalance >= orderBase && orderBase > 0;
+  const codFee = (pay === "cod" && !fullyCoveredByWallet) ? COD_FEE : 0;
+  const beforeWallet = orderBase + codFee;
+  const walletUse = useWallet ? walletToUse(walletBalance, beforeWallet) : 0;
+  const finalTotal = Math.max(0, beforeWallet - walletUse);
+
   if (!mounted) return <div className="container-page space-y-4 py-8"><Skeleton className="h-8 w-48" /><Skeleton className="h-40" /><Skeleton className="h-40" /></div>;
   if (cart.count === 0) {
     return <div className="container-page py-16"><EmptyState icon={<ShoppingBag />} title="Nothing to check out" body="Your bag is empty." action={<Button href="/shop">Continue shopping</Button>} /></div>;
@@ -56,6 +63,7 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
   const setField = (k: keyof typeof f, v: string) => { setF((p) => ({ ...p, [k]: v })); setErrs((e) => ({ ...e, [k]: "" })); };
 
   const validatePay = () => {
+    if (fullyCoveredByWallet) return true;
     const e: Record<string, string> = {};
     if (pay === "upi" && !gateway && !/^[\w.-]{2,}@[a-zA-Z]{2,}$/.test(f.vpa.trim())) e.vpa = "Enter a valid UPI ID, e.g. name@okhdfc";
     if (pay === "card" && !gateway) {
@@ -75,7 +83,7 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
     const res = await placeOrder({
       lines: cart.lines.map((l) => ({ productId: l.productId, color: l.color, size: l.size, qty: l.qty })),
       address: { name: addr.name, phone: addr.phone, line1: addr.line1, line2: addr.line2, city: addr.city, state: addr.state, pincode: addr.pincode },
-      method: pay, coupon: couponCode, express, wallet: walletUse,
+      method: fullyCoveredByWallet ? "cod" : pay, coupon: couponCode, express, wallet: walletUse,
     });
     let number: string, total: number;
     if (res.ok) {
@@ -125,10 +133,6 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
     { id: "cod", label: "Cash on delivery", sub: `₹${COD_FEE} handling fee`, icon: <Banknote className="size-5" /> },
   ];
 
-  const beforeWallet = cart.total + (pay === "cod" ? COD_FEE : 0) + (express ? 149 : 0);
-  const walletUse = useWallet ? walletToUse(walletBalance, beforeWallet) : 0;
-  const finalTotal = beforeWallet - walletUse;
-
   return (
     <div className="container-page pb-32 pt-4 md:pb-12 md:pt-8">
       <div className="mb-5 flex items-center justify-between gap-4">
@@ -140,7 +144,7 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
       {/* mobile summary toggle */}
       <details open={summaryOpen} onToggle={(e) => setSummaryOpen((e.target as HTMLDetailsElement).open)} className="mb-5 rounded-card border border-line bg-card lg:hidden">
         <summary className="flex min-h-14 cursor-pointer items-center justify-between px-4 text-sm font-medium"><span>Order summary · {cart.count} items</span><span className="flex items-center gap-2 font-semibold tabular">{formatINR(finalTotal)}<ChevronDown className="size-4 text-muted" /></span></summary>
-        <div className="border-t border-line p-4"><PriceBreakdown cod={pay === "cod"} express={express} wallet={walletUse} /></div>
+        <div className="border-t border-line p-4"><PriceBreakdown cod={pay === "cod" && !fullyCoveredByWallet} express={express} wallet={walletUse} /></div>
       </details>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_380px] lg:gap-12">
@@ -169,7 +173,7 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
             </div>
           ))}
 
-          {panel(2, "Payment", null, (
+          {panel(2, "Payment", fullyCoveredByWallet ? "Covered by wallet" : null, (
             <div className="space-y-3">
               {walletBalance > 0 && (
                 <div className="flex items-center gap-3 rounded-ctl border border-line bg-bg-subtle p-3.5">
@@ -178,31 +182,40 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
                   <Switch label="Use wallet balance" checked={useWallet} onChange={setUseWallet} />
                 </div>
               )}
-              {!onlinePayments && <p className="rounded-ctl bg-bg-subtle px-4 py-3 text-[13px] text-muted">Pay when your order arrives — online payments are coming soon.</p>}
-              {payOptions.filter((o) => onlinePayments || o.id === "cod").map((o) => (
-                <div key={o.id}>
-                  <Radio name="pay" value={o.id} checked={pay === o.id} onChange={(v) => { setPay(v as Pay); setErrs({}); }}>
-                    <div className="flex items-center gap-3"><span className="text-muted">{o.icon}</span><span><span className="block text-sm font-semibold">{o.label}</span><span className="block text-xs text-muted">{o.sub}</span></span></div>
-                  </Radio>
-                  {!gateway && pay === o.id && o.id === "upi" && (
-                    <div className="animate-fade-in mt-2 rounded-ctl bg-bg-subtle p-4"><Field label="UPI ID" htmlFor="vpa" error={errs.vpa}><Input id="vpa" autoCapitalize="none" placeholder="yourname@okhdfc" value={f.vpa} onChange={(e) => setField("vpa", e.target.value)} invalid={!!errs.vpa} /></Field></div>
-                  )}
-                  {!gateway && pay === o.id && o.id === "card" && (
-                    <div className="animate-fade-in mt-2 space-y-3.5 rounded-ctl bg-bg-subtle p-4">
-                      <Field label="Card number" htmlFor="cc" error={errs.card}><Input id="cc" inputMode="numeric" autoComplete="cc-number" placeholder="1234 5678 9012 3456" maxLength={19} value={f.card} onChange={(e) => setField("card", e.target.value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim())} invalid={!!errs.card} /></Field>
-                      <Field label="Name on card" htmlFor="cn" error={errs.name}><Input id="cn" autoComplete="cc-name" value={f.name} onChange={(e) => setField("name", e.target.value)} invalid={!!errs.name} /></Field>
-                      <div className="grid grid-cols-2 gap-3">
-                        <Field label="Expiry" htmlFor="ce" error={errs.exp}><Input id="ce" inputMode="numeric" autoComplete="cc-exp" placeholder="MM/YY" maxLength={5} value={f.exp} onChange={(e) => { let v = e.target.value.replace(/[^\d]/g, ""); if (v.length > 2) v = `${v.slice(0, 2)}/${v.slice(2, 4)}`; setField("exp", v); }} invalid={!!errs.exp} /></Field>
-                        <Field label="CVV" htmlFor="cv" error={errs.cvv}><Input id="cv" inputMode="numeric" type="password" autoComplete="cc-csc" maxLength={4} value={f.cvv} onChange={(e) => setField("cvv", e.target.value.replace(/\D/g, ""))} invalid={!!errs.cvv} /></Field>
-                      </div>
-                    </div>
-                  )}
-                  {!gateway && pay === o.id && o.id === "netbanking" && (
-                    <div className="animate-fade-in mt-2 rounded-ctl bg-bg-subtle p-4"><Field label="Choose your bank" htmlFor="bk" error={errs.bank}><Select id="bk" value={f.bank} onChange={(e) => setField("bank", e.target.value)} invalid={!!errs.bank}><option value="">Select bank</option>{["HDFC Bank", "ICICI Bank", "State Bank of India", "Axis Bank", "Kotak Mahindra Bank"].map((b) => <option key={b}>{b}</option>)}</Select></Field></div>
-                  )}
+              {fullyCoveredByWallet ? (
+                <div className="rounded-ctl border border-success/30 bg-success-bg p-4 text-center">
+                  <p className="text-sm font-semibold text-success">Your wallet covers this entire order 🎉</p>
+                  <p className="mt-1 text-xs text-muted">No additional payment method is needed. Tap below to place your order.</p>
                 </div>
-              ))}
-              <Button size="lg" full loading={placing} onClick={place} className="hidden rounded-full lg:inline-flex"><Lock className="size-4" /> Pay {formatINR(finalTotal)}</Button>
+              ) : (
+                <>
+                  {!onlinePayments && <p className="rounded-ctl bg-bg-subtle px-4 py-3 text-[13px] text-muted">Pay when your order arrives — online payments are coming soon.</p>}
+                  {payOptions.filter((o) => onlinePayments || o.id === "cod").map((o) => (
+                    <div key={o.id}>
+                      <Radio name="pay" value={o.id} checked={pay === o.id} onChange={(v) => { setPay(v as Pay); setErrs({}); }}>
+                        <div className="flex items-center gap-3"><span className="text-muted">{o.icon}</span><span><span className="block text-sm font-semibold">{o.label}</span><span className="block text-xs text-muted">{o.sub}</span></span></div>
+                      </Radio>
+                      {!gateway && pay === o.id && o.id === "upi" && (
+                        <div className="animate-fade-in mt-2 rounded-ctl bg-bg-subtle p-4"><Field label="UPI ID" htmlFor="vpa" error={errs.vpa}><Input id="vpa" autoCapitalize="none" placeholder="yourname@okhdfc" value={f.vpa} onChange={(e) => setField("vpa", e.target.value)} invalid={!!errs.vpa} /></Field></div>
+                      )}
+                      {!gateway && pay === o.id && o.id === "card" && (
+                        <div className="animate-fade-in mt-2 space-y-3.5 rounded-ctl bg-bg-subtle p-4">
+                          <Field label="Card number" htmlFor="cc" error={errs.card}><Input id="cc" inputMode="numeric" autoComplete="cc-number" placeholder="1234 5678 9012 3456" maxLength={19} value={f.card} onChange={(e) => setField("card", e.target.value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim())} invalid={!!errs.card} /></Field>
+                          <Field label="Name on card" htmlFor="cn" error={errs.name}><Input id="cn" autoComplete="cc-name" value={f.name} onChange={(e) => setField("name", e.target.value)} invalid={!!errs.name} /></Field>
+                          <div className="grid grid-cols-2 gap-3">
+                            <Field label="Expiry" htmlFor="ce" error={errs.exp}><Input id="ce" inputMode="numeric" autoComplete="cc-exp" placeholder="MM/YY" maxLength={5} value={f.exp} onChange={(e) => { let v = e.target.value.replace(/[^\d]/g, ""); if (v.length > 2) v = `${v.slice(0, 2)}/${v.slice(2, 4)}`; setField("exp", v); }} invalid={!!errs.exp} /></Field>
+                            <Field label="CVV" htmlFor="cv" error={errs.cvv}><Input id="cv" inputMode="numeric" type="password" autoComplete="cc-csc" maxLength={4} value={f.cvv} onChange={(e) => setField("cvv", e.target.value.replace(/\D/g, ""))} invalid={!!errs.cvv} /></Field>
+                          </div>
+                        </div>
+                      )}
+                      {!gateway && pay === o.id && o.id === "netbanking" && (
+                        <div className="animate-fade-in mt-2 rounded-ctl bg-bg-subtle p-4"><Field label="Choose your bank" htmlFor="bk" error={errs.bank}><Select id="bk" value={f.bank} onChange={(e) => setField("bank", e.target.value)} invalid={!!errs.bank}><option value="">Select bank</option>{["HDFC Bank", "ICICI Bank", "State Bank of India", "Axis Bank", "Kotak Mahindra Bank"].map((b) => <option key={b}>{b}</option>)}</Select></Field></div>
+                      )}
+                    </div>
+                  ))}
+                </>
+              )}
+              <Button size="lg" full loading={placing} onClick={place} className="hidden rounded-full lg:inline-flex"><Lock className="size-4" /> {finalTotal === 0 ? "Place order" : `Pay ${formatINR(finalTotal)}`}</Button>
               <p className="text-center text-xs text-muted">By placing your order you agree to our <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy policy</Link>.</p>
             </div>
           ))}
@@ -220,7 +233,7 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
                 </li>
               ))}
             </ul>
-            <PriceBreakdown cod={pay === "cod"} express={express} wallet={walletUse} className="border-t border-line pt-4" />
+            <PriceBreakdown cod={pay === "cod" && !fullyCoveredByWallet} express={express} wallet={walletUse} className="border-t border-line pt-4" />
             {addr && <p className="flex gap-2 rounded-ctl bg-bg-subtle p-3 text-xs text-muted"><MapPin className="mt-0.5 size-4 shrink-0" /> Delivering to {addr.name}, {addr.city} {addr.pincode}</p>}
           </div>
         </aside>

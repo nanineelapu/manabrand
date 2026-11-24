@@ -43,6 +43,13 @@ drop trigger if exists profiles_welcome_credit on public.profiles;
 create trigger profiles_welcome_credit after insert on public.profiles
   for each row execute function public.grant_welcome_credit();
 
+-- Backfill existing customers who registered before this migration ran:
+insert into public.wallet_transactions (user_id, amount, kind, note)
+select id, 500, 'welcome', 'Welcome gift'
+from public.profiles
+where role = 'customer'
+on conflict do nothing;
+
 -- ---- place an order and pay part (or all) of it from the wallet, in ONE transaction
 create or replace function public.place_order_wallet(
   p_items jsonb, p_address jsonb, p_payment_method public.payment_method,

@@ -14,7 +14,7 @@ export default async function TermsPage() {
   return (
     <InfoPage title="Terms of use" intro="By using ManaBrand you agree to these terms. They’re written to be readable." updated="1 November 2026">
       <section><h2>Using ManaBrand</h2><p>You must be 18 or older, or use ManaBrand under a parent’s supervision. Keep your login secure — you’re responsible for activity on your account.</p></section>
-      <section><h2>Orders & pricing</h2><p>All prices are in Indian rupees and include applicable taxes. We may cancel orders affected by pricing errors or stock issues and will refund you in full.</p></section>
+      <section><h2>Orders & returns</h2><p>All prices are in Indian rupees and include applicable taxes. ManaBrand operates on a return and exchange-only policy; cash/bank refunds are not issued. Eligible returned items are replaced or exchanged.</p></section>
       <section><h2>Sellers</h2><p>ManaBrand is a marketplace. Products are sold by independent sellers; ManaBrand handles payments and support on their behalf.</p></section>
       <section><h2>Liability</h2><p>To the extent permitted by law, ManaBrand’s liability is limited to the value of the order in question.</p></section>
     </InfoPage>

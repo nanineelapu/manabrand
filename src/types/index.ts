@@ -204,7 +204,7 @@ export interface ReturnRequest {
   customerName: string;
   item: string;
   reason: string;
-  type: "return" | "exchange" | "refund";
+  type: "return" | "exchange";
   status: "requested" | "approved" | "picked_up" | "refunded" | "rejected";
   amount: number;
   createdAt: string;

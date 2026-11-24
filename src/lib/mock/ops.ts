@@ -44,7 +44,7 @@ const statusFlow: OrderStatus[] = ["placed", "confirmed", "packed", "shipped", "
 const notes: Record<OrderStatus, string> = {
   placed: "Order placed successfully", confirmed: "Seller confirmed your order", packed: "Packed and ready for pickup",
   shipped: "Handed to courier partner", out_for_delivery: "Out for delivery today", delivered: "Delivered to you",
-  cancelled: "Order cancelled", returned: "Return completed — refund initiated",
+  cancelled: "Order cancelled", returned: "Return completed",
 };
 const couriers = ["ManaBrand Delivery"];
 const methods: PaymentMethod[] = ["upi", "upi", "card", "cod", "netbanking", "wallet"];
@@ -103,7 +103,7 @@ export const returns: ReturnRequest[] = orders
   .slice(0, 9)
   .map((o, i) => ({
     id: `r${i + 1}`, orderId: o.id, orderNumber: o.number, customerName: o.customerName, item: o.items[0].name,
-    reason: reasons[i % reasons.length], type: (["return", "exchange", "refund"] as const)[i % 3],
+    reason: reasons[i % reasons.length], type: (["return", "exchange"] as const)[i % 2],
     status: o.status === "returned" ? "refunded" : (["requested", "approved", "picked_up", "requested", "rejected"] as const)[i % 5],
     amount: o.items[0].price * o.items[0].qty, createdAt: iso(MOCK_NOW - (i * 2 + 1) * DAY), sellerId: o.items[0].sellerId,
   }));

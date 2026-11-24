@@ -14,7 +14,7 @@ const map: Record<string, { label: string; tone: Tone }> = {
   // payments
   paid: { label: "Paid", tone: "success" },
   pending: { label: "Pending", tone: "warning" },
-  refunded: { label: "Refunded", tone: "neutral" },
+  refunded: { label: "Returned", tone: "neutral" },
   failed: { label: "Failed", tone: "danger" },
   // products / generic
   active: { label: "Active", tone: "success" },
