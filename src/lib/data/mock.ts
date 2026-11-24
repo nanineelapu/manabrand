@@ -221,3 +221,33 @@ export const getCurrentSeller = async () => sellerById(CURRENT_SELLER_ID) ?? nul
 export const getFollowState = async (_sellerId: string) => ({ followers: sellerById(_sellerId)?.followers ?? 0, following: false });
 
 export const getSellerNames = async () => Object.fromEntries(sellers.map((s) => [s.id, s.name]));
+
+export async function getStoreProductsLite() {
+  return live().map((p) => ({
+    image: p.images[0],
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    price: p.price,
+    mrp: p.mrp,
+    photo: p.photo,
+    colors: p.colors,
+    optionLabel: p.optionLabel,
+    sizes: p.sizes,
+    stock: p.stock,
+    sellerName: sellerById(p.sellerId)?.name ?? "",
+    category: p.categorySlug,
+    sub: p.subcategory,
+    rating: p.rating,
+  }));
+}
+
+export async function getAdminBadgeCounts() {
+  const d = await getAdminDashboard();
+  return { orders: d.pendingOrders, sellers: d.pendingSellers, returns: d.openReturns, reviews: d.flaggedReviews };
+}
+
+export async function getSellerBadgeCounts(sellerId = CURRENT_SELLER_ID) {
+  const d = await getSellerDashboard(sellerId);
+  return { orders: d.toConfirm + d.toPack, returns: d.returnsOpen };
+}

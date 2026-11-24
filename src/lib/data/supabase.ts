@@ -12,6 +12,7 @@ import { mergePermissions } from "@/lib/permissions";
 import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
 import { analytics as mockAnalytics } from "@/lib/mock/ops";
+import { withMemoryCache } from "./cache";
 import type {
   Address, AppNotification, Banner, Category, Collection, Coupon, Customer, Order, OrderStatus, Payout, Product,
   ProductStatus, ReturnRequest, Review, Seller, WalletTx } from "@/types";
@@ -107,8 +108,10 @@ function mapReview(r: any): Review {
 
 /* ================================================================ catalogue */
 export async function getSellerNames(): Promise<Record<string, string>> {
-  const rows = ok(await pub().from("sellers").select("id, name"), []) as any[];
-  return Object.fromEntries(rows.map((s) => [s.id, s.name]));
+  return withMemoryCache("seller_names", 60_000, async () => {
+    const rows = ok(await pub().from("sellers").select("id, name"), []) as any[];
+    return Object.fromEntries(rows.map((s) => [s.id, s.name]));
+  });
 }
 
 async function categoryId(slug: string) {
@@ -195,22 +198,26 @@ export async function queryProducts(qy: ProductQuery = {}) {
 }
 
 export async function getCategories(): Promise<Category[]> {
-  const db = pub();
-  const [cats, counts] = await Promise.all([
-    db.from("categories").select("*").order("sort"),
-    db.from("products").select("category_id").eq("status", "active"),
-  ]);
-  const n: Record<string, number> = {};
-  (counts.data ?? []).forEach((p: any) => { n[p.category_id] = (n[p.category_id] ?? 0) + 1; });
-  return ok(cats, []).filter((c: any) => !HIDDEN_CATEGORY_SLUGS.has(c.slug)).map((c: any) => ({ id: c.id, slug: c.slug, name: c.name, tagline: c.tagline, tone: ["#e7efe9", "#9ec3b0"] as [string, string], photo: c.photo_kind as PhotoKind, productCount: n[c.id] ?? 0 }));
+  return withMemoryCache("categories", 60_000, async () => {
+    const db = pub();
+    const [cats, counts] = await Promise.all([
+      db.from("categories").select("*").order("sort"),
+      db.from("products").select("category_id").eq("status", "active"),
+    ]);
+    const n: Record<string, number> = {};
+    (counts.data ?? []).forEach((p: any) => { n[p.category_id] = (n[p.category_id] ?? 0) + 1; });
+    return ok(cats, []).filter((c: any) => !HIDDEN_CATEGORY_SLUGS.has(c.slug)).map((c: any) => ({ id: c.id, slug: c.slug, name: c.name, tagline: c.tagline, tone: ["#e7efe9", "#9ec3b0"] as [string, string], photo: c.photo_kind as PhotoKind, productCount: n[c.id] ?? 0 }));
+  });
 }
 export const getCategory = async (slug: string) => (await getCategories()).find((c) => c.slug === slug);
 
 export async function getSubcategoryMap(): Promise<Record<string, string[]>> {
-  const rows = ok(await pub().from("subcategories").select("name, sort, categories(slug)").order("sort"), []) as any[];
-  const out: Record<string, string[]> = {};
-  rows.forEach((r) => { if (!HIDDEN_CATEGORY_SLUGS.has(r.categories.slug)) (out[r.categories.slug] ??= []).push(r.name); });
-  return out;
+  return withMemoryCache("subcategory_map", 60_000, async () => {
+    const rows = ok(await pub().from("subcategories").select("name, sort, categories(slug)").order("sort"), []) as any[];
+    const out: Record<string, string[]> = {};
+    rows.forEach((r) => { if (!HIDDEN_CATEGORY_SLUGS.has(r.categories.slug)) (out[r.categories.slug] ??= []).push(r.name); });
+    return out;
+  });
 }
 export const getSubcategories = async (slug: string) => (await getSubcategoryMap())[slug] ?? [];
 
@@ -232,9 +239,9 @@ const listBy = async (col: string, asc: boolean, n: number, extra?: (q: any) => 
   if (extra) q = extra(q);
   return (ok(await q.order(col, { ascending: asc }).limit(n), []) as any[]).map(mapProduct);
 };
-export const getNewArrivals = (n = 8) => listBy("created_at", false, n, (q) => q.contains("badges", ["new"]));
-export const getTrending = (n = 8) => listBy("sold_count", false, n);
-export const getOnSale = (n = 8) => listBy("discount_pct", false, n);
+export const getNewArrivals = (n = 8) => withMemoryCache(`new_arrivals_${n}`, 30_000, () => listBy("created_at", false, n, (q) => q.contains("badges", ["new"])));
+export const getTrending = (n = 8) => withMemoryCache(`trending_${n}`, 30_000, () => listBy("sold_count", false, n));
+export const getOnSale = (n = 8) => withMemoryCache(`on_sale_${n}`, 30_000, () => listBy("discount_pct", false, n));
 export async function getRelated(p: Product, n = 8) {
   const catId = await categoryId(p.categorySlug);
   if (!catId) return [];
@@ -242,17 +249,21 @@ export async function getRelated(p: Product, n = 8) {
 }
 
 export async function getCollections(): Promise<Collection[]> {
-  const rows = ok(await pub().from("collections").select("*, collection_products(product_id, sort)").order("sort"), []) as any[];
-  return rows.map((c) => ({ id: c.id, slug: c.slug, name: c.name, story: c.story, tone: ["#e4ebf3", "#2a5db0"] as [string, string], photo: c.photo_kind as PhotoKind,
-    productIds: [...(c.collection_products ?? [])].sort(byOrder).map((x: any) => x.product_id) }));
+  return withMemoryCache("collections", 60_000, async () => {
+    const rows = ok(await pub().from("collections").select("*, collection_products(product_id, sort)").order("sort"), []) as any[];
+    return rows.map((c) => ({ id: c.id, slug: c.slug, name: c.name, story: c.story, tone: ["#e4ebf3", "#2a5db0"] as [string, string], photo: c.photo_kind as PhotoKind,
+      productIds: [...(c.collection_products ?? [])].sort(byOrder).map((x: any) => x.product_id) }));
+  });
 }
 export const getCollection = async (slug: string) => (await getCollections()).find((c) => c.slug === slug);
 
 async function sellerStats(ids?: string[]) {
   let q = pub().from("products").select("seller_id, rating_avg, review_count, sold_count, price, status");
-  if (ids) q = q.in("seller_id", ids);
+  if (ids?.length) q = q.in("seller_id", ids);
   const rows = ok(await q, []) as any[];
-  const f = ok(await pub().from("seller_follows").select("seller_id"), []) as any[];
+  let fq = pub().from("seller_follows").select("seller_id");
+  if (ids?.length) fq = fq.in("seller_id", ids);
+  const f = ok(await fq, []) as any[];
   const stats: Record<string, { n: number; rating: number; w: number; sales: number; followers: number }> = {};
   rows.forEach((p) => {
     const s = (stats[p.seller_id] ??= { n: 0, rating: 0, w: 0, sales: 0, followers: 0 });
@@ -285,7 +296,9 @@ export async function ratingBreakdown(productId: string) {
 }
 
 export async function getHomeBanners() {
-  return (ok(await pub().from("banners").select("*").eq("placement", "home-hero").order("starts_on"), []) as any[]).map(mapBanner);
+  return withMemoryCache("home_banners", 60_000, async () => {
+    return (ok(await pub().from("banners").select("*").eq("placement", "home-hero").order("starts_on"), []) as any[]).map(mapBanner);
+  });
 }
 export async function getStripBanner() {
   const r = ok(await pub().from("banners").select("*").eq("placement", "home-strip").limit(1).maybeSingle());
@@ -296,6 +309,50 @@ export async function getCoupon(code: string) {
   return r ? mapCoupon(r) : undefined;
 }
 export const getTrendingSearches = async () => ["Silk saree", "Kurta", "Oversized tee", "Cargo pants", "Lehenga", "Mom jeans"];
+
+export async function getStoreProductsLite() {
+  return withMemoryCache("store_products_lite", 60_000, async () => {
+    const db = pub();
+    const rows = ok(
+      await db
+        .from("products")
+        .select(`
+          id, slug, name, price, mrp, photo_kind, seller_id, rating_avg, option_label,
+          categories(slug), subcategories(name), sellers(name),
+          product_colors(name, hex, sort),
+          product_options(value, stock, sort),
+          product_images(url, is_cover, sort)
+        `)
+        .eq("status", "active")
+        .order("sold_count", { ascending: false })
+        .limit(500),
+      []
+    ) as any[];
+
+    return rows.map((r) => {
+      const colors = [...(r.product_colors ?? [])].sort(byOrder).map((c: any) => ({ name: c.name, hex: c.hex }));
+      const opts = [...(r.product_options ?? [])].sort(byOrder);
+      const imgRows = [...(r.product_images ?? [])].sort((a: any, b: any) => Number(b.is_cover) - Number(a.is_cover) || a.sort - b.sort);
+      return {
+        image: imgRows[0]?.url,
+        id: r.id,
+        slug: r.slug,
+        name: r.name,
+        price: r.price,
+        mrp: r.mrp,
+        photo: r.photo_kind as PhotoKind,
+        colors: colors.length ? colors : [{ name: "Standard", hex: "#d9d3c7" }],
+        optionLabel: r.option_label ?? "Standard",
+        sizes: opts.map((o: any) => o.value),
+        stock: Object.fromEntries(opts.map((o: any) => [o.value, o.stock])),
+        sellerName: r.sellers?.name ?? "",
+        category: r.categories?.slug ?? "",
+        sub: r.subcategories?.name ?? "",
+        rating: Number(r.rating_avg ?? 0),
+      };
+    });
+  });
+}
 
 export async function getFollowState(sellerId: string) {
   const db = await sb(); const me = await uid();
@@ -375,7 +432,9 @@ export async function getAllReturns() {
   return (ok(await (await sb()).from("returns").select(RETURN_SELECT).order("created_at", { ascending: false }), []) as any[]).map(mapReturn);
 }
 export async function getAllCoupons() {
-  return (ok(await (await sb()).from("coupons").select("*").order("created_at", { ascending: false }), []) as any[]).map(mapCoupon);
+  return withMemoryCache("all_coupons", 30_000, async () => {
+    return (ok(await (await sb()).from("coupons").select("*").order("created_at", { ascending: false }), []) as any[]).map(mapCoupon);
+  });
 }
 export async function getAllBanners() {
   return (ok(await (await sb()).from("banners").select("*").order("starts_on", { ascending: false }), []) as any[]).map(mapBanner);
@@ -403,6 +462,17 @@ export async function getAdminDashboard() {
     topProducts: d.topProducts ?? [], topSellers: d.topSellers ?? [],
     statusCounts: (["placed", "confirmed", "packed", "shipped", "out_for_delivery", "delivered", "cancelled", "returned"] as OrderStatus[])
       .map((s) => ({ status: s, count: (d.statusCounts ?? []).find((x: any) => x.status === s)?.count ?? 0 })),
+  };
+}
+
+export async function getAdminBadgeCounts() {
+  const db = await sb();
+  const d = ok(await db.rpc("admin_dashboard")) as any;
+  return {
+    orders: Number(d?.pendingOrders ?? 0),
+    sellers: Number(d?.pendingSellers ?? 0),
+    returns: Number(d?.openReturns ?? 0),
+    reviews: Number(d?.flaggedReviews ?? 0),
   };
 }
 
@@ -484,6 +554,15 @@ export async function getSellerDashboard(sellerId?: string) {
   };
 }
 
+export async function getSellerBadgeCounts(sellerId?: string) {
+  const id = sellerId ?? (await resolveSellerId());
+  const d = ok(await (await sb()).rpc("seller_dashboard", { p_seller: id })) as any;
+  return {
+    orders: Number(d?.toConfirm ?? 0) + Number(d?.toPack ?? 0),
+    returns: Number(d?.returnsOpen ?? 0),
+  };
+}
+
 const mapWallet = (rows: any[]) => ({
   balance: rows.reduce((a, r) => a + r.amount, 0),
   history: rows.map((r) => ({ id: r.id, amount: r.amount, kind: r.kind, note: r.note, createdAt: r.created_at })) as WalletTx[],
@@ -504,8 +583,10 @@ export async function getAddressesForCustomer(userId: string): Promise<Address[]
     .map((a) => ({ id: a.id, label: a.label, name: a.name, phone: a.phone, line1: a.line1, line2: a.line2 ?? undefined, city: a.city, state: a.state, pincode: a.pincode, isDefault: a.is_default }));
 }
 export async function getDealBox() {
-  const row = ok(await pub().from("settings").select("value").eq("key", "dealbox").maybeSingle()) as { value: Record<string, unknown> } | null;
-  return normalizeDealBox(row?.value as never);
+  return withMemoryCache("dealbox", 60_000, async () => {
+    const row = ok(await pub().from("settings").select("value").eq("key", "dealbox").maybeSingle()) as { value: Record<string, unknown> } | null;
+    return normalizeDealBox(row?.value as never);
+  });
 }
 export async function getSettings() {
   const rows = ok(await (await sb()).from("settings").select("key, value"), []) as { key: string; value: any }[];

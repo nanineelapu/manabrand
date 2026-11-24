@@ -39,6 +39,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en-IN" suppressHydrationWarning className={`${montserrat.variable} ${dmSans.variable}`}>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(sessionStorage.getItem("mb_preloaded"))document.documentElement.setAttribute("data-preloaded","true")}catch(e){}`,
+          }}
+        />
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://cdn.sanity.io" />

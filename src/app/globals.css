@@ -384,11 +384,11 @@ details[open] > summary .chev { transform: rotate(180deg); }
 
 /* ===================================================================== motion */
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-@keyframes page-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes page-in { from { opacity: 0.85; } to { opacity: 1; } }
 @keyframes drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 
-/* route change: content fades up; `backwards` fill so nothing (stacking context, transform) lingers afterwards */
-.page-in { animation: page-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+/* route change: smooth instantaneous transition without layout shift or jitter */
+.page-in { animation: page-in 0.14s ease-out backwards; }
 
 /* scroll reveal — <Reveal/> toggles data-reveal once the block is on screen */
 .reveal { transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
@@ -436,7 +436,7 @@ details[open] > summary .chev { transform: rotate(180deg); }
 
 /* ============================================================== preloader (first visit per session) */
 #preloader { position: fixed; inset: 0; z-index: 200; color: #fff; background: #000; animation: pl-failsafe 0.01s 5s forwards; }
-#preloader .pl-half { position: absolute; left: 0; right: 0; height: 50.5%; background: #000; transition: transform 0.95s cubic-bezier(0.76, 0, 0.24, 1); }
+#preloader .pl-half { position: absolute; left: 0; right: 0; height: 50.5%; background: #000; transition: transform 0.32s cubic-bezier(0.76, 0, 0.24, 1); }
 #preloader .pl-top { top: 0; }
 #preloader .pl-bottom { bottom: 0; }
 #preloader[data-phase="out"] .pl-top { transform: translateY(-101%); }

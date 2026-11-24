@@ -14,8 +14,12 @@ import { adminMessageEmail } from "@/lib/email/templates";
 import { siteUrl } from "@/lib/supabase/env";
 import { notifyRestock, notifyReturnStatus, notifySellerApplied, notifySellerDecision, notifyOrderStatus } from "@/lib/email/notify";
 import type { SellerPermissions } from "@/types";
+import { clearDataCache } from "@/lib/data/cache";
 
-const bust = (...paths: string[]) => paths.forEach((p) => revalidatePath(p, "layout"));
+const bust = (...paths: string[]) => {
+  clearDataCache();
+  paths.forEach((p) => revalidatePath(p, "layout"));
+};
 
 /** The signed-in seller's store + what the admin allows them to do. Works even before the permissions column exists (defaults). */
 async function mySeller(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {

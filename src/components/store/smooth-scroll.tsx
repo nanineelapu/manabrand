@@ -18,7 +18,7 @@ export function SmoothScroll() {
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const l = new Lenis({ duration: 1.15, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smoothWheel: true });
+    const l = new Lenis({ duration: 0.85, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smoothWheel: true });
     lenis.current = l; window.__lenis = l;
     let raf = 0;
     const loop = (time: number) => { l.raf(time); raf = requestAnimationFrame(loop); };
@@ -26,8 +26,12 @@ export function SmoothScroll() {
     return () => { cancelAnimationFrame(raf); l.destroy(); lenis.current = null; delete window.__lenis; };
   }, []);
 
-  // new page → start at the top (Lenis keeps its own position otherwise)
-  useEffect(() => { lenis.current?.scrollTo(0, { immediate: true }); }, [pathname]);
+  // new page → start at the top if no hash (Lenis keeps its own position otherwise)
+  useEffect(() => {
+    if (typeof window !== "undefined" && !window.location.hash) {
+      lenis.current?.scrollTo(0, { immediate: true });
+    }
+  }, [pathname]);
 
   return null;
 }

@@ -78,4 +78,9 @@ export const getWalletForCustomer = pick("getWalletForCustomer");
 export const getAddressesForCustomer = pick("getAddressesForCustomer");
 export const getSellerPromotions = pick("getSellerPromotions");
 export const getSellerTickets = pick("getSellerTickets");
+
+export const getStoreProductsLite = pick("getStoreProductsLite");
+export const getAdminBadgeCounts = pick("getAdminBadgeCounts");
+export const getSellerBadgeCounts = pick("getSellerBadgeCounts");
+export { clearDataCache } from "./cache";
 export type { SettingsData, PromoRow, TicketRow } from "./mock";

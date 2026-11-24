@@ -3,26 +3,39 @@
 import { useEffect, useRef, useState } from "react";
 import { LogoImage } from "@/components/brand/logo";
 
-const MIN_MS = 1900;  // long enough for the logo to fill up and the counter to be read
-const MAX_MS = 3400;  // never keep a visitor waiting longer than this, whatever is still loading
-const EXIT_MS = 950;  // length of the "doors open" exit (matches the CSS)
-const FLASH_MS = 420; // the short "complete" flash at 100%
+const MIN_MS = 320;  // snappy minimum duration on first visit
+const MAX_MS = 750;  // failsafe maximum time
+const EXIT_MS = 320;  // length of the exit animation
+const FLASH_MS = 140; // short complete flash
 
 /**
  * Splash screen. The ManaBrand logo fills up from the bottom as the page loads, a big counter runs 0 → 100%, and a thin
  * bar with a moving shine tracks it. When the hero photo is ready (and the minimum time has passed) it reaches 100%,
  * flashes, and the screen splits open (top half up, bottom half down) to reveal the page.
- * The percentage is eased: it climbs quickly to ~90% while things load, then completes once the page is really ready.
- * It plays on every fresh page load, not when moving between pages. The overlay is part of the server HTML (no flash of the
- * page underneath); if JavaScript never runs, a CSS failsafe removes it after 5 seconds.
+ * It plays only on the first visit in a session. On repeat visits in the same session, it is skipped immediately.
  */
 export function Preloader() {
-  const [phase, setPhase] = useState<"in" | "full" | "out" | "gone">("in");
+  const [phase, setPhase] = useState<"in" | "full" | "out" | "gone">(() => {
+    if (typeof window !== "undefined") {
+      try {
+        if (sessionStorage.getItem("mb_preloaded") || document.documentElement.hasAttribute("data-preloaded")) {
+          return "gone";
+        }
+      } catch {}
+    }
+    return "in";
+  });
   const fill = useRef<HTMLDivElement>(null);
   const num = useRef<HTMLElement>(null);
   const bar = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (phase === "gone") return;
+    if (sessionStorage.getItem("mb_preloaded") || document.documentElement.hasAttribute("data-preloaded")) {
+      document.documentElement.setAttribute("data-preloaded", "true");
+      return;
+    }
+
     const html = document.documentElement;
     html.style.overflow = "hidden";
     window.__lenis?.stop();
@@ -49,9 +62,9 @@ export function Preloader() {
       const dt = Math.min(64, now - last); last = now;
       const t = now - t0;
       // while loading: ease towards 90%. Once ready (and past the minimum time): go to 100%.
-      const target = ready && t >= MIN_MS ? 100 : Math.min(90, 90 * (1 - Math.exp(-t / 850)));
-      shown += (target - shown) * (1 - Math.pow(0.004, dt / 1000));
-      if (target === 100 && shown > 99.4) shown = 100;
+      const target = ready && t >= MIN_MS ? 100 : Math.min(90, 90 * (1 - Math.exp(-t / 300)));
+      shown += (target - shown) * (1 - Math.pow(0.004, dt / 350));
+      if (target === 100 && shown > 98) shown = 100;
       paint(shown);
       if (shown >= 100 && !finished) {
         finished = true;
@@ -59,6 +72,10 @@ export function Preloader() {
         timers.push(setTimeout(() => {
           setPhase("out");
           html.style.overflow = "";
+          try {
+            sessionStorage.setItem("mb_preloaded", "true");
+            document.documentElement.setAttribute("data-preloaded", "true");
+          } catch {}
           window.__lenis?.start();
           timers.push(setTimeout(() => setPhase("gone"), EXIT_MS));
         }, FLASH_MS));
@@ -68,7 +85,16 @@ export function Preloader() {
     };
     raf = requestAnimationFrame(loop);
 
-    return () => { cancelAnimationFrame(raf); timers.forEach(clearTimeout); html.style.overflow = ""; };
+    return () => {
+      cancelAnimationFrame(raf);
+      timers.forEach(clearTimeout);
+      html.style.overflow = "";
+      try {
+        sessionStorage.setItem("mb_preloaded", "true");
+        document.documentElement.setAttribute("data-preloaded", "true");
+      } catch {}
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (phase === "gone") return null;
