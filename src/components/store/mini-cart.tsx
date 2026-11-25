@@ -53,6 +53,9 @@ export function MiniCart() {
     <Sheet open={open} onClose={close} side="auto" title={`Your bag${cart.count ? ` (${cart.count})` : ""}`}
       footer={cart.count > 0 && (
         <div className="space-y-3">
+          <p className="rounded-lg bg-accent-soft px-3 py-2 text-center text-xs text-accent-soft-fg">
+            🎁 Get ₹500 welcome credit when you create an account!
+          </p>
           <div className="flex items-baseline justify-between"><span className="text-sm text-muted">Subtotal</span><span className="text-lg font-semibold tabular">{formatINR(cart.subtotal)}</span></div>
           <div className="grid grid-cols-2 gap-2.5">
             <Button href="/cart" variant="outline" onClick={close}>View bag</Button>
@@ -65,6 +68,7 @@ export function MiniCart() {
           <span className="mb-4 grid size-16 place-items-center rounded-full bg-bg-subtle"><ShoppingBag className="size-7 text-muted" /></span>
           <h3 className="font-display text-xl font-semibold">Your bag is empty</h3>
           <p className="mt-1 text-sm text-muted">Pieces you love will wait for you here.</p>
+          <p className="mt-2 text-xs font-medium text-accent">Join ManaBrand today & get ₹500 in your wallet</p>
           <Button href="/shop" className="mt-6" onClick={close}>Start shopping</Button>
         </div>
       ) : (

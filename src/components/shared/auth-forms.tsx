@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { AlertCircle, Eye, EyeOff, Lock, Mail, ShieldCheck } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Gift, Lock, Mail, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox, Field, Input } from "@/components/ui/form";
 import { completeReset, loginStaff, loginWithPhonePin, registerCustomer, requestPinReset, type AuthResult } from "@/lib/auth/actions";
@@ -47,11 +47,12 @@ function useAuthSubmit() {
   const [pending, start] = useTransition();
   const [error, setError] = useState<string>();
   const [fields, setFields] = useState<Record<string, string>>({});
-  const run = (fn: () => Promise<AuthResult>) => {
+  const run = (fn: () => Promise<AuthResult>, successMsg?: string) => {
+    if (pending) return;
     setError(undefined); setFields({});
     start(async () => {
       const res = await fn();
-      if (res.ok) { toast.success("Welcome!"); router.replace(res.redirectTo); router.refresh(); }
+      if (res.ok) { toast.success(successMsg || "Welcome!"); router.replace(res.redirectTo); router.refresh(); }
       else { setError(res.error); setFields(res.fieldErrors ?? {}); }
     });
   };
@@ -123,8 +124,20 @@ export function RegisterForm({ next }: { next?: string }) {
       else if (v.pin !== v.confirmPin) f.confirmPin = "PINs don’t match";
       if (!v.terms) f.terms = "Please accept the terms to continue";
       setFields(f); if (Object.keys(f).length) return;
-      run(() => registerCustomer({ name: v.name, phone: v.phone, email: v.email, pin: v.pin, confirmPin: v.confirmPin, next }));
+      run(
+        () => registerCustomer({ name: v.name, phone: v.phone, email: v.email, pin: v.pin, confirmPin: v.confirmPin, next }),
+        "Welcome to ManaBrand! ₹500 welcome credit added to your wallet 🎁"
+      );
     }}>
+      <div className="flex items-center gap-3.5 rounded-xl border border-accent/25 bg-accent-soft p-3.5 text-accent-soft-fg">
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent text-accent-fg">
+          <Gift className="size-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold">₹500 Welcome Bonus Gift</p>
+          <p className="text-xs opacity-90">Instant ₹500 added to your wallet upon creating an account to use on any order!</p>
+        </div>
+      </div>
       <FormError message={error} />
       <Field label="Full name" htmlFor="rn" error={fields.name}><Input id="rn" autoComplete="name" value={v.name} onChange={(e) => set("name", e.target.value)} invalid={!!fields.name} /></Field>
       <Field label="Mobile number" htmlFor="rp" error={fields.phone} hint="You’ll sign in with this number.">

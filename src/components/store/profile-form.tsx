@@ -16,6 +16,7 @@ export function ProfileForm({ initial }: { initial: { name: string; email: strin
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (busy) return;
     const er: Record<string, string> = {};
     if (!v.name.trim()) er.name = "Name is required";
     if (!/^\S+@\S+\.\S+$/.test(v.email)) er.email = "Enter a valid email";

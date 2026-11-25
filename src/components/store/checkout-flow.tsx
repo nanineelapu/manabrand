@@ -78,7 +78,7 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
   };
 
   const place = async () => {
-    if (!validatePay() || !addr) return;
+    if (placing || !validatePay() || !addr) return;
     setPlacing(true);
     const res = await placeOrder({
       lines: cart.lines.map((l) => ({ productId: l.productId, color: l.color, size: l.size, qty: l.qty })),
@@ -250,9 +250,28 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
 
       <Sheet open={adding} onClose={() => setAdding(false)} side="dialog" title="Add new address">
         <AddressForm onCancel={() => setAdding(false)} onSave={async (a) => {
-          const r = await saveAddress({ ...a, label: a.label });
-          if (r.ok) a = { ...a, id: r.id }; else if (!r.demo) { toast.error(r.error); return; }
-          setAddrs((l) => [a, ...l.map((x) => (a.isDefault ? { ...x, isDefault: false } : x))]); setAddrId(a.id); setAdding(false); toast.success("Address added");
+          const tempId = a.id?.startsWith("a") ? a.id : `a${Date.now()}`;
+          const optimisticAddr: Address = { ...a, id: tempId };
+
+          // Instant UI feedback: close sheet and select new address immediately with zero lag
+          setAdding(false);
+          setAddrs((l) => [optimisticAddr, ...l.map((x) => (a.isDefault ? { ...x, isDefault: false } : x))]);
+          setAddrId(tempId);
+          toast.success("Address added");
+
+          // Persist in background
+          try {
+            const r = await saveAddress({ ...a, label: a.label });
+            if (r.ok && r.id) {
+              setAddrs((l) => l.map((x) => (x.id === tempId ? { ...x, id: r.id } : x)));
+              setAddrId((curr) => (curr === tempId ? r.id : curr));
+            } else if (!r.ok && !r.demo) {
+              setAddrs((l) => l.filter((x) => x.id !== tempId));
+              toast.error(r.error);
+            }
+          } catch {
+            // Background save failed
+          }
         }} />
       </Sheet>
     </div>

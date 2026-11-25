@@ -37,9 +37,9 @@ export async function placeOrder(input: {
     const row = (Array.isArray(data) ? data[0] : data) as { order_id: string; order_number: string; total: number };
     if (row.total > 0 && input.method !== "cod" && !onlinePaymentsLive()) return { ok: false, error: "Online payment isn’t available yet — please choose Cash on delivery." };
 
-    // PAYMENTS: cash on delivery is "pending" until delivery. Online methods only reach here when a gateway is live
-    // (PAYMENT_MODE=live) — the gateway's webhook then calls confirm_payment(order, payment_id).
-    const paymentStatus: "paid" | "pending" = "pending";
+    // PAYMENTS: cash on delivery is "pending" until delivery. If the order was 100% covered by wallet,
+    // total is 0 and it's already marked paid in the database.
+    const paymentStatus: "paid" | "pending" = row.total === 0 ? "paid" : "pending";
     void notifyOrderPlaced(row.order_id); // confirmation email (never blocks or fails the order)
     revalidatePath("/account/orders");
     return { ok: true, orderId: row.order_id, number: row.order_number, total: row.total, paymentStatus };
@@ -81,6 +81,28 @@ export async function saveAddress(input: AddressInput & { id?: string; label: "H
       city: clampStr(input.city, 60), state: AREA.state, pincode: input.pincode, is_default: input.isDefault };
     if (!row.name || !row.line1 || !row.city) return { ok: false, error: "Please complete the address." };
     const supabase = await createClient();
+
+    // Deduplication check: if adding new address, prevent duplicate entries from rapid double-clicks
+    if (!input.id || !isUuid(input.id)) {
+      const { data: existing } = await supabase
+        .from("addresses")
+        .select("id")
+        .eq("user_id", actor.id)
+        .eq("line1", row.line1)
+        .eq("pincode", row.pincode)
+        .eq("phone", phone)
+        .maybeSingle();
+
+      if (existing) {
+        if (input.isDefault) {
+          await supabase.from("addresses").update({ is_default: false }).eq("user_id", actor.id);
+          await supabase.from("addresses").update({ is_default: true }).eq("id", existing.id);
+        }
+        revalidatePath("/account/addresses");
+        return { ok: true, id: existing.id };
+      }
+    }
+
     if (input.isDefault) await supabase.from("addresses").update({ is_default: false }).eq("user_id", actor.id);   // the unique index allows one default
     const q = input.id && isUuid(input.id) ? supabase.from("addresses").update(row).eq("id", input.id).eq("user_id", actor.id).select("id").single()
                                            : supabase.from("addresses").insert(row).select("id").single();

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, ShoppingBag, Trash2 } from "lucide-react";
+import { Gift, Heart, ShoppingBag, Trash2, Wallet } from "lucide-react";
 import { ProductImage } from "@/components/brand/product-image";
 import { Button } from "@/components/ui/button";
 import { Breadcrumb, EmptyState } from "@/components/ui/display";
@@ -12,7 +12,7 @@ import { discountPct, formatINR } from "@/lib/utils";
 import { CouponBox, PriceBreakdown, useCartPricing } from "./price-breakdown";
 import { Skeleton } from "@/components/ui/display";
 
-export function CartView() {
+export function CartView({ isGuest = false, walletBalance = 0 }: { isGuest?: boolean; walletBalance?: number }) {
   const mounted = useMounted();
   const cart = useCartPricing();
   // a line that cannot be fulfilled (sold out, or more than what is left) blocks checkout until fixed
@@ -25,8 +25,21 @@ export function CartView() {
   if (cart.count === 0) {
     return (
       <div className="container-page py-10 md:py-20">
-        <EmptyState icon={<ShoppingBag />} title="Your bag is empty" body="Add items you love — they’ll wait for you here."
-          action={<div className="flex flex-col gap-2.5 sm:flex-row"><Button href="/shop" size="lg">Start shopping</Button><Button href="/wishlist" size="lg" variant="outline">View wishlist</Button></div>} />
+        <EmptyState
+          icon={<ShoppingBag />}
+          title="Your bag is empty"
+          body={isGuest ? "Add items you love — they’ll wait for you here. Create an account to claim ₹500 in your wallet!" : "Add items you love — they’ll wait for you here."}
+          action={
+            <div className="flex flex-col gap-2.5 sm:flex-row">
+              <Button href="/shop" size="lg">Start shopping</Button>
+              {isGuest ? (
+                <Button href="/register?next=/cart" size="lg" variant="outline">Sign up & get ₹500</Button>
+              ) : (
+                <Button href="/wishlist" size="lg" variant="outline">View wishlist</Button>
+              )}
+            </div>
+          }
+        />
       </div>
     );
   }
@@ -35,6 +48,23 @@ export function CartView() {
     <div className="container-page pb-32 pt-4 md:pb-10 md:pt-6">
       <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Bag" }]} className="hidden md:block" />
       <h1 className="font-display text-[30px] font-semibold tracking-tight md:mt-4 md:text-4xl">Your bag <span className="text-lg font-normal text-muted">({cart.count})</span></h1>
+
+      {isGuest && (
+        <div className="mt-4 flex flex-col items-start justify-between gap-3.5 rounded-card border border-accent/25 bg-accent-soft p-4 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-3">
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent text-accent-fg">
+              <Gift className="size-5" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-accent-soft-fg">Get ₹500 off your order</p>
+              <p className="text-xs text-muted">Sign up today and get an instant ₹500 welcome gift in your wallet to spend!</p>
+            </div>
+          </div>
+          <Button href="/register?next=/checkout" size="sm" variant="outline" className="shrink-0 rounded-full bg-card hover:bg-bg-subtle">
+            Claim ₹500
+          </Button>
+        </div>
+      )}
 
       <div className="mt-5 grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-12">
         <div className="min-w-0">
@@ -79,6 +109,17 @@ export function CartView() {
           <section className="rounded-card border border-line bg-card p-5 shadow-card">
             <h2 className="mb-4 text-[15px] font-semibold">Price details</h2>
             <PriceBreakdown />
+            {walletBalance > 0 && (
+              <div className="mt-4 flex items-center gap-3 rounded-xl border border-success/30 bg-success-bg p-3">
+                <span className="grid size-7 shrink-0 place-items-center rounded-full bg-success text-white">
+                  <Wallet className="size-3.5" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-success">{formatINR(walletBalance)} wallet balance available</p>
+                  <p className="text-[11px] text-muted">Will be used at checkout to reduce your total.</p>
+                </div>
+              </div>
+            )}
             {blocked ? <Button size="lg" full disabled className="mt-5 hidden rounded-full lg:inline-flex">Fix your bag to continue</Button> : <Button href="/checkout" size="lg" full className="mt-5 hidden rounded-full lg:inline-flex">Proceed to checkout</Button>}
           </section>
         </aside>

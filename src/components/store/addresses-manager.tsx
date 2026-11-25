@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/display";
 import { Button } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/sheet";
 import { deleteAddress, saveAddress } from "@/lib/actions/store";
-import { useAct } from "@/lib/actions/use-act";
+import { toast } from "@/lib/stores";
 import type { Address } from "@/types";
 import { AddressForm } from "./address-form";
 
@@ -15,16 +15,50 @@ export function AddressesManager({ initial }: { initial: Address[] }) {
   const [edit, setEdit] = useState<Partial<Address> | null>(null);
   const [del, setDel] = useState<Address | null>(null);
 
-  const { act, busy } = useAct();
   const save = async (a: Address) => {
-    const applyLocal = (saved: Address) => {
-      setList((l) => {
-        const base = saved.isDefault ? l.map((x) => ({ ...x, isDefault: false })) : l;
-        return base.some((x) => x.id === saved.id) ? base.map((x) => (x.id === saved.id ? saved : x)) : [...base, saved];
-      });
-      setEdit(null);
-    };
-    await act(() => saveAddress({ ...a, id: edit?.id ? a.id : undefined }), { success: "Address saved", onOk: (r) => applyLocal("id" in r && r.id ? { ...a, id: r.id as string } : a), onDemo: () => applyLocal(a), refresh: false });
+    const isEditing = Boolean(edit?.id);
+    const tempId = isEditing ? a.id : `a${Date.now()}`;
+    const optimistic: Address = { ...a, id: tempId };
+
+    // Instant UI feedback: close modal and update state in 0ms!
+    setEdit(null);
+    setList((prev) => {
+      const base = optimistic.isDefault ? prev.map((x) => ({ ...x, isDefault: false })) : prev;
+      return isEditing
+        ? base.map((x) => (x.id === a.id ? optimistic : x))
+        : [optimistic, ...base];
+    });
+    toast.success("Address saved");
+
+    // Persist in background
+    try {
+      const r = await saveAddress({ ...a, id: isEditing ? a.id : undefined });
+      if (r.ok && r.id && !isEditing) {
+        setList((prev) => prev.map((x) => (x.id === tempId ? { ...x, id: r.id } : x)));
+      } else if (!r.ok && !r.demo) {
+        setList((prev) => (isEditing ? prev.map((x) => (x.id === a.id ? (edit as Address) : x)) : prev.filter((x) => x.id !== tempId)));
+        toast.error(r.error);
+      }
+    } catch {
+      toast.error("Could not save address. Please try again.");
+    }
+  };
+
+  const remove = async (addressToRemove: Address) => {
+    setDel(null);
+    // Instant optimistic removal
+    setList((l) => l.filter((x) => x.id !== addressToRemove.id));
+    toast.success("Address removed");
+    try {
+      const r = await deleteAddress(addressToRemove.id);
+      if (!r.ok && !r.demo) {
+        setList((l) => [...l, addressToRemove]);
+        toast.error(r.error);
+      }
+    } catch {
+      setList((l) => [...l, addressToRemove]);
+      toast.error("Could not remove address");
+    }
   };
 
   return (
@@ -54,7 +88,7 @@ export function AddressesManager({ initial }: { initial: Address[] }) {
         {edit && <AddressForm initial={edit} onSave={save} onCancel={() => setEdit(null)} />}
       </Sheet>
       <Sheet open={!!del} onClose={() => setDel(null)} side="dialog" title="Remove this address?" description={del ? `${del.line1}, ${del.city}` : ""}
-        footer={<div className="grid grid-cols-2 gap-2.5"><Button variant="outline" onClick={() => setDel(null)}>Keep</Button><Button variant="danger" loading={busy} onClick={() => act(() => deleteAddress(del!.id), { success: "Address removed", onOk: () => { setList((l) => l.filter((x) => x.id !== del!.id)); setDel(null); }, refresh: false })}>Remove</Button></div>}>
+        footer={<div className="grid grid-cols-2 gap-2.5"><Button variant="outline" onClick={() => setDel(null)}>Keep</Button><Button variant="danger" onClick={() => del && remove(del)}>Remove</Button></div>}>
         <p className="text-sm text-muted">This can’t be undone.</p>
       </Sheet>
     </>

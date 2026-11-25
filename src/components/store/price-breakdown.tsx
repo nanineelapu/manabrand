@@ -73,7 +73,7 @@ export function PriceBreakdown({ cod, express, wallet = 0, className }: { cod?: 
       <div className="flex items-baseline justify-between border-t border-line pt-3.5">
         <dt className="text-[15px] font-semibold">Total</dt><dd className="text-xl font-semibold tabular">{formatINR(total)}</dd>
       </div>
-      {cart.savings + cart.discount > 0 && <p className="rounded-ctl bg-success-bg px-3 py-2 text-center text-[13px] font-medium text-success">You’re saving {formatINR(cart.savings + cart.discount)} on this order 🎉</p>}
+      {cart.savings + cart.discount + wallet > 0 && <p className="rounded-ctl bg-success-bg px-3 py-2 text-center text-[13px] font-medium text-success">You’re saving {formatINR(cart.savings + cart.discount + wallet)} on this order 🎉</p>}
     </dl>
   );
 }

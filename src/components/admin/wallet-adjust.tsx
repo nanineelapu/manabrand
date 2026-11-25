@@ -14,6 +14,7 @@ export function WalletAdjust({ userId, name }: { userId: string; name: string })
   const [err, setErr] = useState("");
   const { act, busy } = useAct();
   const save = () => {
+    if (busy) return;
     const n = Number(f.amount.replace(/\D/g, ""));
     if (!n) { setErr("Enter an amount."); return; }
     setErr("");

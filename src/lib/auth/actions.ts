@@ -6,6 +6,7 @@ import { sendEmail } from "@/lib/email/send";
 import { welcomeEmail } from "@/lib/email/templates";
 import { isSupabaseConfigured, siteUrl } from "@/lib/supabase/env";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { WELCOME_CREDIT } from "@/lib/wallet";
 import { passwordFromPin } from "./pin";
 import { clearFailures, lockoutStatus, recordAttempt, clientIp } from "./throttle";
 import { emailError, nameError, normalizeEmail, normalizePhone, passwordError, phoneError, pinError, safeNext } from "./validation";
@@ -50,7 +51,7 @@ export async function registerCustomer(input: {
   if (byPhone) return { ok: false, error: "This mobile number is already registered. Please sign in.", fieldErrors: { phone: "Already registered" } };
   if (byEmail) return { ok: false, error: "This email is already in use. Try signing in, or use another email.", fieldErrors: { email: "Already in use" } };
 
-  const { error } = await admin.auth.admin.createUser({
+  const { data: newUser, error } = await admin.auth.admin.createUser({
     email,
     password: passwordFromPin(input.pin, phone),
     email_confirm: true, // sign-in works immediately; the reset link proves ownership of the inbox
@@ -60,6 +61,20 @@ export async function registerCustomer(input: {
   if (error) {
     console.error("[register] could not create the account:", error.message, error.status ?? "");   // visible in Vercel → Logs
     return { ok: false, error: signUpErrorMessage(error) };
+  }
+
+  // Dual-layer guarantee: grant ₹500 welcome credit immediately
+  if (newUser?.user?.id) {
+    try {
+      await admin.from("wallet_transactions").insert({
+        user_id: newUser.user.id,
+        amount: WELCOME_CREDIT,
+        kind: "welcome",
+        note: "Welcome gift",
+      });
+    } catch {
+      // Harmless: database trigger may have already inserted it, or table not yet migrated
+    }
   }
 
   // sign in right away (sets the session cookies)

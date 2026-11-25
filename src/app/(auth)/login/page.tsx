@@ -11,7 +11,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const nextQs = next ? `?next=${encodeURIComponent(next)}` : "";
   return (
     <AuthShell title="Welcome back" subtitle="Sign in with your mobile number and 4-digit PIN."
-      footer={<>New to ManaBrand? <Link href={`/register${nextQs}`} className="font-semibold text-fg underline underline-offset-4">Create an account</Link></>}>
+      footer={<>New to ManaBrand? <Link href={`/register${nextQs}`} className="font-semibold text-fg underline underline-offset-4">Create an account</Link><span className="mt-1 block text-xs font-medium text-accent">Join now &amp; get ₹500 in your wallet 🎁</span></>}>
       <LoginForm mode="customer" next={next || undefined} />
     </AuthShell>
   );

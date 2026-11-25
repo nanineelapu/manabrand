@@ -10,9 +10,10 @@ import { normalizeDealBox } from "@/lib/magic-hours";
 import { HIDDEN_CATEGORY_SLUGS } from "@/lib/fashion";
 import { mergePermissions } from "@/lib/permissions";
 import { createPublicClient } from "@/lib/supabase/public";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { analytics as mockAnalytics } from "@/lib/mock/ops";
 import { withMemoryCache } from "./cache";
+import { WELCOME_CREDIT } from "@/lib/wallet";
 import type {
   Address, AppNotification, Banner, Category, Collection, Coupon, Customer, Order, OrderStatus, Payout, Product,
   ProductStatus, ReturnRequest, Review, Seller, WalletTx } from "@/types";
@@ -615,7 +616,33 @@ export async function getWallet() {
       .order("created_at", { ascending: false })
       .limit(1000);
     if (res.error) return { balance: 0, history: [] };
-    return mapWallet((res.data ?? []) as any[]);
+
+    let rows = (res.data ?? []) as any[];
+
+    // Auto-grant welcome credit if customer has no welcome bonus yet
+    const hasWelcome = rows.some((t) => t.kind === "welcome");
+    if (!hasWelcome && process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) {
+      try {
+        const admin = createAdminClient();
+        const { data: profile } = await admin.from("profiles").select("id, role").eq("id", me).maybeSingle();
+        if (profile?.role === "customer") {
+          const { data: inserted, error: insErr } = await admin.from("wallet_transactions").insert({
+            user_id: me,
+            amount: WELCOME_CREDIT,
+            kind: "welcome",
+            note: "Welcome gift",
+          }).select().maybeSingle();
+
+          if (!insErr && inserted) {
+            rows = [inserted, ...rows];
+          }
+        }
+      } catch {
+        // Silently continue if table is missing or already inserted
+      }
+    }
+
+    return mapWallet(rows);
   } catch {
     return { balance: 0, history: [] };
   }

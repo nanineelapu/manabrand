@@ -73,13 +73,13 @@ export function Select({ className, invalid, children, ...rest }: React.SelectHT
 
 /* ---------- Checkbox / Radio / Switch ---------- */
 export function Checkbox({
-  label, checked, onChange, className, description,
-}: { label: React.ReactNode; checked: boolean; onChange: (v: boolean) => void; className?: string; description?: string }) {
+  label, checked, onChange, className, description, disabled,
+}: { label: React.ReactNode; checked: boolean; onChange: (v: boolean) => void; className?: string; description?: string; disabled?: boolean }) {
   const id = useId();
   return (
-    <label htmlFor={id} className={cn("flex min-h-8 cursor-pointer items-start gap-3", className)}>
+    <label htmlFor={id} className={cn("flex min-h-8 cursor-pointer items-start gap-3", disabled && "cursor-not-allowed opacity-50", className)}>
       <span className="relative mt-0.5 grid size-5 shrink-0 place-items-center">
-        <input id={id} type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="peer absolute inset-0 size-5 cursor-pointer opacity-0" />
+        <input id={id} type="checkbox" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} className="peer absolute inset-0 size-5 cursor-pointer opacity-0 disabled:cursor-not-allowed" />
         <span className="pointer-events-none grid size-5 place-items-center rounded-md border border-line-strong bg-card transition-colors peer-checked:border-primary peer-checked:bg-primary peer-focus-visible:ring-2 peer-focus-visible:ring-ring">
           <Check className={cn("size-3.5 text-primary-fg transition-opacity", checked ? "opacity-100" : "opacity-0")} strokeWidth={3} />
         </span>
