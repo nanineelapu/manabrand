@@ -47,31 +47,31 @@ export function MobileTabBar() {
     {/* "bag" indicator above the tab bar — compact white capsule theme */}
     {mounted && bag > 0 && (
       <Link key={bag} href="/cart" aria-label={`View bag, ${bag} ${bag === 1 ? "item" : "items"}, ${formatINR(subtotal)}`} data-round
-        className="animate-pop-in fixed bottom-[calc(max(0.25rem,env(safe-area-inset-bottom))+3.8rem)] left-3 right-3 z-40 mx-auto flex max-w-[330px] items-center gap-2.5 rounded-full border border-black/10 bg-white/95 py-1.5 pl-1.5 pr-3.5 text-neutral-900 shadow-[0_8px_24px_rgba(0,0,0,0.12)] backdrop-blur-xl sm:right-16 sm:max-w-sm lg:hidden">
-        <span className="relative grid size-8 shrink-0 place-items-center rounded-full bg-accent-soft text-accent">
-          <ShoppingBag className="size-4" />
+        className="animate-pop-in fixed bottom-[calc(max(0.35rem,env(safe-area-inset-bottom))+4.2rem)] left-3 right-3 z-40 mx-auto flex max-w-[340px] items-center gap-2.5 rounded-full border border-black/10 bg-white/95 py-2 pl-2 pr-4 text-neutral-900 shadow-[0_8px_24px_rgba(0,0,0,0.12)] backdrop-blur-xl sm:right-16 sm:max-w-sm lg:hidden">
+        <span className="relative grid size-8.5 shrink-0 place-items-center rounded-full bg-accent-soft text-accent">
+          <ShoppingBag className="size-4.5" />
           <span className="absolute -right-1 -top-1 grid min-w-[16px] place-items-center rounded-full bg-accent px-1 text-[9px] font-bold leading-[16px] text-white tabular">{bag}</span>
         </span>
         <span className="min-w-0 flex-1 leading-tight">
-          <span className="block text-xs font-bold text-neutral-900">{bag} {bag === 1 ? "item" : "items"} in your bag</span>
+          <span className="block text-[13px] font-bold text-neutral-900">{bag} {bag === 1 ? "item" : "items"} in your bag</span>
           <span className="block text-[11px] font-medium text-neutral-500 tabular">{formatINR(subtotal)}</span>
         </span>
         <span className="inline-flex items-center gap-0.5 text-xs font-bold text-accent">View bag <ChevronRight className="size-3.5" /></span>
       </Link>
     )}
-    <nav aria-label="Main" data-round className="fixed inset-x-3 bottom-[max(0.25rem,env(safe-area-inset-bottom))] z-40 lg:hidden">
-      <ul className="relative mx-auto grid h-[54px] max-w-md grid-cols-5 rounded-[28px] border border-white/70 bg-white/50 p-1 backdrop-blur-3xl backdrop-saturate-[2] [box-shadow:inset_0_1px_0_rgb(255_255_255/0.9),inset_0_-1px_0_rgb(255_255_255/0.25),0_0_0_0.5px_rgb(0_0_0/0.08)]">
+    <nav aria-label="Main" data-round className="fixed inset-x-3 bottom-[max(0.35rem,env(safe-area-inset-bottom))] z-40 lg:hidden">
+      <ul className="relative mx-auto grid h-[60px] max-w-md grid-cols-5 rounded-[32px] border border-white/70 bg-white/60 p-1 backdrop-blur-3xl backdrop-saturate-[2] [box-shadow:inset_0_1px_0_rgb(255_255_255/0.9),inset_0_-1px_0_rgb(255_255_255/0.25),0_0_0_0.5px_rgb(0_0_0/0.08)]">
         {/* the sliding glass pill behind the active tab */}
         <span aria-hidden
-          className={cn("tab-pill pointer-events-none absolute bottom-1 left-1 top-1 w-[calc((100%-0.5rem)/5)] rounded-[22px] transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.3,1.25,0.5,1)]", current < 0 && "opacity-0")}
+          className={cn("tab-pill pointer-events-none absolute bottom-1 left-1 top-1 w-[calc((100%-0.5rem)/5)] rounded-[26px] transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.3,1.25,0.5,1)]", current < 0 && "opacity-0")}
           style={{ transform: `translateX(${Math.max(current, 0) * 100}%)` }} />
         {tabs.map(({ href, label, icon: Icon, match }) => {
           if (label === "Bag" && showInstall) {
             return (
               <li key="install" className="relative">
                 <button type="button" aria-label="Install the ManaBrand app" onClick={() => (app.canPrompt ? app.install() : setHelp(true))}
-                  className="flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-[22px] text-[10px] font-semibold tracking-tight text-black/70 transition-colors active:scale-95">
-                  <Download className="size-5" strokeWidth={1.9} />
+                  className="flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-[26px] text-[11px] font-semibold tracking-tight text-black/70 transition-colors active:scale-95">
+                  <Download className="size-[22px]" strokeWidth={1.9} />
                   Install
                 </button>
               </li>
@@ -82,9 +82,9 @@ export function MobileTabBar() {
           return (
             <li key={href} className="relative">
               <Link href={href} aria-current={active ? "page" : undefined}
-                className={cn("flex h-full flex-col items-center justify-center gap-0.5 rounded-[22px] text-[10px] font-semibold tracking-tight transition-colors active:scale-95", active ? "text-black" : "text-black/70")}>
+                className={cn("flex h-full flex-col items-center justify-center gap-0.5 rounded-[26px] text-[11px] font-semibold tracking-tight transition-colors active:scale-95", active ? "text-black" : "text-black/70")}>
                 <span className="relative">
-                  <Icon className={cn("size-5 transition-transform duration-300", active && "scale-110")} strokeWidth={active ? 2.3 : 1.9} fill={active && label === "Home" ? "currentColor" : "none"} fillOpacity={0.2} />
+                  <Icon className={cn("size-[22px] transition-transform duration-300", active && "scale-110")} strokeWidth={active ? 2.3 : 1.9} fill={active && label === "Home" ? "currentColor" : "none"} fillOpacity={0.2} />
                   {mounted && n > 0 && <span className="absolute -right-2.5 -top-1.5 grid min-w-4 place-items-center rounded-full bg-[rgb(200_16_46)] px-1 text-[9px] font-bold leading-4 text-white tabular">{n}</span>}
                 </span>
                 {label}

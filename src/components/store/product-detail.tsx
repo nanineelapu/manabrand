@@ -211,14 +211,14 @@ export function BuyBox({ product, sellerName, sellerSlug }: { product: Product; 
 
 function StickyCta({ product, onAdd, onBuy }: { product: Product; onAdd: () => void; onBuy: () => void }) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/97 px-3.5 py-2 pb-[max(0.4rem,env(safe-area-inset-bottom))] shadow-[0_-6px_20px_rgb(26_22_19/0.06)] backdrop-blur md:hidden">
-      <div className="mx-auto flex max-w-md items-center gap-2.5">
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/97 px-4 py-2.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-6px_20px_rgb(26_22_19/0.06)] backdrop-blur md:hidden">
+      <div className="mx-auto flex max-w-md items-center gap-3">
         <div className="min-w-0 shrink-0">
-          <p className="text-base font-semibold leading-none tabular">{formatINR(product.price)}</p>
-          {product.mrp > product.price && <p className="mt-0.5 text-[11px] text-subtle line-through tabular">{formatINR(product.mrp)}</p>}
+          <p className="text-base font-bold leading-none tabular">{formatINR(product.price)}</p>
+          {product.mrp > product.price && <p className="mt-0.5 text-xs text-subtle line-through tabular">{formatINR(product.mrp)}</p>}
         </div>
-        <Button onClick={onAdd} variant="outline" size="sm" className="flex-1 rounded-full text-xs font-bold sm:text-sm">Add to bag</Button>
-        <Button onClick={onBuy} variant="accent" size="sm" className="flex-1 rounded-full text-xs font-bold sm:text-sm">Buy now</Button>
+        <Button onClick={onAdd} variant="outline" size="sm" className="h-10 flex-1 rounded-full text-[13px] font-bold">Add to bag</Button>
+        <Button onClick={onBuy} variant="accent" size="sm" className="h-10 flex-1 rounded-full text-[13px] font-bold">Buy now</Button>
       </div>
     </div>
   );
