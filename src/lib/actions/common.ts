@@ -17,6 +17,7 @@ export function friendly(message: string): string {
   if (/foreign key/i.test(message)) return "This is in use elsewhere and can’t be removed.";
   if (/violates check constraint/i.test(message)) return "Some of the values aren’t valid. Please check and try again.";
   if (/JWT|not signed in|session/i.test(message)) return "Please sign in again.";
+  if (/schema cache/i.test(message)) return "We couldn’t process your order right now. Please try again in a moment.";
   return message;
 }
 export const fail = (e: unknown): Result => ({ ok: false, error: friendly(e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e)) });

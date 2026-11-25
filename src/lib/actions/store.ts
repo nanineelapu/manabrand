@@ -7,6 +7,7 @@ import { refundOrderIfPaid } from "@/lib/payments/refund";
 import { supabaseUrl } from "@/lib/supabase/env";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { emailError, nameError, normalizeEmail, normalizePhone } from "@/lib/auth/validation";
+import { maxWalletForOrder } from "@/lib/wallet";
 import { AREA, OUT_OF_AREA, inServiceArea } from "@/lib/locale";
 import { clampStr, demoResult, fail, guarded, isUuid, live, type Result } from "./common";
 
@@ -21,7 +22,7 @@ export interface AddressInput { name: string; phone: string; line1: string; line
 export async function placeOrder(input: {
   lines: CartLineInput[]; address: AddressInput; method: "upi" | "card" | "cod" | "netbanking"; coupon?: string | null; express?: boolean; wallet?: number;
 }): Promise<Result<{ orderId: string; number: string; total: number; paymentStatus: "paid" | "pending" }>> {
-  return guarded(["customer"], async () => {
+  return guarded(["customer"], async (actor) => {
     const supabase = await createClient();
     const items = input.lines.map((l) => ({ product_id: l.productId, color: l.color, option_value: l.size, qty: l.qty }));
     if (!items.every((i) => isUuid(i.product_id))) return { ok: false, error: "Your bag contains items that are no longer available. Please remove them and try again." };
@@ -30,11 +31,65 @@ export async function placeOrder(input: {
     if (!inServiceArea(String(input.address.pincode ?? ""))) return { ok: false, error: OUT_OF_AREA };
     const walletAsk = Math.max(0, Math.floor(Number(input.wallet) || 0));   // how much of the wallet to spend (the database caps it at the balance and the order total)
     const args = { p_items: items, p_address: { ...input.address, phone }, p_payment_method: input.method, p_coupon: input.coupon ?? null, p_express: Boolean(input.express) };
-    const { data, error } = walletAsk > 0
-      ? await supabase.rpc("place_order_wallet", { ...args, p_wallet: walletAsk })
-      : await supabase.rpc("place_order", args);
-    if (error) throw new Error(error.message);
-    const row = (Array.isArray(data) ? data[0] : data) as { order_id: string; order_number: string; total: number };
+
+    let row: { order_id: string; order_number: string; total: number };
+
+    if (walletAsk > 0) {
+      // 1. Try place_order_wallet RPC first
+      const rpcResult = await supabase.rpc("place_order_wallet", { ...args, p_wallet: walletAsk });
+      if (rpcResult.error) {
+        // If place_order_wallet function is not in schema cache, fallback to place_order + wallet ledger deduction
+        if (/place_order_wallet/i.test(rpcResult.error.message) || rpcResult.error.code === "PGRST202") {
+          const poRes = await supabase.rpc("place_order", args);
+          if (poRes.error) throw new Error(poRes.error.message);
+          const placed = (Array.isArray(poRes.data) ? poRes.data[0] : poRes.data) as { order_id: string; order_number: string; total: number };
+
+          const adminDb = createAdminClient();
+          const { data: txs } = await adminDb.from("wallet_transactions").select("amount").eq("user_id", actor.id);
+          const balance = Math.max(0, (txs ?? []).reduce((sum, t) => sum + (Number(t.amount) || 0), 0));
+
+          const maxAllowed = maxWalletForOrder(placed.total);
+          const useWallet = Math.max(0, Math.min(walletAsk, balance, placed.total, maxAllowed));
+
+          if (useWallet > 0) {
+            const newTotal = placed.total - useWallet;
+            await adminDb.from("wallet_transactions").insert({
+              user_id: actor.id,
+              amount: -useWallet,
+              kind: "order",
+              order_id: placed.order_id,
+              note: `Used on order ${placed.order_number}`,
+            });
+
+            await adminDb.from("orders").update({
+              total: newTotal,
+              wallet_used: useWallet,
+              payment_status: newTotal === 0 ? "paid" : "pending",
+              payment_ref: newTotal === 0 ? "wallet" : null,
+            }).eq("id", placed.order_id);
+
+            await adminDb.from("order_events").insert({
+              order_id: placed.order_id,
+              status: "placed",
+              note: `Paid ₹${useWallet} from wallet`,
+            });
+
+            row = { order_id: placed.order_id, order_number: placed.order_number, total: newTotal };
+          } else {
+            row = placed;
+          }
+        } else {
+          throw new Error(rpcResult.error.message);
+        }
+      } else {
+        row = (Array.isArray(rpcResult.data) ? rpcResult.data[0] : rpcResult.data) as { order_id: string; order_number: string; total: number };
+      }
+    } else {
+      const { data, error } = await supabase.rpc("place_order", args);
+      if (error) throw new Error(error.message);
+      row = (Array.isArray(data) ? data[0] : data) as { order_id: string; order_number: string; total: number };
+    }
+
     if (row.total > 0 && input.method !== "cod" && !onlinePaymentsLive()) return { ok: false, error: "Online payment isn’t available yet — please choose Cash on delivery." };
 
     // PAYMENTS: cash on delivery is "pending" until delivery. If the order was 100% covered by wallet,
@@ -52,7 +107,34 @@ export async function cancelOrder(orderId: string, reason: string): Promise<Resu
     const { error } = await (await createClient()).rpc("cancel_order", { p_order: orderId, p_reason: clampStr(reason, 200) });
     if (error) throw new Error(error.message);
     await refundOrderIfPaid(orderId); // paid online? the money goes back automatically
-    await createAdminClient().rpc("wallet_refund_order", { p_order: orderId });   // wallet money used on this order goes back to the wallet
+    try {
+      const res = await createAdminClient().rpc("wallet_refund_order", { p_order: orderId });
+      if (res?.error && /wallet_refund_order/i.test(res.error.message)) {
+        // Fallback: refund wallet money directly if RPC not present in schema cache
+        const adminDb = createAdminClient();
+        const { data: ord } = await adminDb.from("orders").select("id, user_id, number, wallet_used").eq("id", orderId).maybeSingle();
+        if (ord && ord.wallet_used > 0) {
+          const { data: existingRefund } = await adminDb
+            .from("wallet_transactions")
+            .select("id")
+            .eq("order_id", orderId)
+            .eq("kind", "refund")
+            .maybeSingle();
+
+          if (!existingRefund) {
+            await adminDb.from("wallet_transactions").insert({
+              user_id: ord.user_id,
+              amount: ord.wallet_used,
+              kind: "refund",
+              order_id: ord.id,
+              note: `Refund for cancelled order ${ord.number}`,
+            });
+          }
+        }
+      }
+    } catch {
+      // Non-blocking wallet refund
+    }
     void notifyOrderStatus(orderId, "cancelled");
     revalidatePath("/account/orders"); revalidatePath("/admin/orders");
     return { ok: true };
