@@ -115,7 +115,7 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
   const panel = (i: number, title: string, summary: React.ReactNode, body: React.ReactNode) => {
     const open = step === i, done = step > i;
     return (
-      <section className={cn("rounded-card border bg-card shadow-card transition-colors", open ? "border-primary/30" : "border-line")} aria-labelledby={`st-${i}`}>
+      <section className={cn("rounded-3xl border bg-card shadow-card transition-colors", open ? "border-primary/30" : "border-line")} aria-labelledby={`st-${i}`}>
         <header className="flex items-center gap-3 p-4 md:p-5">
           <span className={cn("grid size-7 shrink-0 place-items-center rounded-full text-xs font-semibold", done ? "bg-success text-white" : open ? "bg-primary text-primary-fg" : "bg-bg-subtle text-muted")}>{done ? <Check className="size-3.5" strokeWidth={3} /> : i + 1}</span>
           <div className="min-w-0 flex-1"><h2 id={`st-${i}`} className="text-[15px] font-semibold">{title}</h2>{done && <div className="truncate text-[13px] text-muted">{summary}</div>}</div>
@@ -142,7 +142,7 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
       <Stepper steps={STEPS} current={step} className="mb-6 max-w-xl" />
 
       {/* mobile summary toggle */}
-      <details open={summaryOpen} onToggle={(e) => setSummaryOpen((e.target as HTMLDetailsElement).open)} className="mb-5 rounded-card border border-line bg-card lg:hidden">
+      <details open={summaryOpen} onToggle={(e) => setSummaryOpen((e.target as HTMLDetailsElement).open)} className="mb-5 rounded-2xl border border-line bg-card lg:hidden">
         <summary className="flex min-h-14 cursor-pointer items-center justify-between px-4 text-sm font-medium"><span>Order summary · {cart.count} items</span><span className="flex items-center gap-2 font-semibold tabular">{formatINR(finalTotal)}<ChevronDown className="size-4 text-muted" /></span></summary>
         <div className="border-t border-line p-4"><PriceBreakdown cod={pay === "cod" && !fullyCoveredByWallet} express={express} wallet={walletUse} /></div>
       </details>
@@ -158,14 +158,14 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
                   <p className="mt-0.5 text-[13px] text-muted">Mobile: {a.phone}</p>
                 </Radio>
               ))}
-              <button onClick={() => setAdding(true)} className="flex h-12 w-full items-center justify-center gap-2 rounded-ctl border border-dashed border-line-strong text-sm font-medium hover:bg-bg-subtle"><Plus className="size-4" /> Add a new address</button>
+              <button onClick={() => setAdding(true)} className="flex h-12 w-full items-center justify-center gap-2 rounded-full border border-dashed border-line-strong text-sm font-medium hover:bg-bg-subtle"><Plus className="size-4" /> Add a new address</button>
               <Button size="lg" full disabled={!addr} onClick={() => setStep(1)} className="rounded-full">Deliver to this address</Button>
             </div>
           ))}
 
           {panel(1, "Delivery", "Within 48 hours", (
             <div className="space-y-3">
-              <div className="flex items-center justify-between gap-3 rounded-ctl border border-line-strong bg-card p-3.5">
+              <div className="flex items-center justify-between gap-3 rounded-2xl border border-line-strong bg-card p-3.5">
                 <div><span className="flex items-center gap-2 text-sm font-semibold"><Truck className="size-4" /> Delivery within 48 hours</span><p className="mt-0.5 text-[13px] text-muted">Your order arrives within 48 hours of being placed</p></div>
                 <span className="text-sm font-semibold text-success">{cart.shipping === 0 ? "Free" : formatINR(cart.shipping)}</span>
               </div>
@@ -177,7 +177,7 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
             <div className="space-y-3">
               {walletBalance > 0 && (
                 <div className="space-y-2">
-                  <div className="flex items-center gap-3 rounded-ctl border border-line bg-bg-subtle p-3.5">
+                  <div className="flex items-center gap-3 rounded-2xl border border-line bg-bg-subtle p-3.5">
                     <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-accent"><Wallet className="size-5" /></span>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold">Use wallet balance</p>
@@ -195,18 +195,18 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
                     )}
                   </div>
                   {beforeWallet < 999 ? (
-                    <p className="rounded-ctl bg-bg-subtle px-3 py-2 text-xs text-muted">
+                    <p className="rounded-xl bg-bg-subtle px-3 py-2 text-xs text-muted">
                       💡 Add <strong className="text-fg">{formatINR(999 - beforeWallet)}</strong> more to your order to unlock <strong className="text-success">₹200</strong> wallet discount.
                     </p>
                   ) : useWallet && walletUse > 0 ? (
-                    <p className="rounded-ctl bg-success-bg px-3 py-2 text-xs text-success">
+                    <p className="rounded-xl bg-success-bg px-3 py-2 text-xs text-success">
                       🎉 {formatINR(walletUse)} wallet discount applied ({beforeWallet >= 2499 ? "₹350 tier" : beforeWallet >= 1999 ? "₹300 tier" : beforeWallet >= 1499 ? "₹250 tier" : "₹200 tier"}). Remaining in wallet: {formatINR(walletBalance - walletUse)}.
                     </p>
                   ) : null}
                 </div>
               )}
               {fullyCoveredByWallet ? (
-                <div className="rounded-ctl border border-success/30 bg-success-bg p-4 text-center">
+                <div className="rounded-2xl border border-success/30 bg-success-bg p-4 text-center">
                   <p className="text-sm font-semibold text-success">Your wallet covers this entire order 🎉</p>
                   <p className="mt-1 text-xs text-muted">No additional payment method is needed. Tap below to place your order.</p>
                 </div>
@@ -219,10 +219,10 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
                         <div className="flex items-center gap-3"><span className="text-muted">{o.icon}</span><span><span className="block text-sm font-semibold">{o.label}</span><span className="block text-xs text-muted">{o.sub}</span></span></div>
                       </Radio>
                       {!gateway && pay === o.id && o.id === "upi" && (
-                        <div className="animate-fade-in mt-2 rounded-ctl bg-bg-subtle p-4"><Field label="UPI ID" htmlFor="vpa" error={errs.vpa}><Input id="vpa" autoCapitalize="none" placeholder="yourname@okhdfc" value={f.vpa} onChange={(e) => setField("vpa", e.target.value)} invalid={!!errs.vpa} /></Field></div>
+                        <div className="animate-fade-in mt-2 rounded-2xl bg-bg-subtle p-4"><Field label="UPI ID" htmlFor="vpa" error={errs.vpa}><Input id="vpa" autoCapitalize="none" placeholder="yourname@okhdfc" value={f.vpa} onChange={(e) => setField("vpa", e.target.value)} invalid={!!errs.vpa} /></Field></div>
                       )}
                       {!gateway && pay === o.id && o.id === "card" && (
-                        <div className="animate-fade-in mt-2 space-y-3.5 rounded-ctl bg-bg-subtle p-4">
+                        <div className="animate-fade-in mt-2 space-y-3.5 rounded-2xl bg-bg-subtle p-4">
                           <Field label="Card number" htmlFor="cc" error={errs.card}><Input id="cc" inputMode="numeric" autoComplete="cc-number" placeholder="1234 5678 9012 3456" maxLength={19} value={f.card} onChange={(e) => setField("card", e.target.value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim())} invalid={!!errs.card} /></Field>
                           <Field label="Name on card" htmlFor="cn" error={errs.name}><Input id="cn" autoComplete="cc-name" value={f.name} onChange={(e) => setField("name", e.target.value)} invalid={!!errs.name} /></Field>
                           <div className="grid grid-cols-2 gap-3">
@@ -232,7 +232,7 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
                         </div>
                       )}
                       {!gateway && pay === o.id && o.id === "netbanking" && (
-                        <div className="animate-fade-in mt-2 rounded-ctl bg-bg-subtle p-4"><Field label="Choose your bank" htmlFor="bk" error={errs.bank}><Select id="bk" value={f.bank} onChange={(e) => setField("bank", e.target.value)} invalid={!!errs.bank}><option value="">Select bank</option>{["HDFC Bank", "ICICI Bank", "State Bank of India", "Axis Bank", "Kotak Mahindra Bank"].map((b) => <option key={b}>{b}</option>)}</Select></Field></div>
+                        <div className="animate-fade-in mt-2 rounded-2xl bg-bg-subtle p-4"><Field label="Choose your bank" htmlFor="bk" error={errs.bank}><Select id="bk" value={f.bank} onChange={(e) => setField("bank", e.target.value)} invalid={!!errs.bank}><option value="">Select bank</option>{["HDFC Bank", "ICICI Bank", "State Bank of India", "Axis Bank", "Kotak Mahindra Bank"].map((b) => <option key={b}>{b}</option>)}</Select></Field></div>
                       )}
                     </div>
                   ))}
@@ -245,19 +245,19 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
         </div>
 
         <aside className="hidden lg:block">
-          <div className="sticky top-24 space-y-4 rounded-card border border-line bg-card p-5 shadow-card">
+          <div className="sticky top-24 space-y-4 rounded-3xl border border-line bg-card p-5 shadow-card">
             <h2 className="text-[15px] font-semibold">Order summary</h2>
             <ul className="max-h-60 space-y-3 overflow-y-auto pr-1">
               {cart.lines.map((l) => (
                 <li key={l.key} className="flex items-center gap-3">
-                  <span className="relative size-14 shrink-0 overflow-hidden rounded-lg"><ProductImage photo={l.product.photo} seed={l.product.id} color={l.colorHex} src={l.product.image} /><span className="absolute right-0.5 top-0.5 grid size-4 place-items-center rounded-full bg-ink text-[10px] text-white">{l.qty}</span></span>
+                  <span className="relative size-14 shrink-0 overflow-hidden rounded-xl"><ProductImage photo={l.product.photo} seed={l.product.id} color={l.colorHex} src={l.product.image} /><span className="absolute right-0.5 top-0.5 grid size-4 place-items-center rounded-full bg-ink text-[10px] text-white">{l.qty}</span></span>
                   <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{l.product.name}</span><span className="block text-xs text-muted">{l.color} · {l.size}</span></span>
                   <span className="text-sm font-medium tabular">{formatINR(l.lineTotal)}</span>
                 </li>
               ))}
             </ul>
             <PriceBreakdown cod={pay === "cod" && !fullyCoveredByWallet} express={express} wallet={walletUse} className="border-t border-line pt-4" />
-            {addr && <p className="flex gap-2 rounded-ctl bg-bg-subtle p-3 text-xs text-muted"><MapPin className="mt-0.5 size-4 shrink-0" /> Delivering to {addr.name}, {addr.city} {addr.pincode}</p>}
+            {addr && <p className="flex gap-2 rounded-xl bg-bg-subtle p-3 text-xs text-muted"><MapPin className="mt-0.5 size-4 shrink-0" /> Delivering to {addr.name}, {addr.city} {addr.pincode}</p>}
           </div>
         </aside>
       </div>

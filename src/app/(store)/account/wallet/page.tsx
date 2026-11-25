@@ -19,23 +19,23 @@ export default async function WalletPage() {
         <Link href="/shop" className="mt-5 inline-flex h-11 items-center rounded-full bg-white px-6 text-sm font-bold text-black hover:bg-white/90">Shop now</Link>
       </section>
 
-      <section className="rounded-card border border-line bg-card p-5 shadow-card md:p-6">
+      <section className="rounded-3xl border border-line bg-card p-5 shadow-card md:p-6">
         <h2 className="font-display text-lg font-semibold">How to use your wallet</h2>
         <p className="mt-1 text-xs text-muted">Wallet credits apply automatically at checkout based on your order total:</p>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-ctl border border-line bg-bg-subtle p-3.5 text-center">
+          <div className="rounded-2xl border border-line bg-bg-subtle p-3.5 text-center">
             <p className="text-xs text-muted">Orders &gt; ₹999</p>
             <p className="mt-1 font-semibold text-accent">Use up to ₹200</p>
           </div>
-          <div className="rounded-ctl border border-line bg-bg-subtle p-3.5 text-center">
+          <div className="rounded-2xl border border-line bg-bg-subtle p-3.5 text-center">
             <p className="text-xs text-muted">Orders &gt; ₹1,499</p>
             <p className="mt-1 font-semibold text-accent">Use up to ₹250</p>
           </div>
-          <div className="rounded-ctl border border-line bg-bg-subtle p-3.5 text-center">
+          <div className="rounded-2xl border border-line bg-bg-subtle p-3.5 text-center">
             <p className="text-xs text-muted">Orders &gt; ₹1,999</p>
             <p className="mt-1 font-semibold text-accent">Use up to ₹300</p>
           </div>
-          <div className="rounded-ctl border border-line bg-bg-subtle p-3.5 text-center">
+          <div className="rounded-2xl border border-line bg-bg-subtle p-3.5 text-center">
             <p className="text-xs text-muted">Orders &gt; ₹2,499</p>
             <p className="mt-1 font-semibold text-accent">Use up to ₹350</p>
           </div>
@@ -44,8 +44,8 @@ export default async function WalletPage() {
 
       <section>
         <h2 className="mb-3 font-display text-xl font-semibold">History</h2>
-        {history.length === 0 ? <p className="rounded-card border border-line bg-card p-6 text-center text-sm text-muted">Nothing here yet.</p> : (
-          <ul className="divide-y divide-line rounded-card border border-line bg-card shadow-card">
+        {history.length === 0 ? <p className="rounded-2xl border border-line bg-card p-6 text-center text-sm text-muted">Nothing here yet.</p> : (
+          <ul className="divide-y divide-line rounded-3xl border border-line bg-card shadow-card">
             {history.map((t) => {
               const k = KIND[t.kind], Icon = t.amount > 0 ? ArrowDownLeft : k.icon;
               return (

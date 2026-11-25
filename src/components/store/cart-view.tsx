@@ -31,11 +31,11 @@ export function CartView({ isGuest = false, walletBalance = 0 }: { isGuest?: boo
           body={isGuest ? "Add items you love — they’ll wait for you here. Create an account to claim ₹500 in your wallet!" : "Add items you love — they’ll wait for you here."}
           action={
             <div className="flex flex-col gap-2.5 sm:flex-row">
-              <Button href="/shop" size="lg">Start shopping</Button>
+              <Button href="/shop" size="lg" className="rounded-full">Start shopping</Button>
               {isGuest ? (
-                <Button href="/register?next=/cart" size="lg" variant="outline">Sign up & get ₹500</Button>
+                <Button href="/register?next=/cart" size="lg" variant="outline" className="rounded-full">Sign up & get ₹500</Button>
               ) : (
-                <Button href="/wishlist" size="lg" variant="outline">View wishlist</Button>
+                <Button href="/wishlist" size="lg" variant="outline" className="rounded-full">View wishlist</Button>
               )}
             </div>
           }
@@ -50,7 +50,7 @@ export function CartView({ isGuest = false, walletBalance = 0 }: { isGuest?: boo
       <h1 className="font-display text-[30px] font-semibold tracking-tight md:mt-4 md:text-4xl">Your bag <span className="text-lg font-normal text-muted">({cart.count})</span></h1>
 
       {isGuest && (
-        <div className="mt-4 flex flex-col items-start justify-between gap-3.5 rounded-card border border-accent/25 bg-accent-soft p-4 sm:flex-row sm:items-center">
+        <div className="mt-4 flex flex-col items-start justify-between gap-3.5 rounded-2xl border border-accent/25 bg-accent-soft p-4 sm:flex-row sm:items-center">
           <div className="flex items-center gap-3">
             <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent text-accent-fg">
               <Gift className="size-5" />
@@ -73,7 +73,7 @@ export function CartView({ isGuest = false, walletBalance = 0 }: { isGuest?: boo
               const off = discountPct(l.product.price, l.product.mrp);
               return (
                 <li key={l.key} className="flex gap-3 py-5 sm:gap-4">
-                  <Link href={`/product/${l.product.slug}`} className="aspect-[3/4] w-20 shrink-0 overflow-hidden rounded-xl min-[400px]:w-24 md:w-28"><ProductImage photo={l.product.photo} seed={l.product.id} color={l.colorHex} src={l.product.image} /></Link>
+                  <Link href={`/product/${l.product.slug}`} className="aspect-[3/4] w-20 shrink-0 overflow-hidden rounded-2xl min-[400px]:w-24 md:w-28"><ProductImage photo={l.product.photo} seed={l.product.id} color={l.colorHex} src={l.product.image} /></Link>
                   <div className="flex min-w-0 flex-1 flex-col">
                     <p className="text-[11px] font-medium uppercase tracking-wide text-subtle">{l.product.sellerName}</p>
                     <Link href={`/product/${l.product.slug}`} className="line-clamp-2 text-[15px] font-medium leading-snug">{l.product.name}</Link>
@@ -101,16 +101,16 @@ export function CartView({ isGuest = false, walletBalance = 0 }: { isGuest?: boo
         </div>
 
         <aside className="min-w-0 space-y-5 lg:sticky lg:top-24 lg:self-start">
-          <section className="rounded-card border border-line bg-card p-5 shadow-card">
+          <section className="rounded-3xl border border-line bg-card p-5 shadow-card">
             <h2 className="mb-3 text-[15px] font-semibold">Apply coupon</h2>
             <CouponBox />
             {cart.couponError && <p className="mt-2 text-xs text-danger">{cart.couponError}</p>}
           </section>
-          <section className="rounded-card border border-line bg-card p-5 shadow-card">
+          <section className="rounded-3xl border border-line bg-card p-5 shadow-card">
             <h2 className="mb-4 text-[15px] font-semibold">Price details</h2>
             <PriceBreakdown />
             {walletBalance > 0 && (
-              <div className="mt-4 flex items-center gap-3 rounded-xl border border-success/30 bg-success-bg p-3">
+              <div className="mt-4 flex items-center gap-3 rounded-2xl border border-success/30 bg-success-bg p-3">
                 <span className="grid size-7 shrink-0 place-items-center rounded-full bg-success text-white">
                   <Wallet className="size-3.5" />
                 </span>

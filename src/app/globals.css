@@ -67,8 +67,8 @@
   --accent-soft: rgb(14 122 95 / 0.12);
   --accent-soft-fg: var(--emerald-600);
   --ring: var(--emerald-500);
-  --r-ctl: 0px;
-  --r-card: 0px;
+  --r-ctl: 12px;
+  --r-card: 20px;
   --sh-card: 0 10px 30px rgb(13 31 25 / 0.07), inset 0 1px 0 rgb(255 255 255 / 0.8);
   --sh-pop: 0 24px 60px rgb(13 31 25 / 0.24);
   --mesh:
@@ -120,6 +120,8 @@
   --sh-card: none;
   --sh-pop: 0 24px 60px rgb(0 0 0 / 0.18);
   --mesh: #ffffff;
+  --r-ctl: 14px;
+  --r-card: 24px;
   --tabbar-h: 80px; /* floating glass tab bar (64px + 12px gap + breathing room) */
   color-scheme: light;
 }
@@ -159,13 +161,15 @@
   --rail-fg: #d5e2dc;
   --rail-muted: #7f948b;
   --rail-active: rgb(255 255 255 / 0.09);
-  --r-ctl: 0px;
-  --r-card: 0px;
+  --r-ctl: 10px;
+  --r-card: 16px;
 }
 
 /* ---- Surface: SELLER — warm amber glass --------------------------------- */
 [data-surface="seller"] {
   --bg: #f6f0e4;
+  --r-ctl: 12px;
+  --r-card: 18px;
   --accent: #a8720c;
   --accent-fg: #ffffff;
   --accent-soft: rgb(212 169 79 / 0.22);
@@ -234,9 +238,6 @@
 
   --breakpoint-xs: 26rem;
 }
-
-/* ---- Shape language: everything is rectangular. No rounded corners anywhere. */
-*:not([data-studio], [data-studio] *, [data-round], [data-round] *), *:not([data-studio], [data-studio] *, [data-round], [data-round] *)::before, *:not([data-studio], [data-studio] *, [data-round], [data-round] *)::after { border-radius: 0 !important; }
 
 /* ---- Base --------------------------------------------------------------- */
 html { -webkit-text-size-adjust: 100%; }

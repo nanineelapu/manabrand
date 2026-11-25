@@ -74,12 +74,12 @@ export function AddressesManager({ initial }: { initial: Address[] }) {
             <p className="mt-3 text-sm font-medium">{a.name}</p>
             <p className="mt-1 flex-1 text-[13px] leading-relaxed text-muted">{a.line1}{a.line2 ? `, ${a.line2}` : ""}<br />{a.city}, {a.state} – {a.pincode}<br />Mobile: {a.phone}</p>
             <div className="mt-4 flex gap-2">
-              <Button size="sm" variant="outline" onClick={() => setEdit(a)}><Pencil className="size-3.5" /> Edit</Button>
-              <Button size="sm" variant="ghost" onClick={() => setDel(a)} className="text-danger hover:bg-danger-bg"><Trash2 className="size-3.5" /> Remove</Button>
+              <Button size="sm" variant="outline" className="rounded-full" onClick={() => setEdit(a)}><Pencil className="size-3.5" /> Edit</Button>
+              <Button size="sm" variant="ghost" onClick={() => setDel(a)} className="rounded-full text-danger hover:bg-danger-bg"><Trash2 className="size-3.5" /> Remove</Button>
             </div>
           </article>
         ))}
-        <button onClick={() => setEdit({})} className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-card border-2 border-dashed border-line-strong text-sm font-medium text-muted transition-colors hover:bg-bg-subtle hover:text-fg">
+        <button onClick={() => setEdit({})} className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-line-strong text-sm font-medium text-muted transition-colors hover:bg-bg-subtle hover:text-fg">
           <Plus className="size-6" /> Add a new address
         </button>
       </div>
@@ -88,7 +88,7 @@ export function AddressesManager({ initial }: { initial: Address[] }) {
         {edit && <AddressForm initial={edit} onSave={save} onCancel={() => setEdit(null)} />}
       </Sheet>
       <Sheet open={!!del} onClose={() => setDel(null)} side="dialog" title="Remove this address?" description={del ? `${del.line1}, ${del.city}` : ""}
-        footer={<div className="grid grid-cols-2 gap-2.5"><Button variant="outline" onClick={() => setDel(null)}>Keep</Button><Button variant="danger" onClick={() => del && remove(del)}>Remove</Button></div>}>
+        footer={<div className="grid grid-cols-2 gap-2.5"><Button variant="outline" className="rounded-full" onClick={() => setDel(null)}>Keep</Button><Button variant="danger" className="rounded-full" onClick={() => del && remove(del)}>Remove</Button></div>}>
         <p className="text-sm text-muted">This can’t be undone.</p>
       </Sheet>
     </>

@@ -53,13 +53,13 @@ export function MiniCart() {
     <Sheet open={open} onClose={close} side="auto" title={`Your bag${cart.count ? ` (${cart.count})` : ""}`}
       footer={cart.count > 0 && (
         <div className="space-y-3">
-          <p className="rounded-lg bg-accent-soft px-3 py-2 text-center text-xs text-accent-soft-fg">
+          <p className="rounded-xl bg-accent-soft px-3 py-2 text-center text-xs text-accent-soft-fg">
             🎁 Get ₹500 in your wallet on sign up (usable on orders &gt; ₹999)!
           </p>
           <div className="flex items-baseline justify-between"><span className="text-sm text-muted">Subtotal</span><span className="text-lg font-semibold tabular">{formatINR(cart.subtotal)}</span></div>
           <div className="grid grid-cols-2 gap-2.5">
-            <Button href="/cart" variant="outline" onClick={close}>View bag</Button>
-            <Button href="/checkout" variant="primary" onClick={close}>Checkout</Button>
+            <Button href="/cart" variant="outline" onClick={close} className="rounded-full">View bag</Button>
+            <Button href="/checkout" variant="primary" onClick={close} className="rounded-full">Checkout</Button>
           </div>
         </div>
       )}>
@@ -69,7 +69,7 @@ export function MiniCart() {
           <h3 className="font-display text-xl font-semibold">Your bag is empty</h3>
           <p className="mt-1 text-sm text-muted">Pieces you love will wait for you here.</p>
           <p className="mt-2 text-xs font-medium text-accent">Join ManaBrand today & get ₹500 in your wallet</p>
-          <Button href="/shop" className="mt-6" onClick={close}>Start shopping</Button>
+          <Button href="/shop" className="mt-6 rounded-full" onClick={close}>Start shopping</Button>
         </div>
       ) : (
         <>

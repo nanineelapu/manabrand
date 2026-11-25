@@ -126,7 +126,7 @@ export function MobileMenu({ items, quickLinks = [] }: Props) {
     <Sheet open={open} onClose={close} side="left" hideHeader className="lg:hidden">
       <div className="-mx-5 flex items-center justify-between border-b border-line px-5 py-4">
         <Logo />
-        <button onClick={close} className="h-9 bg-bg-subtle px-3.5 text-sm font-medium">Close</button>
+        <button onClick={close} className="h-9 rounded-full bg-bg-subtle px-4 text-sm font-medium">Close</button>
       </div>
       <nav className="py-2" aria-label="Menu">
         {items.filter((it) => it.showOn !== "desktop").map((it) => it.dropdown ? (
@@ -148,7 +148,7 @@ export function MobileMenu({ items, quickLinks = [] }: Props) {
           <Link key={q.href + q.label} href={q.href} onClick={close} className="rounded-2xl bg-black px-4 py-3.5 font-semibold text-white transition-colors hover:bg-primary">{q.label}</Link>
         ))}
       </div>
-      <Link href="/seller/register" onClick={close} className="mt-4 flex items-center justify-between border border-line bg-accent-soft p-4 text-fg">
+      <Link href="/seller/register" onClick={close} className="mt-4 flex items-center justify-between rounded-2xl border border-line bg-accent-soft p-4 text-fg">
         <span><span className="block text-sm font-semibold">Sell on ManaBrand</span><span className="text-xs text-muted">Open your store in minutes</span></span>
         <span aria-hidden className="text-accent">→</span>
       </Link>

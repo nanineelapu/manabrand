@@ -57,12 +57,12 @@ export function ProductGallery({ product }: { product: Product }) {
         <div ref={scroller} className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto lg:hidden"
           onScroll={(e) => { const el = e.currentTarget; setActive(Math.round(el.scrollLeft / el.clientWidth)); }}>
           {views.map((v) => (
-            <div key={v} className="aspect-[4/5] w-full shrink-0 snap-center md:aspect-[3/4] md:rounded-card md:overflow-hidden">
+            <div key={v} className="aspect-[4/5] w-full shrink-0 snap-center md:aspect-[3/4] md:rounded-3xl md:overflow-hidden">
               <ProductImage photo={product.photo} seed={product.id} color={hex} view={v} src={product.images[v]} rounded={false} title={`${product.name} — view ${v + 1}`} />
             </div>
           ))}
         </div>
-        <div className="hidden aspect-[3/4] overflow-hidden rounded-card lg:block">
+        <div className="hidden aspect-[3/4] overflow-hidden rounded-3xl lg:block">
           <ProductImage photo={product.photo} seed={product.id} color={hex} view={active} src={product.images[active]} title={product.name} />
         </div>
         <div className="absolute inset-x-0 bottom-3 flex justify-center gap-1.5 lg:hidden">
@@ -150,7 +150,7 @@ export function BuyBox({ product, sellerName, sellerSlug }: { product: Product; 
               const out = product.stock[s] === 0, on = size === s;
               return (
                 <button key={s} role="radio" aria-checked={on} disabled={out} onClick={() => { setSize(s); setSizeError(false); }}
-                  className={cn("relative h-12 min-w-14 rounded-ctl border px-4 text-sm font-medium transition-colors",
+                  className={cn("relative h-12 min-w-14 rounded-full border px-5 text-sm font-medium transition-colors",
                     on ? "border-primary bg-primary text-primary-fg" : "border-line-strong bg-card hover:border-primary",
                     out && "cursor-not-allowed border-line text-subtle line-through hover:border-line")}>
                   {s}
@@ -174,11 +174,11 @@ export function BuyBox({ product, sellerName, sellerSlug }: { product: Product; 
       </div>
 
       {/* delivery */}
-      <div className="rounded-card border border-line bg-card p-4">
+      <div className="rounded-3xl border border-line bg-card p-5">
         <p className="mb-2.5 flex items-center gap-2 text-sm font-semibold"><MapPin className="size-4 text-accent" /> Delivery options</p>
         <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); checkPin(); }}>
           <Field htmlFor="pin" className="flex-1"><Input id="pin" inputMode="numeric" maxLength={6} placeholder="Pincode, e.g. 532312" value={pin} aria-label="Pincode" onChange={(e) => { setPin(e.target.value.replace(/\D/g, "")); setPinMsg(null); }} invalid={pinMsg?.ok === false} /></Field>
-          <Button type="submit" variant="outline">Check</Button>
+          <Button type="submit" variant="outline" className="rounded-full">Check</Button>
         </form>
         {pinMsg && <p role="status" className={cn("mt-2 text-[13px] font-medium", pinMsg.ok ? "text-success" : "text-danger")}>{pinMsg.text}</p>}
         <ul className="mt-4 space-y-3 text-[13px] text-muted">

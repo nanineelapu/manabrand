@@ -76,8 +76,8 @@ export function AddressForm({
       </fieldset>
       <Checkbox checked={!!a.isDefault} disabled={saving} onChange={(v) => set("isDefault", v)} label="Make this my default address" />
       <div className="flex gap-2.5 pt-1">
-        {onCancel && <Button variant="outline" onClick={onCancel} disabled={saving} className="flex-1">Cancel</Button>}
-        <Button type="submit" loading={saving} disabled={saving} className="flex-1">{saving ? "Saving…" : submitLabel}</Button>
+        {onCancel && <Button variant="outline" onClick={onCancel} disabled={saving} className="flex-1 rounded-full">Cancel</Button>}
+        <Button type="submit" loading={saving} disabled={saving} className="flex-1 rounded-full">{saving ? "Saving…" : submitLabel}</Button>
       </div>
     </form>
   );

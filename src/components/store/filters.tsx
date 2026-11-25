@@ -144,15 +144,15 @@ export function FilterSheetButton({ facets, subs, total }: { facets: Facets; sub
 
   return (
     <>
-      <button onClick={() => { setLocal(draft); setOpen(true); }} className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-ctl border border-line-strong bg-card text-sm font-medium lg:hidden">
+      <button onClick={() => { setLocal(draft); setOpen(true); }} className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full border border-line-strong bg-card text-sm font-medium lg:hidden">
         <SlidersHorizontal className="size-4" /> Filter
         {count > 0 && <span className="grid size-5 place-items-center rounded-full bg-accent text-[11px] font-bold text-white">{count}</span>}
       </button>
       <Sheet open={open} onClose={() => setOpen(false)} side="bottom" title="Filters" className="lg:hidden"
         footer={
           <div className="grid grid-cols-[auto_1fr] gap-2.5">
-            <Button variant="outline" onClick={() => setLocal(Object.fromEntries(FILTER_KEYS.map((k) => [k, undefined])))}>Reset</Button>
-            <Button onClick={() => { push(local); setOpen(false); }}>Show results</Button>
+            <Button variant="outline" className="rounded-full" onClick={() => setLocal(Object.fromEntries(FILTER_KEYS.map((k) => [k, undefined])))}>Reset</Button>
+            <Button className="rounded-full" onClick={() => { push(local); setOpen(false); }}>Show results</Button>
           </div>
         }>
         <p className="mb-3 text-sm text-muted">{total} products match your current selection</p>
@@ -169,7 +169,7 @@ export function SortSelect({ options }: { options: readonly { value: string; lab
     <label className="relative flex-1 lg:flex-none">
       <span className="sr-only">Sort by</span>
       <select value={sort} onChange={(e) => push({ sort: e.target.value === "featured" ? undefined : e.target.value })}
-        className="h-11 w-full cursor-pointer appearance-none rounded-ctl border border-line-strong bg-card pl-4 pr-9 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring/30 lg:min-w-52">
+        className="h-11 w-full cursor-pointer appearance-none rounded-full border border-line-strong bg-card pl-4 pr-9 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring/30 lg:min-w-52">
         {options.map((o) => <option key={o.value} value={o.value}>{o.value === "featured" ? "Sort: Featured" : o.label}</option>)}
       </select>
       <svg className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6" /></svg>

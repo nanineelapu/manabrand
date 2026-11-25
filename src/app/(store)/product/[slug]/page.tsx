@@ -54,7 +54,7 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
               </AccordionItem>
               <AccordionItem title="About the seller" icon={<Scissors className="size-[18px]" />} name="pd">
                 {seller && (
-                  <Link href={`/sellers/${seller.slug}`} className="flex items-center gap-3 rounded-ctl bg-bg-subtle p-3.5 text-fg">
+                  <Link href={`/sellers/${seller.slug}`} className="flex items-center gap-3 rounded-2xl bg-bg-subtle p-3.5 text-fg">
                     <span className="grid size-11 shrink-0 place-items-center rounded-full font-display text-lg font-semibold text-white" style={{ background: seller.tone[1] }}>{seller.name[0]}</span>
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center gap-1 text-sm font-semibold">{seller.name} <BadgeCheck className="size-4 text-info" /></span>

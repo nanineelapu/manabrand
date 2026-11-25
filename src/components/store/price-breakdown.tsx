@@ -41,12 +41,12 @@ export function CouponBox() {
     <div>
       <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); apply(code); }}>
         <Input value={code} onChange={(e) => { setCode(e.target.value.toUpperCase()); setErr(""); }} placeholder="Coupon code" aria-label="Coupon code" invalid={!!err} leading={<Tag className="size-4" />} className="uppercase" />
-        <Button type="submit" variant="outline" disabled={!code}>Apply</Button>
+        <Button type="submit" variant="outline" disabled={!code} className="rounded-full">Apply</Button>
       </form>
       {err && <p role="alert" className="mt-1.5 text-xs text-danger">{err}</p>}
       <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto">
         {coupons.slice(0, 3).map((c) => (
-          <button key={c.code} onClick={() => apply(c.code)} className="shrink-0 rounded-ctl border border-dashed border-line-strong bg-card px-3 py-2 text-left hover:bg-bg-subtle">
+          <button key={c.code} onClick={() => apply(c.code)} className="shrink-0 rounded-xl border border-dashed border-line-strong bg-card px-3 py-2 text-left hover:bg-bg-subtle">
             <span className="block font-mono text-xs font-bold tracking-wider">{c.code}</span>
             <span className="block max-w-40 truncate text-[11px] text-muted">{c.description}</span>
           </button>
