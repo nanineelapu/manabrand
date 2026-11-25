@@ -16,7 +16,7 @@ export function CartView() {
   const mounted = useMounted();
   const cart = useCartPricing();
   // a line that cannot be fulfilled (sold out, or more than what is left) blocks checkout until fixed
-  const blocked = cart.lines.some((l) => { const have = l.product.stock[l.size]; return have !== undefined && l.qty > have; });
+  const blocked = cart.lines.some((l) => { const have = l.product.stock?.[l.size]; return have !== undefined && l.qty > have; });
   const { setQty, remove } = useCart();
   const wish = useWishlist();
 
@@ -48,7 +48,7 @@ export function CartView() {
                     <p className="text-[11px] font-medium uppercase tracking-wide text-subtle">{l.product.sellerName}</p>
                     <Link href={`/product/${l.product.slug}`} className="line-clamp-2 text-[15px] font-medium leading-snug">{l.product.name}</Link>
                     <p className="mt-1 text-[13px] text-muted">{l.color} · Size {l.size}</p>
-                    {(() => { const have = l.product.stock[l.size]; return have === undefined ? null : have === 0
+                    {(() => { const have = l.product.stock?.[l.size]; return have === undefined ? null : have === 0
                       ? <p role="alert" className="mt-1 text-[13px] font-semibold text-danger">Sold out in this size — remove it to continue.</p>
                       : l.qty > have ? <p role="alert" className="mt-1 text-[13px] font-semibold text-danger">Only {have} left — lower the quantity to continue.</p>
                       : have <= 3 ? <p className="mt-1 text-[13px] font-medium text-warning">Only {have} left</p> : null; })()}

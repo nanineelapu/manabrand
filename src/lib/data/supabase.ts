@@ -365,18 +365,54 @@ export async function getFollowState(sellerId: string) {
 
 /* ============================================================ the shopper */
 export async function getCurrentCustomer(): Promise<Customer> {
-  const db = await sb(); const me = await uid();
+  const db = await sb();
+  const me = await uid();
   if (!me) throw new Error("Not signed in");
-  const p = ok(await db.from("profiles").select("*").eq("id", me).single()) as any;
-  const o = ok(await db.from("orders").select("total, status").eq("user_id", me), []) as any[];
+  const res = await db.from("profiles").select("*").eq("id", me).maybeSingle();
+  const p = res.data as any;
+  if (!p) {
+    const { data: authData } = await db.auth.getUser();
+    const u = authData.user;
+    return {
+      id: me,
+      name: u?.user_metadata?.full_name ?? u?.email?.split("@")[0] ?? "Customer",
+      email: u?.email ?? "",
+      phone: u?.phone ?? u?.user_metadata?.phone ?? "",
+      city: "",
+      joined: u?.created_at ?? new Date().toISOString(),
+      orders: 0,
+      spent: 0,
+      status: "active",
+      tier: "Regular",
+    };
+  }
+  const oRes = await db.from("orders").select("total, status").eq("user_id", me);
+  const o = (oRes.data ?? []) as any[];
   const live = o.filter((x) => x.status !== "cancelled");
   const spent = live.reduce((a, b) => a + b.total, 0);
-  return { id: p.id, name: p.full_name, email: p.email, phone: p.phone ?? "", city: "", joined: p.created_at, orders: o.length, spent,
-    status: p.status, tier: spent > 20000 ? "VIP" : o.length > 2 ? "Regular" : p.tier };
+  return {
+    id: p.id,
+    name: p.full_name ?? "Customer",
+    email: p.email ?? "",
+    phone: p.phone ?? "",
+    city: "",
+    joined: p.created_at ?? new Date().toISOString(),
+    orders: o.length,
+    spent,
+    status: p.status ?? "active",
+    tier: spent > 20000 ? "VIP" : o.length > 2 ? "Regular" : (p.tier ?? "Regular"),
+  };
 }
 export async function getMyOrders() {
-  const me = await uid(); if (!me) return [];
-  return (ok(await (await sb()).from("orders").select(ORDER_SELECT).eq("user_id", me).order("created_at", { ascending: false }), []) as any[]).map(mapOrder);
+  const me = await uid();
+  if (!me) return [];
+  try {
+    const res = await (await sb()).from("orders").select(ORDER_SELECT).eq("user_id", me).order("created_at", { ascending: false });
+    if (res.error) return [];
+    return ((res.data ?? []) as any[]).map(mapOrder);
+  } catch {
+    return [];
+  }
 }
 export async function getOrderByIdOrNumber(key: string) {
   const col = /^[0-9a-f-]{36}$/i.test(key) ? "id" : "number";
@@ -569,12 +605,35 @@ const mapWallet = (rows: any[]) => ({
 });
 /** The signed-in customer's wallet: balance (sum of the ledger) and history. */
 export async function getWallet() {
-  const me = await uid(); if (!me) return { balance: 0, history: [] as WalletTx[] };
-  return mapWallet(ok(await (await sb()).from("wallet_transactions").select("*").eq("user_id", me).order("created_at", { ascending: false }).limit(1000), []) as any[]);
+  const me = await uid();
+  if (!me) return { balance: 0, history: [] as WalletTx[] };
+  try {
+    const res = await (await sb())
+      .from("wallet_transactions")
+      .select("*")
+      .eq("user_id", me)
+      .order("created_at", { ascending: false })
+      .limit(1000);
+    if (res.error) return { balance: 0, history: [] };
+    return mapWallet((res.data ?? []) as any[]);
+  } catch {
+    return { balance: 0, history: [] };
+  }
 }
 /** Admin: a customer's wallet (needs the admin-read policy from migration 0014). */
 export async function getWalletForCustomer(userId: string) {
-  return mapWallet(ok(await (await sb()).from("wallet_transactions").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(1000), []) as any[]);
+  try {
+    const res = await (await sb())
+      .from("wallet_transactions")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1000);
+    if (res.error) return { balance: 0, history: [] };
+    return mapWallet((res.data ?? []) as any[]);
+  } catch {
+    return { balance: 0, history: [] };
+  }
 }
 
 /** Admin: every address a customer has saved (needs the admin-read policy from migration 0013). */

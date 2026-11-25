@@ -12,7 +12,7 @@ export function priceCart(lines: CartLine[], byId: Map<string, ProductLite>, cou
   const priced: PricedLine[] = lines.flatMap((l) => {
     const product = byId.get(l.productId);
     if (!product) return [];
-    const colorHex = product.colors.find((c) => c.name === l.color)?.hex ?? product.colors[0].hex;
+    const colorHex = product.colors?.find((c) => c.name === l.color)?.hex ?? product.colors?.[0]?.hex ?? "#d9d3c7";
     return [{ ...l, product, colorHex, lineTotal: product.price * l.qty, lineMrp: product.mrp * l.qty }];
   });
   const subtotal = priced.reduce((a, b) => a + b.lineTotal, 0);
