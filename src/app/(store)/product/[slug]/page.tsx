@@ -30,7 +30,7 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
   for (const p of grouped?.items ?? []) { if (seen.has(p.categorySlug)) continue; seen.add(p.categorySlug); look.push(p); if (look.length === 6) break; }
 
   return (
-    <div className="container-page pb-28 pt-3 md:pb-6 md:pt-6">
+    <div className="container-page pb-20 pt-1.5 md:pb-6 md:pt-6">
       <Breadcrumb items={[{ label: "Home", href: "/" }, { label: catTitle(product.categorySlug, cat?.name), href: `/category/${product.categorySlug}` }, { label: product.subcategory, href: `/category/${product.categorySlug}?sub=${encodeURIComponent(product.subcategory)}` }, { label: product.name }]} className="hidden md:block" />
 
       <ProductSelection product={product}>

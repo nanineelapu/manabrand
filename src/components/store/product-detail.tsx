@@ -57,22 +57,32 @@ export function ProductGallery({ product }: { product: Product }) {
         <div ref={scroller} className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto lg:hidden"
           onScroll={(e) => { const el = e.currentTarget; setActive(Math.round(el.scrollLeft / el.clientWidth)); }}>
           {views.map((v) => (
-            <div key={v} className="aspect-[4/5] w-full shrink-0 snap-center md:aspect-[3/4] md:rounded-3xl md:overflow-hidden">
-              <ProductImage photo={product.photo} seed={product.id} color={hex} view={v} src={product.images[v]} rounded={false} title={`${product.name} — view ${v + 1}`} />
+            <div key={v} className="aspect-[3/4] max-h-[46vh] w-full shrink-0 snap-center overflow-hidden bg-neutral-50 md:aspect-[3/4] md:max-h-none md:rounded-3xl">
+              <ProductImage photo={product.photo} seed={product.id} color={hex} view={v} src={product.images[v]} rounded={false} title={`${product.name} — view ${v + 1}`} className="[&_img]:!object-contain" />
             </div>
           ))}
         </div>
-        <div className="hidden aspect-[3/4] overflow-hidden rounded-3xl lg:block">
-          <ProductImage photo={product.photo} seed={product.id} color={hex} view={active} src={product.images[active]} title={product.name} />
-        </div>
-        <div className="absolute inset-x-0 bottom-3 flex justify-center gap-1.5 lg:hidden">
-          {views.map((v) => <button key={v} aria-label={`Go to image ${v + 1}`} onClick={() => jump(v)} className={cn("h-1.5 rounded-full bg-fg transition-all", active === v ? "w-5" : "w-1.5 opacity-30")} />)}
+        <div className="hidden aspect-[3/4] overflow-hidden rounded-3xl bg-neutral-50 lg:block">
+          <ProductImage photo={product.photo} seed={product.id} color={hex} view={active} src={product.images[active]} title={product.name} className="[&_img]:!object-contain" />
         </div>
         <div className="absolute right-3 top-3 flex gap-2 lg:right-4 lg:top-4">
-          <WishlistButton productId={product.id} className="size-11" />
+          <WishlistButton productId={product.id} className="size-10 sm:size-11" />
         </div>
-        <span className="absolute bottom-3 left-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium tabular lg:hidden">{active + 1} / {views.length}</span>
+        <span className="absolute bottom-2 left-3 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-medium text-white tabular backdrop-blur-sm lg:hidden">{active + 1} / {views.length}</span>
       </div>
+
+      {/* mobile sub photos thumbnail row */}
+      {views.length > 1 && (
+        <div className="no-scrollbar mt-2.5 flex items-center justify-center gap-2 overflow-x-auto px-2 lg:hidden" role="tablist" aria-label="Product sub photos">
+          {views.map((v) => (
+            <button key={v} role="tab" aria-selected={active === v} aria-label={`View ${v + 1}`} onClick={() => jump(v)}
+              className={cn("size-12 shrink-0 overflow-hidden rounded-xl border-2 bg-neutral-50 transition-all sm:size-14",
+                active === v ? "border-primary scale-105 shadow-sm" : "border-line opacity-65 hover:opacity-100")}>
+              <ProductImage photo={product.photo} seed={product.id} color={hex} view={v} src={product.images[v]} className="[&_img]:!object-contain" />
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -111,27 +121,27 @@ export function BuyBox({ product, sellerName, sellerSlug }: { product: Product; 
   const showGuide = groupOf(product.categorySlug) !== null && product.optionLabel === "Size" && product.sizes.length > 1 && product.photo !== "sneaker";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div>
-        <Link href={`/sellers/${sellerSlug}`} className="text-sm font-medium text-accent hover:underline">{sellerName}</Link>
-        <h1 className="mt-1 text-[26px] font-semibold leading-tight tracking-tight md:text-3xl">{product.name}</h1>
-        <div className="mt-2 flex items-center gap-3">
-          <a href="#reviews"><Rating value={product.rating} count={product.reviewCount} size="md" /></a>
-          {product.badges.includes("bestseller") && <span className="rounded-full bg-gold-100 px-2.5 py-0.5 text-xs font-semibold text-ink">Bestseller</span>}
+        <Link href={`/sellers/${sellerSlug}`} className="text-xs font-semibold uppercase tracking-wider text-accent hover:underline sm:text-sm">{sellerName}</Link>
+        <h1 className="mt-1 text-xl font-semibold leading-tight tracking-tight sm:text-2xl md:text-3xl">{product.name}</h1>
+        <div className="mt-1.5 flex items-center gap-3">
+          <a href="#reviews"><Rating value={product.rating} count={product.reviewCount} size="sm" className="sm:text-sm" /></a>
+          {product.badges.includes("bestseller") && <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-semibold text-ink sm:text-xs">Bestseller</span>}
         </div>
-        <div className="mt-4"><Price price={product.price} mrp={product.mrp} size="xl" /></div>
-        <p className="mt-1 text-xs text-muted">Inclusive of all taxes{off ? ` · You save ${formatINR(product.mrp - product.price)}` : ""}</p>
+        <div className="mt-2.5 sm:mt-4"><Price price={product.price} mrp={product.mrp} size="lg" className="sm:text-2xl" /></div>
+        <p className="mt-0.5 text-xs text-muted">Inclusive of all taxes{off ? ` · You save ${formatINR(product.mrp - product.price)}` : ""}</p>
       </div>
 
       {/* colour — only when there is a real choice */}
       {product.colors.length > 1 && (
         <div>
-          <p className="mb-2.5 text-sm"><span className="font-semibold">Colour:</span> <span className="text-muted">{c.name}</span></p>
-          <div className="flex flex-wrap gap-3" role="radiogroup" aria-label="Colour">
+          <p className="mb-2 text-xs font-medium sm:text-sm"><span className="font-semibold text-fg">Colour:</span> <span className="text-muted">{c.name}</span></p>
+          <div className="flex flex-wrap gap-2.5 sm:gap-3" role="radiogroup" aria-label="Colour">
             {product.colors.map((col, i) => (
               <button key={col.name} role="radio" aria-checked={i === color} aria-label={col.name} title={col.name} onClick={() => setColor(i)}
-                className={cn("grid size-11 place-items-center rounded-full border-2 transition-all", i === color ? "border-primary" : "border-transparent hover:border-line-strong")}>
-                <span className="grid size-8 place-items-center rounded-full border border-black/10" style={{ background: col.hex }}>{i === color && <Check className="size-4 text-white mix-blend-difference" strokeWidth={3} />}</span>
+                className={cn("grid size-9.5 place-items-center rounded-full border-2 transition-all sm:size-11", i === color ? "border-primary" : "border-transparent hover:border-line-strong")}>
+                <span className="grid size-7 place-items-center rounded-full border border-black/10 sm:size-8" style={{ background: col.hex }}>{i === color && <Check className="size-3.5 text-white mix-blend-difference sm:size-4" strokeWidth={3} />}</span>
               </button>
             ))}
           </div>
@@ -140,17 +150,17 @@ export function BuyBox({ product, sellerName, sellerSlug }: { product: Product; 
 
       {/* option: size / storage / volume / pack … */}
       {hasChoice && (
-        <div ref={sizeRef} className={cn("rounded-card transition-colors", sizeError && !size && "-m-3 bg-danger-bg p-3")}>
-          <div className="mb-2.5 flex items-center justify-between">
-            <p className="text-sm font-semibold">Select {optLabel} {sizeError && !size && <span className="ml-1 font-normal text-danger">— required</span>}</p>
-            {showGuide && <button onClick={() => setGuide(true)} className="inline-flex items-center gap-1.5 text-[13px] font-medium underline underline-offset-4"><Ruler className="size-4" /> Size guide</button>}
+        <div ref={sizeRef} className={cn("rounded-card transition-colors", sizeError && !size && "-m-2.5 bg-danger-bg p-2.5")}>
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-xs font-semibold sm:text-sm">Select {optLabel} {sizeError && !size && <span className="ml-1 font-normal text-danger">— required</span>}</p>
+            {showGuide && <button onClick={() => setGuide(true)} className="inline-flex items-center gap-1 text-xs font-medium underline underline-offset-4 sm:text-[13px]"><Ruler className="size-3.5 sm:size-4" /> Size guide</button>}
           </div>
           <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={product.optionLabel}>
             {product.sizes.map((s) => {
               const out = product.stock[s] === 0, on = size === s;
               return (
                 <button key={s} role="radio" aria-checked={on} disabled={out} onClick={() => { setSize(s); setSizeError(false); }}
-                  className={cn("relative h-12 min-w-14 rounded-full border px-5 text-sm font-medium transition-colors",
+                  className={cn("relative h-10 min-w-12 rounded-full border px-3.5 text-xs font-medium transition-colors sm:h-12 sm:min-w-14 sm:px-5 sm:text-sm",
                     on ? "border-primary bg-primary text-primary-fg" : "border-line-strong bg-card hover:border-primary",
                     out && "cursor-not-allowed border-line text-subtle line-through hover:border-line")}>
                   {s}
@@ -162,7 +172,7 @@ export function BuyBox({ product, sellerName, sellerSlug }: { product: Product; 
           {product.sizes.every((s) => product.stock[s] === 0)
             ? <NotifyMe productId={product.id} />
             : product.sizes.some((s) => product.stock[s] === 0) && <NotifyMe productId={product.id} sizes={product.sizes.filter((s) => product.stock[s] === 0)} collapsed />}
-          {low !== undefined && low > 0 && low <= 5 && <p className="mt-2 text-[13px] font-medium text-warning">Only {low} left — selling fast</p>}
+          {low !== undefined && low > 0 && low <= 5 && <p className="mt-1.5 text-xs font-medium text-warning sm:text-[13px]">Only {low} left — selling fast</p>}
         </div>
       )}
 
@@ -174,7 +184,7 @@ export function BuyBox({ product, sellerName, sellerSlug }: { product: Product; 
       </div>
 
       {/* delivery */}
-      <div className="rounded-3xl border border-line bg-card p-5">
+      <div className="rounded-2xl border border-line bg-card p-4 sm:rounded-3xl sm:p-5">
         <p className="mb-2.5 flex items-center gap-2 text-sm font-semibold"><MapPin className="size-4 text-accent" /> Delivery options</p>
         <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); checkPin(); }}>
           <Field htmlFor="pin" className="flex-1"><Input id="pin" inputMode="numeric" maxLength={6} placeholder="Pincode, e.g. 532312" value={pin} aria-label="Pincode" onChange={(e) => { setPin(e.target.value.replace(/\D/g, "")); setPinMsg(null); }} invalid={pinMsg?.ok === false} /></Field>
@@ -201,14 +211,14 @@ export function BuyBox({ product, sellerName, sellerSlug }: { product: Product; 
 
 function StickyCta({ product, onAdd, onBuy }: { product: Product; onAdd: () => void; onBuy: () => void }) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/97 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgb(26_22_19/0.06)] backdrop-blur md:hidden">
-      <div className="mx-auto flex max-w-md items-center gap-3">
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/97 px-3.5 py-2 pb-[max(0.4rem,env(safe-area-inset-bottom))] shadow-[0_-6px_20px_rgb(26_22_19/0.06)] backdrop-blur md:hidden">
+      <div className="mx-auto flex max-w-md items-center gap-2.5">
         <div className="min-w-0 shrink-0">
-          <p className="text-lg font-semibold leading-none tabular">{formatINR(product.price)}</p>
-          {product.mrp > product.price && <p className="mt-1 text-xs text-subtle line-through tabular">{formatINR(product.mrp)}</p>}
+          <p className="text-base font-semibold leading-none tabular">{formatINR(product.price)}</p>
+          {product.mrp > product.price && <p className="mt-0.5 text-[11px] text-subtle line-through tabular">{formatINR(product.mrp)}</p>}
         </div>
-        <Button onClick={onAdd} variant="outline" className="flex-1 rounded-full">Add to bag</Button>
-        <Button onClick={onBuy} variant="accent" className="flex-1 rounded-full">Buy now</Button>
+        <Button onClick={onAdd} variant="outline" size="sm" className="flex-1 rounded-full text-xs font-bold sm:text-sm">Add to bag</Button>
+        <Button onClick={onBuy} variant="accent" size="sm" className="flex-1 rounded-full text-xs font-bold sm:text-sm">Buy now</Button>
       </div>
     </div>
   );

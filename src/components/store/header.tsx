@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ChevronDown, Heart, Menu, Search, ShoppingBag, User } from "lucide-react";
 import { Logo, LogoImage } from "@/components/brand/logo";
 import { IconButton } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import type { CmsLink, HeaderItem } from "@/lib/cms/types";
 /** `items` is the menu resolved from the CMS (Navigation) merged with the shop's categories. */
 interface Props { items: HeaderItem[]; accountLabel?: string; quickLinks?: CmsLink[] }
 
-const capsule = "flex h-14 items-center rounded-full border border-white/10 bg-black/90 backdrop-blur-xl lg:h-[64px]";
+const capsule = "flex h-11 items-center rounded-full border border-white/10 bg-black/90 backdrop-blur-xl sm:h-13 lg:h-[60px]";
 
 export function StoreHeader({ items, accountLabel = "Account" }: Props) {
   const mounted = useMounted();
@@ -24,35 +24,23 @@ export function StoreHeader({ items, accountLabel = "Account" }: Props) {
   const bag = useCart((s) => s.lines.reduce((a, l) => a + l.qty, 0));
   const wish = useWishlist((s) => s.ids.length);
 
-  // below lg the header slides away while reading (scroll down) and returns on any scroll up
-  const [hidden, setHidden] = useState(false);
-  useEffect(() => { document.documentElement.dataset.header = hidden ? "hidden" : "shown"; }, [hidden]);   // the sticky Filter / Sort bar reads this
   useEffect(() => {
-    let last = window.scrollY, raf = 0;
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const y = window.scrollY, d = y - last;
-        if (Math.abs(d) > 6) { setHidden(y > 140 && d > 0); last = y; }
-      });
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => { window.removeEventListener("scroll", onScroll); cancelAnimationFrame(raf); };
+    document.documentElement.dataset.header = "shown";
   }, []);
 
   return (
-    // data-round: the one place (besides hero buttons) allowed to have rounded corners — the capsule look
-    <header data-round data-theme="dark" className={cn("sticky top-0 z-40 px-3 pt-3 transition-transform duration-300 ease-out md:px-6 lg:pt-4 lg:!translate-y-0", hidden && "-translate-y-[140%]")}>
-      <div className="mx-auto flex max-w-[1380px] items-center justify-between gap-5 sm:gap-8">
+    // data-round: capsule header — fixed sticky at top, no hiding on scroll
+    <header data-round data-theme="dark" className="sticky top-0 z-40 px-2.5 pt-2 transition-colors duration-200 md:px-6 lg:pt-3.5">
+      <div className="mx-auto flex max-w-[1380px] items-center justify-between gap-3 sm:gap-6 lg:gap-8">
         {/* capsule 1 — brand */}
-        <div className={cn(capsule, "shrink-0 px-3 sm:px-4 lg:px-5")}>
+        <div className={cn(capsule, "shrink-0 px-2.5 sm:px-4 lg:px-5")}>
           <Link href="/" aria-label="ManaBrand home" className="flex shrink-0 items-center">
-            <LogoImage size="md" priority invert className="h-[46px] sm:h-[48px] lg:h-[52px]" />
+            <LogoImage size="md" priority invert className="h-[34px] sm:h-[40px] lg:h-[46px]" />
           </Link>
         </div>
 
         {/* capsule 2 — menu, search, bag, hamburger */}
-        <div className={cn(capsule, "min-w-0 gap-1 pl-2 pr-1.5 sm:gap-1.5 lg:pl-3 lg:pr-2")}>
+        <div className={cn(capsule, "min-w-0 gap-1 pl-1.5 pr-1 sm:gap-1.5 sm:pl-2.5 sm:pr-1.5 lg:pl-3 lg:pr-2")}>
           <nav aria-label="Primary" className="hidden min-w-0 items-center lg:flex">
             {items.filter((it) => it.showOn !== "mobile").map((it) => it.dropdown ? (
               <div key={it.href + it.label} className="group/nav flex items-center self-stretch">
@@ -79,7 +67,7 @@ export function StoreHeader({ items, accountLabel = "Account" }: Props) {
           </nav>
 
           {/* 1. Search button */}
-          <IconButton label="Search" className="text-white hover:bg-white/10" onClick={() => setSearch(true)}><Search className="size-[20px]" /></IconButton>
+          <IconButton size="sm" label="Search" className="size-8.5 text-white hover:bg-white/10 sm:size-10" onClick={() => setSearch(true)}><Search className="size-[17px] sm:size-[19px]" /></IconButton>
 
           <Link href="/wishlist" aria-label={`Wishlist${mounted && wish ? `, ${wish} items` : ""}`} className="relative hidden size-11 place-items-center rounded-full hover:bg-white/10 xl:grid">
             <Heart className="size-[20px]" />{mounted && wish > 0 && <span className="absolute -right-0.5 -top-0.5 grid min-w-[18px] place-items-center rounded-full bg-accent px-1 text-[10px] font-bold leading-[18px] text-white tabular">{wish > 9 ? "9+" : wish}</span>}
@@ -88,18 +76,18 @@ export function StoreHeader({ items, accountLabel = "Account" }: Props) {
 
           {/* 2. Bag: on mobile "Bag", on desktop "Order now" */}
           <Link href={mounted && bag > 0 ? "/checkout" : "/shop"} prefetch aria-label={`Bag${mounted && bag ? `, ${bag} items in bag` : ""}`}
-            className="inline-flex h-10 items-center gap-1.5 rounded-full bg-primary px-3 text-[13px] font-bold text-white transition-colors hover:bg-primary-hover sm:h-11 sm:gap-2 sm:px-4 sm:text-[14px] lg:h-12 lg:pl-6 lg:pr-5 lg:text-[15px]">
+            className="inline-flex h-8.5 items-center gap-1 rounded-full bg-primary px-2.5 text-xs font-bold text-white transition-colors hover:bg-primary-hover sm:h-10 sm:gap-2 sm:px-4 sm:text-[14px] lg:h-11 lg:pl-5 lg:pr-4.5 lg:text-[15px]">
             <span className="lg:hidden">Bag</span>
             <span className="hidden lg:inline">Order now</span>
             <span className="relative grid place-items-center">
-              <ShoppingBag className="size-[17px] sm:size-[19px]" />
-              {mounted && bag > 0 && <span className="absolute -right-2 -top-2 grid min-w-[16px] place-items-center rounded-full bg-white px-1 text-[9px] font-bold leading-[16px] text-primary tabular sm:min-w-[17px] sm:text-[10px] sm:leading-[17px]">{bag > 9 ? "9+" : bag}</span>}
+              <ShoppingBag className="size-[15px] sm:size-[18px]" />
+              {mounted && bag > 0 && <span className="absolute -right-2 -top-2 grid min-w-[15px] place-items-center rounded-full bg-white px-1 text-[9px] font-bold leading-[15px] text-primary tabular sm:min-w-[17px] sm:text-[10px] sm:leading-[17px]">{bag > 9 ? "9+" : bag}</span>}
             </span>
           </Link>
 
           {/* 3. Hamburger menu: at the very right on mobile */}
-          <IconButton label="Open menu" className="text-white hover:bg-white/10 lg:hidden" onClick={() => setMenu(true)}>
-            <Menu className="size-[22px]" />
+          <IconButton size="sm" label="Open menu" className="size-8.5 text-white hover:bg-white/10 sm:size-10 lg:hidden" onClick={() => setMenu(true)}>
+            <Menu className="size-[19px] sm:size-[22px]" />
           </IconButton>
         </div>
       </div>

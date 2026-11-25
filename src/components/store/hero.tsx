@@ -128,11 +128,11 @@ export function Hero({ c, slides, site }: {
           <div className="container-page">
             <div className="flex flex-col-reverse gap-5 lg:flex-row lg:items-center lg:justify-between">
               <div className="pointer-events-auto flex w-full gap-3 sm:w-auto sm:gap-4">
-                <Link href={c.primaryCta.href} className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl bg-primary px-5 text-[15px] font-bold text-white transition-colors hover:bg-primary-hover sm:h-14 sm:flex-none sm:px-9 sm:text-[16px]">
+                <Link href={c.primaryCta.href} className="inline-flex h-11.5 flex-1 items-center justify-center rounded-full bg-primary px-5 text-[14px] font-bold text-white transition-colors hover:bg-primary-hover sm:h-14 sm:flex-none sm:px-9 sm:text-[16px]">
                   {c.primaryCta.label}
                 </Link>
-                <Link href={c.secondaryCta.href} className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-white/80 bg-black/20 px-4 text-[15px] font-bold text-white backdrop-blur-sm transition-colors hover:bg-white hover:text-black sm:h-14 sm:flex-none sm:gap-3 sm:px-9 sm:text-[16px]">
-                  <CtaLabel label={c.secondaryCta.label} /> <ArrowRight className="size-5" />
+                <Link href={c.secondaryCta.href} className="inline-flex h-11.5 flex-1 items-center justify-center gap-2 rounded-full border-2 border-white/80 bg-black/20 px-4 text-[14px] font-bold text-white backdrop-blur-sm transition-colors hover:bg-white hover:text-black sm:h-14 sm:flex-none sm:gap-3 sm:px-9 sm:text-[16px]">
+                  <CtaLabel label={c.secondaryCta.label} /> <ArrowRight className="size-4.5 sm:size-5" />
                 </Link>
               </div>
 

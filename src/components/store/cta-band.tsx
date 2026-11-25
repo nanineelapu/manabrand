@@ -20,23 +20,23 @@ export function CtaBand({ site }: { site: Pick<CmsSite, "supportPhone" | "madeIn
             <div aria-hidden className="pointer-events-none absolute -bottom-40 -left-24 size-[28rem] rounded-full bg-primary/25 blur-3xl" />
             <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-gradient-to-l from-white/[0.07] to-transparent" />
 
-            <div className="relative flex min-w-0 flex-col justify-center gap-8 p-6 sm:p-8 md:p-10 lg:gap-10 lg:p-10">
-              <p className="text-[40px] font-black uppercase leading-[0.92] tracking-[-0.045em] sm:text-5xl md:text-6xl lg:text-[clamp(44px,4.8vw,68px)]">
+            <div className="relative flex min-w-0 flex-col justify-center gap-4 p-5 sm:gap-8 sm:p-8 md:p-10 lg:gap-10 lg:p-10">
+              <p className="text-[28px] font-black uppercase leading-[0.92] tracking-[-0.045em] sm:text-4xl md:text-6xl lg:text-[clamp(44px,4.8vw,68px)]">
                 <span className="block text-white">Find<U />your</span>
                 <span className="block text-accent">Next<U />look</span>
               </p>
             </div>
 
-            <div className="relative flex flex-col justify-center gap-5 border-t border-white/10 p-4 sm:p-6 lg:border-l lg:border-t-0 lg:p-6">
+            <div className="relative flex flex-col justify-center gap-3 border-t border-white/10 p-3.5 sm:gap-5 sm:p-6 lg:border-l lg:border-t-0 lg:p-6">
               <div className="flex gap-2.5 lg:flex-col">
-                <Link href="/shop" className="group flex min-h-14 flex-1 items-center justify-between gap-4 rounded-[22px] bg-white px-5 text-base font-black uppercase leading-tight tracking-tight text-primary transition-transform hover:-translate-y-0.5 lg:min-h-24 lg:text-xl">
+                <Link href="/shop" className="group flex min-h-12 flex-1 items-center justify-between gap-3 rounded-full bg-white px-4 text-sm font-black uppercase leading-tight tracking-tight text-primary transition-transform hover:-translate-y-0.5 sm:min-h-14 sm:rounded-[22px] sm:px-5 sm:text-base lg:min-h-24 lg:text-xl">
                   <span>Start<br className="hidden lg:inline" /> shopping</span>
-                  <ShoppingBag className="size-6 shrink-0 transition-transform group-hover:scale-110" strokeWidth={2} />
+                  <ShoppingBag className="size-5 shrink-0 transition-transform group-hover:scale-110 sm:size-6" strokeWidth={2} />
                 </Link>
                 {site.supportPhone ? (
-                  <a href={`tel:${site.supportPhone.replace(/[^\d+]/g, "")}`} className="group flex size-14 shrink-0 items-center justify-center gap-4 rounded-[22px] border-2 border-white/15 bg-white/[0.04] px-0 text-base font-black uppercase tracking-tight transition-colors hover:border-white/40 lg:size-auto lg:min-h-16 lg:w-full lg:justify-between lg:px-5 lg:text-lg" aria-label="Call support">
+                  <a href={`tel:${site.supportPhone.replace(/[^\d+]/g, "")}`} className="group flex size-12 shrink-0 items-center justify-center gap-3 rounded-full border-2 border-white/15 bg-white/[0.04] px-0 text-sm font-black uppercase tracking-tight transition-colors hover:border-white/40 sm:size-14 sm:rounded-[22px] sm:text-base lg:size-auto lg:min-h-16 lg:w-full lg:justify-between lg:px-5 lg:text-lg" aria-label="Call support">
                     <span className="hidden lg:inline">Call_support</span>
-                    <Phone className="size-5 shrink-0 text-white/70 transition-transform group-hover:rotate-12" strokeWidth={2} />
+                    <Phone className="size-4.5 shrink-0 text-white/70 transition-transform group-hover:rotate-12 sm:size-5" strokeWidth={2} />
                   </a>
                 ) : null}
               </div>
