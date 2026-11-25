@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import { AlertCircle, Eye, EyeOff, Gift, Lock, Mail, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox, Field, Input } from "@/components/ui/form";
+import { WelcomeWalletPopup } from "@/components/store/welcome-wallet-popup";
 import { completeReset, loginStaff, loginWithPhonePin, registerCustomer, requestPinReset, type AuthResult } from "@/lib/auth/actions";
 import { emailError, nameError, passwordError, phoneError, pinError } from "@/lib/auth/validation";
 import { toast } from "@/lib/stores";
@@ -109,53 +110,88 @@ export function LoginForm({
 
 /* ==================================================================== REGISTER */
 export function RegisterForm({ next }: { next?: string }) {
-  const { pending, error, fields, setFields, run } = useAuthSubmit();
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  const [error, setError] = useState<string>();
+  const [fields, setFields] = useState<Record<string, string>>({});
   const [v, setV] = useState({ name: "", phone: "", email: "", pin: "", confirmPin: "", terms: false });
+  const [welcomeData, setWelcomeData] = useState<{ open: boolean; name: string; target: string } | null>(null);
+
   const set = (k: keyof typeof v, val: string | boolean) => { setV((p) => ({ ...p, [k]: val })); setFields((e) => ({ ...e, [k]: "" })); };
 
   return (
-    <form noValidate className="space-y-4" onSubmit={(e) => {
-      e.preventDefault();
-      const f: Record<string, string> = {};
-      const n = nameError(v.name); if (n) f.name = n;
-      const p = phoneError(v.phone); if (p) f.phone = p;
-      const em = emailError(v.email); if (em) f.email = em;
-      const pe = pinError(v.pin, v.phone); if (pe) f.pin = pe;
-      else if (v.pin !== v.confirmPin) f.confirmPin = "PINs don’t match";
-      if (!v.terms) f.terms = "Please accept the terms to continue";
-      setFields(f); if (Object.keys(f).length) return;
-      run(
-        () => registerCustomer({ name: v.name, phone: v.phone, email: v.email, pin: v.pin, confirmPin: v.confirmPin, next }),
-        "Welcome to ManaBrand! ₹500 welcome credit added to your wallet 🎁"
-      );
-    }}>
-      <div className="flex items-center gap-3.5 rounded-xl border border-accent/25 bg-accent-soft p-3.5 text-accent-soft-fg">
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent text-accent-fg">
-          <Gift className="size-5" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold">₹500 Welcome Bonus Gift</p>
-          <p className="text-xs opacity-90">Instant ₹500 added to your wallet to save on your orders above ₹999!</p>
+    <>
+      <form noValidate className="space-y-4" onSubmit={(e) => {
+        e.preventDefault();
+        const f: Record<string, string> = {};
+        const n = nameError(v.name); if (n) f.name = n;
+        const p = phoneError(v.phone); if (p) f.phone = p;
+        const em = emailError(v.email); if (em) f.email = em;
+        const pe = pinError(v.pin, v.phone); if (pe) f.pin = pe;
+        else if (v.pin !== v.confirmPin) f.confirmPin = "PINs don’t match";
+        if (!v.terms) f.terms = "Please accept the terms to continue";
+        setFields(f); if (Object.keys(f).length) return;
+
+        if (pending) return;
+        setError(undefined); setFields({});
+        start(async () => {
+          const res = await registerCustomer({ name: v.name, phone: v.phone, email: v.email, pin: v.pin, confirmPin: v.confirmPin, next });
+          if (res.ok) {
+            const sep = res.redirectTo.includes("?") ? "&" : "?";
+            const target = `${res.redirectTo}${sep}welcome_wallet=1`;
+            try {
+              sessionStorage.setItem("mana_welcome_wallet", JSON.stringify({ name: v.name.trim(), amount: 500, next: res.redirectTo }));
+              window.dispatchEvent(new Event("mana_welcome_wallet_updated"));
+            } catch {
+              // Ignore
+            }
+            toast.success("Welcome to ManaBrand! ₹500 welcome credit added to your wallet 🎁");
+            setWelcomeData({ open: true, name: v.name.trim(), target });
+          } else {
+            setError(res.error);
+            setFields(res.fieldErrors ?? {});
+          }
+        });
+      }}>
+        <div className="flex items-center gap-3.5 rounded-xl border border-accent/25 bg-accent-soft p-3.5 text-accent-soft-fg">
+          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent text-accent-fg">
+            <Gift className="size-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold">₹500 Welcome Bonus Gift</p>
+            <p className="text-xs opacity-90">Instant ₹500 added to your wallet to save on your orders above ₹999!</p>
+          </div>
         </div>
-      </div>
-      <FormError message={error} />
-      <Field label="Full name" htmlFor="rn" error={fields.name}><Input id="rn" autoComplete="name" value={v.name} onChange={(e) => set("name", e.target.value)} invalid={!!fields.name} /></Field>
-      <Field label="Mobile number" htmlFor="rp" error={fields.phone} hint="You’ll sign in with this number.">
-        <Input id="rp" type="tel" inputMode="tel" autoComplete="tel" placeholder="98765 43210" maxLength={14}
-          leading={<span className="text-sm font-medium text-fg">+91</span>} className="pl-14" value={v.phone} onChange={(e) => set("phone", e.target.value)} invalid={!!fields.phone} />
-      </Field>
-      <Field label="Email address" htmlFor="re" error={fields.email} hint="We send order updates, receipts and your PIN-reset link here.">
-        <Input id="re" type="email" inputMode="email" autoComplete="email" leading={<Mail className="size-4" />} value={v.email} onChange={(e) => set("email", e.target.value)} invalid={!!fields.email} />
-      </Field>
-      <SecretField id="rpin" label="Create a 4-digit PIN" autoComplete="new-password" value={v.pin} onChange={(x) => set("pin", x)} error={fields.pin} hint="Avoid birth years, 1234 or repeated digits." />
-      <SecretField id="rpin2" label="Confirm PIN" autoComplete="new-password" value={v.confirmPin} onChange={(x) => set("confirmPin", x)} error={fields.confirmPin} />
-      <p className="flex items-start gap-2 bg-accent-soft px-3.5 py-3 text-[13px] text-accent-soft-fg"><ShieldCheck className="mt-0.5 size-4 shrink-0" /> Your PIN is stored securely and can never be viewed — not even by us. We will never ask for it.</p>
-      <div>
-        <Checkbox checked={v.terms} onChange={(b) => set("terms", b)} label={<>I agree to the <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy policy</Link></>} />
-        {fields.terms && <p role="alert" className="mt-1 text-xs text-danger">{fields.terms}</p>}
-      </div>
-      <Button type="submit" size="lg" full loading={pending}>Create account</Button>
-    </form>
+        <FormError message={error} />
+        <Field label="Full name" htmlFor="rn" error={fields.name}><Input id="rn" autoComplete="name" value={v.name} onChange={(e) => set("name", e.target.value)} invalid={!!fields.name} /></Field>
+        <Field label="Mobile number" htmlFor="rp" error={fields.phone} hint="You’ll sign in with this number.">
+          <Input id="rp" type="tel" inputMode="tel" autoComplete="tel" placeholder="98765 43210" maxLength={14}
+            leading={<span className="text-sm font-medium text-fg">+91</span>} className="pl-14" value={v.phone} onChange={(e) => set("phone", e.target.value)} invalid={!!fields.phone} />
+        </Field>
+        <Field label="Email address" htmlFor="re" error={fields.email} hint="We send order updates, receipts and your PIN-reset link here.">
+          <Input id="re" type="email" inputMode="email" autoComplete="email" leading={<Mail className="size-4" />} value={v.email} onChange={(e) => set("email", e.target.value)} invalid={!!fields.email} />
+        </Field>
+        <SecretField id="rpin" label="Create a 4-digit PIN" autoComplete="new-password" value={v.pin} onChange={(x) => set("pin", x)} error={fields.pin} hint="Avoid birth years, 1234 or repeated digits." />
+        <SecretField id="rpin2" label="Confirm PIN" autoComplete="new-password" value={v.confirmPin} onChange={(x) => set("confirmPin", x)} error={fields.confirmPin} />
+        <p className="flex items-start gap-2 bg-accent-soft px-3.5 py-3 text-[13px] text-accent-soft-fg"><ShieldCheck className="mt-0.5 size-4 shrink-0" /> Your PIN is stored securely and can never be viewed — not even by us. We will never ask for it.</p>
+        <div>
+          <Checkbox checked={v.terms} onChange={(b) => set("terms", b)} label={<>I agree to the <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy policy</Link></>} />
+          {fields.terms && <p role="alert" className="mt-1 text-xs text-danger">{fields.terms}</p>}
+        </div>
+        <Button type="submit" size="lg" full loading={pending}>Create account</Button>
+      </form>
+
+      {welcomeData && (
+        <WelcomeWalletPopup
+          forceOpen
+          initialData={{ name: welcomeData.name, amount: 500, next: welcomeData.target }}
+          onDismiss={() => {
+            router.replace(welcomeData.target);
+            router.refresh();
+          }}
+        />
+      )}
+    </>
   );
 }
 
