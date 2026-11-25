@@ -56,8 +56,8 @@ export function CartView({ isGuest = false, walletBalance = 0 }: { isGuest?: boo
               <Gift className="size-5" />
             </span>
             <div>
-              <p className="text-sm font-semibold text-accent-soft-fg">Get ₹500 off your order</p>
-              <p className="text-xs text-muted">Sign up today and get an instant ₹500 welcome gift in your wallet to spend!</p>
+              <p className="text-sm font-semibold text-accent-soft-fg">Get ₹500 off with your wallet</p>
+              <p className="text-xs text-muted">Sign up today and get an instant ₹500 welcome gift in your wallet to use on orders above ₹999!</p>
             </div>
           </div>
           <Button href="/register?next=/checkout" size="sm" variant="outline" className="shrink-0 rounded-full bg-card hover:bg-bg-subtle">
@@ -116,7 +116,13 @@ export function CartView({ isGuest = false, walletBalance = 0 }: { isGuest?: boo
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold text-success">{formatINR(walletBalance)} wallet balance available</p>
-                  <p className="text-[11px] text-muted">Will be used at checkout to reduce your total.</p>
+                  <p className="text-[11px] text-muted">
+                    {cart.total >= 2499 ? `₹${Math.min(walletBalance, 350)} will be applied at checkout` :
+                     cart.total >= 1999 ? `₹${Math.min(walletBalance, 300)} will be applied at checkout` :
+                     cart.total >= 1499 ? `₹${Math.min(walletBalance, 250)} will be applied at checkout` :
+                     cart.total >= 999 ? `₹${Math.min(walletBalance, 200)} will be applied at checkout` :
+                     `Add ${formatINR(999 - cart.total)} more to use ₹200 from wallet`}
+                  </p>
                 </div>
               </div>
             )}

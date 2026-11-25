@@ -135,7 +135,7 @@ export function RegisterForm({ next }: { next?: string }) {
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold">₹500 Welcome Bonus Gift</p>
-          <p className="text-xs opacity-90">Instant ₹500 added to your wallet upon creating an account to use on any order!</p>
+          <p className="text-xs opacity-90">Instant ₹500 added to your wallet to save on your orders above ₹999!</p>
         </div>
       </div>
       <FormError message={error} />

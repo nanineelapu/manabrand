@@ -54,7 +54,7 @@ export function MiniCart() {
       footer={cart.count > 0 && (
         <div className="space-y-3">
           <p className="rounded-lg bg-accent-soft px-3 py-2 text-center text-xs text-accent-soft-fg">
-            🎁 Get ₹500 welcome credit when you create an account!
+            🎁 Get ₹500 in your wallet on sign up (usable on orders &gt; ₹999)!
           </p>
           <div className="flex items-baseline justify-between"><span className="text-sm text-muted">Subtotal</span><span className="text-lg font-semibold tabular">{formatINR(cart.subtotal)}</span></div>
           <div className="grid grid-cols-2 gap-2.5">

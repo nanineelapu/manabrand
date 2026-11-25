@@ -225,19 +225,28 @@ async function main() {
   const bal = async () => (await one<{ b: number }>(`select coalesce(sum(amount), 0)::int b from wallet_transactions where user_id = $1`, [shopper]))[0].b;
   const before = await bal();
   await as("authenticated", shopper);
-  const wl = (await one<{ order_id: string; order_number: string; total: number }>(`select * from place_order_wallet($1::jsonb, $2::jsonb, 'cod'::payment_method, null, false, 300)`, [JSON.stringify([{ product_id: A.id, option_value: A.v, qty: 1 }]), JSON.stringify(ADDR)]))[0];
-  ok("wallet lowers the order total by what was used", wl.total === A.price + 99 + 40 - 300, `(got ${wl.total}, expected ${A.price + 99 + 40 - 300})`);
+
+  // Under ₹999: order total 599 + 99 + 40 = 738 (< 999) -> wallet use is 0
+  const under = (await one<{ order_id: string; order_number: string; total: number }>(`select * from place_order_wallet($1::jsonb, $2::jsonb, 'cod'::payment_method, null, false, 200)`, [JSON.stringify([{ product_id: A.id, option_value: A.v, qty: 1 }]), JSON.stringify(ADDR)]))[0];
+  ok("wallet cannot be used on orders under ₹999", under.total === A.price + 99 + 40 && (await one<{ w: number }>(`select wallet_used w from orders where id = $1`, [under.order_id]))[0].w === 0);
+
+  // In ₹999 tier: 2 items of A (2 * 599 = 1198, total = 1198 + 99 + 40 = 1337) -> capped at 200
+  const orderTotal999 = A.price * 2 + 99 + 40;
+  const wl = (await one<{ order_id: string; order_number: string; total: number }>(`select * from place_order_wallet($1::jsonb, $2::jsonb, 'cod'::payment_method, null, false, 300)`, [JSON.stringify([{ product_id: A.id, option_value: A.v, qty: 2 }]), JSON.stringify(ADDR)]))[0];
+  ok("wallet lowers the order total by tiered cap (max 200 above 999)", wl.total === orderTotal999 - 200, `(got ${wl.total}, expected ${orderTotal999 - 200})`);
   await as("postgres");
-  ok("the spend is recorded in the ledger and on the order", (await bal()) === before - 300 && (await one<{ w: number }>(`select wallet_used w from orders where id = $1`, [wl.order_id]))[0].w === 300);
+  ok("the spend is recorded in the ledger and on the order", (await bal()) === before - 200 && (await one<{ w: number }>(`select wallet_used w from orders where id = $1`, [wl.order_id]))[0].w === 200);
   await as("authenticated", shopper);
-  const over = (await one<{ order_id: string; total: number }>(`select * from place_order_wallet($1::jsonb, $2::jsonb, 'cod'::payment_method, null, false, 99999)`, [JSON.stringify([{ product_id: B.id, option_value: B.v, qty: 1 }]), JSON.stringify(ADDR)]))[0];
+
+  // In >= 2499 tier: 5 items of A (5 * 599 = 2995, free shipping) -> tier cap is 350, capped at remaining bal 300
+  const over = (await one<{ order_id: string; total: number }>(`select * from place_order_wallet($1::jsonb, $2::jsonb, 'cod'::payment_method, null, false, 99999)`, [JSON.stringify([{ product_id: A.id, option_value: A.v, qty: 5 }]), JSON.stringify(ADDR)]))[0];
   await as("postgres");
-  ok("the wallet can never go below zero (spend is capped at the balance)", (await bal()) === Math.max(0, before - 300 - Math.min(before - 300, B.price + 99 + 40)) && (await bal()) >= 0);
+  ok("the wallet can never go below zero (spend is capped at the balance)", (await bal()) === 0);
   const afterOver = await bal();
   await as("service_role");   // only the server (or an admin) may refund
   await db.query(`select wallet_refund_order($1)`, [wl.order_id]); await db.query(`select wallet_refund_order($1)`, [wl.order_id]);
   await as("postgres");
-  ok("cancelling gives the wallet money back — once, even if asked twice", (await bal()) === afterOver + 300);
+  ok("cancelling gives the wallet money back — once, even if asked twice", (await bal()) === afterOver + 200);
   await as("authenticated", other2);
   ok("a customer cannot see someone else's wallet", (await one(`select 1 from wallet_transactions where user_id = $1`, [shopper])).length === 0);
   void over;

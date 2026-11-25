@@ -44,7 +44,7 @@ export const welcomeEmail = (name: string, siteUrl: string): Mail => mail("Welco
   title: "Welcome to ManaBrand", preheader: "Your account is ready — start shopping local fashion.", siteUrl,
   body: h(`Welcome, ${esc(name.split(" ")[0])} 👋`) + p("Your ManaBrand account is ready. Sign in any time with your <b>mobile number and 4-digit PIN</b>.") +
     p("Order updates and receipts will come to this email address.") +
-    `<div style="margin:6px 0 14px;padding:14px 16px;border:2px dashed ${BRAND.pink};border-radius:12px;text-align:center"><div style="font-size:13px;color:${BRAND.muted}">A welcome gift is waiting in your wallet</div><div style="font-size:26px;font-weight:900;color:${BRAND.pink}">₹500</div><div style="font-size:13px;color:${BRAND.muted}">It is used automatically at checkout.</div></div>` +
+    `<div style="margin:6px 0 14px;padding:14px 16px;border:2px dashed ${BRAND.pink};border-radius:12px;text-align:center"><div style="font-size:13px;color:${BRAND.muted}">A welcome gift is waiting in your wallet</div><div style="font-size:26px;font-weight:900;color:${BRAND.pink}">₹500</div><div style="font-size:13px;color:${BRAND.muted}">Applied automatically on orders above ₹999 at checkout.</div></div>` +
     button(`${siteUrl}/shop`, "Start shopping"),
 }));
 

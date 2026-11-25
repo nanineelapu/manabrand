@@ -57,14 +57,28 @@ create or replace function public.place_order_wallet(
 ) returns table (order_id uuid, order_number text, total int)
 language plpgsql security definer set search_path = public as $$
 #variable_conflict use_column
-declare r record; v_uid uuid := auth.uid(); v_bal int; v_use int; v_total int;
+declare r record; v_uid uuid := auth.uid(); v_bal int; v_use int; v_total int; v_max_wallet int;
 begin
   select * into r from public.place_order(p_items, p_address, p_payment_method, p_coupon, p_express);
   v_total := r.total;
   if coalesce(p_wallet, 0) > 0 and v_uid is not null then
     perform pg_advisory_xact_lock(hashtext('wallet:' || v_uid::text));     -- two checkouts at once can't spend the same money
     select coalesce(sum(amount), 0)::int into v_bal from public.wallet_transactions where user_id = v_uid;
-    v_use := least(p_wallet, v_bal, v_total);
+
+    -- Conditional wallet limits based on order total:
+    --  Above 2499 -> max 350
+    --  Above 1999 -> max 300
+    --  Above 1499 -> max 250
+    --  Above 999  -> max 200
+    --  Below 999  -> max 0
+    if v_total >= 2499 then v_max_wallet := 350;
+    elsif v_total >= 1999 then v_max_wallet := 300;
+    elsif v_total >= 1499 then v_max_wallet := 250;
+    elsif v_total >= 999 then v_max_wallet := 200;
+    else v_max_wallet := 0;
+    end if;
+
+    v_use := least(p_wallet, v_bal, v_total, v_max_wallet);
     if v_use > 0 then
       insert into public.wallet_transactions (user_id, amount, kind, order_id, note)
       values (v_uid, -v_use, 'order', r.order_id, 'Used on order ' || r.order_number);

@@ -48,10 +48,10 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
   const [summaryOpen, setSummaryOpen] = useState(false);
 
   const orderBase = cart.total + (express ? 149 : 0);
-  const fullyCoveredByWallet = useWallet && walletBalance >= orderBase && orderBase > 0;
-  const codFee = (pay === "cod" && !fullyCoveredByWallet) ? COD_FEE : 0;
+  const codFee = pay === "cod" ? COD_FEE : 0;
   const beforeWallet = orderBase + codFee;
   const walletUse = useWallet ? walletToUse(walletBalance, beforeWallet) : 0;
+  const fullyCoveredByWallet = useWallet && walletUse >= beforeWallet && beforeWallet > 0;
   const finalTotal = Math.max(0, beforeWallet - walletUse);
 
   if (!mounted) return <div className="container-page space-y-4 py-8"><Skeleton className="h-8 w-48" /><Skeleton className="h-40" /><Skeleton className="h-40" /></div>;
@@ -176,10 +176,33 @@ export function CheckoutFlow({ addresses: initial, onlinePayments = true, gatewa
           {panel(2, "Payment", fullyCoveredByWallet ? "Covered by wallet" : null, (
             <div className="space-y-3">
               {walletBalance > 0 && (
-                <div className="flex items-center gap-3 rounded-ctl border border-line bg-bg-subtle p-3.5">
-                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-accent"><Wallet className="size-5" /></span>
-                  <div className="min-w-0 flex-1"><p className="text-sm font-semibold">Use wallet balance</p><p className="text-xs text-muted">{formatINR(walletBalance)} available{useWallet && walletUse > 0 ? ` · ${formatINR(walletUse)} will be used` : ""}</p></div>
-                  <Switch label="Use wallet balance" checked={useWallet} onChange={setUseWallet} />
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3 rounded-ctl border border-line bg-bg-subtle p-3.5">
+                    <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-accent"><Wallet className="size-5" /></span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold">Use wallet balance</p>
+                      <p className="text-xs text-muted">
+                        {formatINR(walletBalance)} available
+                        {walletUse > 0
+                          ? (useWallet ? ` · ${formatINR(walletUse)} applied` : ` · ${formatINR(walletUse)} can be used`)
+                          : " · Min. order ₹999 required"}
+                      </p>
+                    </div>
+                    {walletUse > 0 ? (
+                      <Switch label="Use wallet balance" checked={useWallet} onChange={setUseWallet} />
+                    ) : (
+                      <span className="rounded-full bg-line px-2.5 py-1 text-[11px] font-medium text-muted">Min ₹999</span>
+                    )}
+                  </div>
+                  {beforeWallet < 999 ? (
+                    <p className="rounded-ctl bg-bg-subtle px-3 py-2 text-xs text-muted">
+                      💡 Add <strong className="text-fg">{formatINR(999 - beforeWallet)}</strong> more to your order to unlock <strong className="text-success">₹200</strong> wallet discount.
+                    </p>
+                  ) : useWallet && walletUse > 0 ? (
+                    <p className="rounded-ctl bg-success-bg px-3 py-2 text-xs text-success">
+                      🎉 {formatINR(walletUse)} wallet discount applied ({beforeWallet >= 2499 ? "₹350 tier" : beforeWallet >= 1999 ? "₹300 tier" : beforeWallet >= 1499 ? "₹250 tier" : "₹200 tier"}). Remaining in wallet: {formatINR(walletBalance - walletUse)}.
+                    </p>
+                  ) : null}
                 </div>
               )}
               {fullyCoveredByWallet ? (

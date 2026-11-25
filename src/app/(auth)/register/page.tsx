@@ -10,7 +10,7 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
   const next = safeNext(Array.isArray(sp.next) ? sp.next[0] : sp.next, "");
   const nextQs = next ? `?next=${encodeURIComponent(next)}` : "";
   return (
-    <AuthShell title="Create your account" subtitle="Join ManaBrand today and receive ₹500 in your wallet instantly to use on your first order. Your mobile number is your login."
+    <AuthShell title="Create your account" subtitle="Join ManaBrand today and receive ₹500 in your wallet to use on orders above ₹999. Your mobile number is your login."
       footer={<>Already have an account? <Link href={`/login${nextQs}`} className="font-semibold text-fg underline underline-offset-4">Sign in</Link></>}>
       <RegisterForm next={next || undefined} />
     </AuthShell>
