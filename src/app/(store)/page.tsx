@@ -3,6 +3,7 @@ import { Hero } from "@/components/store/hero";
 import { PopularCategories } from "@/components/store/popular-categories";
 import { ManaDealBox } from "@/components/store/mana-deal-box";
 import { WhySection } from "@/components/store/why-section";
+import { SellOnMana } from "@/components/store/sell-on-mana";
 import { ArrowUpRight } from "lucide-react";
 import { ProductImage } from "@/components/brand/product-image";
 import { SectionHeader } from "@/components/ui/display";
@@ -77,6 +78,9 @@ export default async function HomePage() {
 
       {/* sits right above the big "Find your next look" card (rendered by the layout) */}
       <WhySection />
+
+      {/* Sell on ManaBrand — tells makers and shops they can list products, sits above the footer */}
+      <SellOnMana />
     </>
   );
 }
