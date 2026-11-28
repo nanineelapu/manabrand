@@ -203,7 +203,7 @@ export const getWalletForCustomer = async (id: string) => (id ? getWallet() : ge
 export const getDealBox = async () => normalizeDealBox(undefined);
 export const getSettings = async (): Promise<SettingsData> => ({
   shipping: { freeAbove: 9999999, standardFee: 49, expressFee: 149, codFee: 40 }, payments: { upi: true, card: true, netbanking: true, cod: true, wallet: false },
-  commission: { default: 12 }, business: { name: "ManaBrand Pvt. Ltd.", supportEmail: "care@manabrand.in", supportPhone: "+91 831 765 8309", gstin: "27AABCM1234P1Z9" },
+  commission: { default: 12 }, business: { name: "ManaBrand Pvt. Ltd.", supportEmail: "care@manabrand.co.in", supportPhone: "+91 831 765 8309", gstin: "27AABCM1234P1Z9" },
 });
 export const getSellerPromotions = async (): Promise<PromoRow[]> => [
   { id: "p1", name: "Festive cottons", off: 15, scope: "Everyday Cotton (5 products)", ends: "30 Nov", on: true, orders: 64 },

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Phone, ShoppingBag } from "lucide-react";
-import { Reveal } from "@/components/ui/motion";
 import type { CmsSite } from "@/lib/cms/types";
 
 /** The "_" between words, drawn as a short bar like the reference's terminal-style headline. */
@@ -14,7 +13,7 @@ export function CtaBand({ site }: { site: Pick<CmsSite, "supportPhone" | "madeIn
   return (
     <section aria-label="Start shopping" data-round className="bg-white py-8 md:py-10">
       <div className="container-page">
-        <Reveal>
+        
           <div data-theme="dark" className="relative grid overflow-hidden rounded-[28px] bg-black text-white md:rounded-[44px] lg:grid-cols-[1fr_300px] lg:rounded-[52px]">
             {/* soft red glow + right-edge fade */}
             <div aria-hidden className="pointer-events-none absolute -bottom-40 -left-24 size-[28rem] rounded-full bg-primary/25 blur-3xl" />
@@ -29,20 +28,20 @@ export function CtaBand({ site }: { site: Pick<CmsSite, "supportPhone" | "madeIn
 
             <div className="relative flex flex-col justify-center gap-3 border-t border-white/10 p-3.5 sm:gap-5 sm:p-6 lg:border-l lg:border-t-0 lg:p-6">
               <div className="flex gap-2.5 lg:flex-col">
-                <Link href="/shop" className="group flex min-h-12 flex-1 items-center justify-between gap-3 rounded-full bg-white px-4 text-sm font-black uppercase leading-tight tracking-tight text-primary transition-transform hover:-translate-y-0.5 sm:min-h-14 sm:rounded-[22px] sm:px-5 sm:text-base lg:min-h-24 lg:text-xl">
+                <Link href="/shop" className="shine group flex min-h-12 flex-1 items-center justify-between gap-3 rounded-full bg-white px-4 text-sm font-black uppercase leading-tight tracking-tight text-primary transition-transform hover:-translate-y-0.5 sm:min-h-14 sm:rounded-[22px] sm:px-5 sm:text-base lg:min-h-24 lg:text-xl">
                   <span>Start<br className="hidden lg:inline" /> shopping</span>
-                  <ShoppingBag className="size-5 shrink-0 transition-transform group-hover:scale-110 sm:size-6" strokeWidth={2} />
+                  <ShoppingBag className="size-5 shrink-0 sm:size-6" strokeWidth={2} />
                 </Link>
                 {site.supportPhone ? (
-                  <a href={`tel:${site.supportPhone.replace(/[^\d+]/g, "")}`} className="group flex size-12 shrink-0 items-center justify-center gap-3 rounded-full border-2 border-white/15 bg-white/[0.04] px-0 text-sm font-black uppercase tracking-tight transition-colors hover:border-white/40 sm:size-14 sm:rounded-[22px] sm:text-base lg:size-auto lg:min-h-16 lg:w-full lg:justify-between lg:px-5 lg:text-lg" aria-label="Call support">
+                  <a href={`tel:${site.supportPhone.replace(/[^\d+]/g, "")}`} className="group flex size-12 shrink-0 items-center justify-center gap-3 rounded-full border-2 border-white/15 bg-white/[0.04] px-0 text-sm font-black uppercase tracking-tight hover:border-white/40 sm:size-14 sm:rounded-[22px] sm:text-base lg:size-auto lg:min-h-16 lg:w-full lg:justify-between lg:px-5 lg:text-lg" aria-label="Call support">
                     <span className="hidden lg:inline">Call_support</span>
-                    <Phone className="size-4.5 shrink-0 text-white/70 transition-transform group-hover:rotate-12 sm:size-5" strokeWidth={2} />
+                    <Phone className="size-4.5 shrink-0 text-white/70 sm:size-5" strokeWidth={2} />
                   </a>
                 ) : null}
               </div>
             </div>
           </div>
-        </Reveal>
+        
       </div>
     </section>
   );

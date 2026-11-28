@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, Check, Clock, Gift, Truck, X, Zap } from "lucide-react";
 import { SectionHeader } from "@/components/ui/display";
-import { Reveal } from "@/components/ui/motion";
 import { clock, magicLabel, magicState, type DealBoxConfig } from "@/lib/magic-hours";
 import { ProductRail } from "@/components/store/product-card";
 import type { Product } from "@/types";
@@ -67,28 +66,26 @@ export function ManaDealBox({ config, picks = [] }: { config: DealBoxConfig; pic
   return (
     <section aria-labelledby="dealbox-heading" data-round className="bg-white text-black">
       <div className="container-page py-12 md:py-16">
-        <Reveal><SectionHeader id="dealbox-heading" eyebrow={config.allDay ? "Members only · 24/7" : "Members only · Daily"} title="Mana Deal Box" subtitle={config.allDay ? "Open 24/7 — members’ deals any time, every day." : `Opens every day in the magic hours, ${label}.`} /></Reveal>
+        <SectionHeader id="dealbox-heading" eyebrow={config.allDay ? "Members only · 24/7" : "Members only · Daily"} title="Mana Deal Box" subtitle={config.allDay ? "Open 24/7 — members’ deals any time, every day." : `Opens every day in the magic hours, ${label}.`} />
 
         <div className="mt-7 grid grid-cols-[minmax(0,1fr)] gap-5 md:mt-9 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-stretch lg:gap-8">
           {/* perks */}
           <div className="grid min-w-0 gap-3">
           <MagicClock cfg={config} />
-          <ul className="grid min-w-0 gap-3">
+          <ul className="rise grid min-w-0 gap-3">
             {perks(label, config.allDay).map((k, i) => (
-              <li key={k.title}>
-                <Reveal delay={i * 70}>
+              <li key={k.title} style={{ "--i": i } as React.CSSProperties}>
                   <div className="flex items-center gap-4 rounded-[22px] border border-black/10 bg-white p-4 transition-colors hover:border-primary md:p-5">
                     <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-black text-white"><k.icon className="size-[22px]" strokeWidth={1.8} /></span>
                     <div className="min-w-0"><h3 className="text-[16px] font-extrabold tracking-tight">{k.title}</h3><p className="mt-0.5 text-[13px] leading-relaxed text-black/60">{k.desc}</p></div>
                   </div>
-                </Reveal>
               </li>
             ))}
           </ul>
           </div>
 
           {/* pass */}
-          <Reveal delay={140}>
+          
             <div className="flex h-full flex-col rounded-[28px] border border-black/10 bg-neutral-50 p-6 md:p-7">
               <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-black/50">Annual pass</p>
 
@@ -106,13 +103,13 @@ export function ManaDealBox({ config, picks = [] }: { config: DealBoxConfig; pic
 
               <div className="mt-7 lg:mt-auto lg:pt-7">
                 <button type="button" onClick={() => { setDone(false); setOpen(true); }}
-                  className="group inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 text-[15px] font-bold text-white transition-colors hover:bg-primary-hover">
-                  Join the Deal Box <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                  className="group inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 text-[15px] font-bold text-white">
+                  Join the Deal Box <ArrowRight className="size-4" />
                 </button>
                 <p className="mt-2.5 text-center text-xs text-black/50">Cancel anytime.</p>
               </div>
             </div>
-          </Reveal>
+          
         </div>
       </div>
 
@@ -131,7 +128,7 @@ export function ManaDealBox({ config, picks = [] }: { config: DealBoxConfig; pic
                 <label htmlFor="dealbox-contact" className="mt-5 block text-[13px] font-semibold">Mobile number or email</label>
                 <input id="dealbox-contact" required value={contact} onChange={(e) => setContact(e.target.value)} placeholder="98765 43210 or you@example.com"
                   className="mt-1.5 h-12 w-full rounded-xl border border-black/15 bg-white px-4 text-[15px] outline-none placeholder:text-black/35 focus:border-primary" />
-                <button type="submit" className="mt-5 h-12 w-full rounded-xl bg-primary text-[15px] font-bold text-white transition-colors hover:bg-primary-hover">Request my pass</button>
+                <button type="submit" className="mt-5 h-12 w-full rounded-xl bg-primary text-[15px] font-bold text-white">Request my pass</button>
               </form>
             ) : (
               <div className="py-3 text-center">

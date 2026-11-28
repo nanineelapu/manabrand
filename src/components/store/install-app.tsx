@@ -32,18 +32,28 @@ export function useInstallApp() {
   useEffect(() => { setEnv({ standalone: isStandalone(), ios: isIOS() }); }, []);
   const { standalone, ios } = env;
   const canPrompt = !!deferred && !standalone && !installed;
+  // The Install button is hidden unless we can really install:
+  //   · Android / desktop Chrome: when beforeinstallprompt is in hand (tap → native dialog, no instructions)
+  //   · iPhone / iPad: there is no install API, so the Share-sheet steps are the only way; the button opens the steps
+  // Other browsers (Firefox Android, in-app browsers, Chrome before beforeinstallprompt has fired) see no button at all.
+  const available = !standalone && !installed && (canPrompt || ios);
   return {
     canPrompt,
     /** already running as an installed app (home-screen icon / app drawer) */
     installed: standalone || installed,
+    /** iPhone / iPad — the only case where the help modal is the real path */
     needsIOSSteps: ios && !standalone && !installed && !deferred,
-    available: !standalone && !installed && (canPrompt || ios),
+    available,
     async install() {
-      if (!deferred) return;
-      await deferred.prompt();
-      const { outcome } = await deferred.userChoice;
-      if (outcome === "accepted") installed = true;
-      deferred = null; emit();
+      if (!deferred) return false;
+      try {
+        await deferred.prompt();
+        const { outcome } = await deferred.userChoice;
+        if (outcome === "accepted") installed = true;
+      } finally {
+        deferred = null; emit();
+      }
+      return true;
     },
   };
 }
@@ -73,14 +83,14 @@ export function RegisterServiceWorker() {
   return null;
 }
 
-/** Plain button for the footer / menu. Renders nothing when the app is already installed or can't be installed. */
+/** Plain button for the footer / menu. Only shown when the browser can actually install (or on iPhone, where the Share-sheet help is the real path). */
 export function InstallButton({ className, label = "Install app" }: { className?: string; label?: string }) {
   const app = useInstallApp();
   const [help, setHelp] = useState(false);
   if (!app.available) return null;
   return (
     <>
-      <button type="button" onClick={() => (app.canPrompt ? app.install() : setHelp(true))}
+      <button type="button" onClick={() => (app.canPrompt ? app.install() : app.needsIOSSteps ? setHelp(true) : null)}
         className={cn("inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-4 py-2.5 text-sm font-semibold transition-colors hover:border-white/40", className)}>
         <Download className="size-4" />{label}
       </button>

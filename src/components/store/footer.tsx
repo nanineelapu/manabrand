@@ -15,7 +15,7 @@ const heading = "mb-2 flex items-center gap-2.5 text-[10px] font-extrabold upper
  */
 export function Footer({ site, nav }: { site: CmsSite; nav: CmsNav }) {
   const social = [site.instagram && [InstagramIcon, "Instagram", site.instagram], site.youtube && [YoutubeIcon, "YouTube", site.youtube], [Mail, "Email", site.supportEmail ? `mailto:${site.supportEmail}` : "/contact"]].filter(Boolean) as [typeof Mail, string, string][];
-  const email = site.supportEmail ?? "care@manabrand.in";
+  const email = site.supportEmail ?? "care@manabrand.co.in";
 
   return (
     <footer data-round data-theme="dark" className="bg-black text-white">

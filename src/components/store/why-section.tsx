@@ -1,6 +1,5 @@
 import { Clock, ShieldCheck, Truck } from "lucide-react";
 import { LogoImage } from "@/components/brand/logo";
-import { Reveal } from "@/components/ui/motion";
 
 /**
  * "Why ManaBrand" band — a light section between the black hero and the shop, in the reference's style:
@@ -17,20 +16,19 @@ export function WhySection() {
   return (
     <section aria-labelledby="why-h" data-round className="bg-white text-black">
       <div className="container-page py-12 md:py-14">
-        <Reveal className="text-center">
+        
           <p className="text-[11px] font-extrabold uppercase tracking-[0.55em] text-black sm:text-xs">Why ManaBrand</p>
           <h2 id="why-h" className="mt-3 flex items-center justify-center gap-3 text-[24px] font-black uppercase leading-none tracking-[-0.03em] text-black sm:text-3xl lg:text-[40px]">
             <span>Beyond the <span className="text-primary">Product</span></span>
             <span aria-hidden className="shrink-0"><LogoImage size="xs" className="h-9 lg:h-11" /></span>
           </h2>
-        </Reveal>
+        
 
-        <div className="mt-7 grid gap-4 md:mt-9 md:grid-cols-3 md:gap-5">
+        <div className="rise mt-7 grid gap-4 md:mt-9 md:grid-cols-3 md:gap-5">
           {CARDS.map((c, i) => (
-            <Reveal key={c.n} delay={i * 90} className="group">
-              <article className="flex h-full flex-col rounded-[26px] border border-black/10 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary md:rounded-[32px] md:p-6">
+              <article key={c.n} style={{ "--i": i } as React.CSSProperties} className="group flex h-full flex-col rounded-[26px] border border-black/10 bg-white p-5 transition-colors hover:border-primary md:rounded-[32px] md:p-6">
                 <div className="flex items-start justify-between">
-                  <span className="grid size-14 place-items-center rounded-[20px] bg-black text-white transition-colors duration-300 group-hover:bg-primary md:size-16 md:rounded-[22px]">
+                  <span className="grid size-14 place-items-center rounded-[20px] bg-black text-white transition-colors group-hover:bg-primary md:size-16 md:rounded-[22px]">
                     <c.icon className="size-6 md:size-7" strokeWidth={1.8} />
                   </span>
                   <span className="font-mono text-sm tracking-widest text-black/30">{c.n}</span>
@@ -42,7 +40,7 @@ export function WhySection() {
                 </h3>
                 <p className="mt-3 max-w-sm text-sm leading-relaxed text-black/60">{c.text}</p>
               </article>
-            </Reveal>
+            
           ))}
         </div>
       </div>

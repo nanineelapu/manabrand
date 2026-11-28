@@ -5,7 +5,7 @@
 export interface Mail { subject: string; html: string; text: string }
 
 const BRAND = { pink: "#e0247a", ink: "#0b0b0d", muted: "#6b6b73", line: "#ececf0", bg: "#f5f5f7" };
-const SUPPORT = { email: "care@manabrand.in", phone: "+91 831 765 8309", hours: "Mon–Sat, 9am–8pm" };
+const SUPPORT = { email: "care@manabrand.co.in", phone: "+91 831 765 8309", hours: "Mon–Sat, 9am–8pm" };
 
 /** Escape anything a customer typed before it goes into HTML. */
 export const esc = (s: unknown) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);

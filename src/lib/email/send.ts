@@ -4,12 +4,12 @@ import type { Mail } from "./templates";
 /**
  * Sends email through Resend (https://resend.com). Needs two env vars:
  *   RESEND_API_KEY   — an API key ("Sending access") from the Resend dashboard
- *   EMAIL_FROM       — e.g. ManaBrand <care@manabrand.in>  (the domain must be verified in Resend)
- * Optional: SUPPORT_EMAIL — the inbox that receives contact-form messages (defaults to care@manabrand.in).
+ *   EMAIL_FROM       — e.g. ManaBrand <care@manabrand.co.in>  (the domain must be verified in Resend)
+ * Optional: SUPPORT_EMAIL — the inbox that receives contact-form messages (defaults to care@manabrand.co.in).
  * Without a key, mail is only logged to the server console (so local development never sends anything).
  * Never throws: a failed email must not break an order or a sign-up.
  */
-export const SUPPORT_EMAIL = () => process.env.SUPPORT_EMAIL?.trim() || "care@manabrand.in";
+export const SUPPORT_EMAIL = () => process.env.SUPPORT_EMAIL?.trim() || "care@manabrand.co.in";
 export const emailConfigured = () => Boolean(process.env.RESEND_API_KEY?.trim());
 
 export async function sendEmail(o: { to: string | string[]; replyTo?: string } & Mail): Promise<{ ok: boolean; dev?: boolean }> {
@@ -23,7 +23,7 @@ export async function sendEmail(o: { to: string | string[]; replyTo?: string } &
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: process.env.EMAIL_FROM?.trim() || "ManaBrand <care@manabrand.in>", to: o.to, subject: o.subject, html: o.html, text: o.text,
+        from: process.env.EMAIL_FROM?.trim() || "ManaBrand <care@manabrand.co.in>", to: o.to, subject: o.subject, html: o.html, text: o.text,
         ...(o.replyTo ? { reply_to: o.replyTo } : {}),
       }),
       signal: AbortSignal.timeout(8000),

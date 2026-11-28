@@ -383,8 +383,8 @@ details[open] > summary .chev { transform: rotate(180deg); }
 
 /* rect */
 
-/* ===================================================================== motion (minimal) */
-/* Decorative animations are off across the site. Only two niceties remain: a subtle card hover on pointer devices, and a press squish. */
+/* ===================================================================== motion (deliberate) */
+/* A handful of effects that make the site feel alive without hurting speed. Scroll-driven, floating and looping effects stay off. */
 @media (hover: hover) {
   .lift { transition: transform 0.2s ease-out, box-shadow 0.2s ease-out; }
   .lift:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgb(0 0 0 / 0.1); }
@@ -392,7 +392,28 @@ details[open] > summary .chev { transform: rotate(180deg); }
 .press { transition: transform 0.12s; }
 .press:active { transform: scale(0.97); }
 :focus-visible { outline: 2px solid var(--ring, currentColor); outline-offset: 2px; }
-@media (prefers-reduced-motion: reduce) { .lift:hover { transform: none; } }
+
+/* One-time entrance for a row of cards (home sections). Each child gets its small delay via style="--i:n" — no observer, no JS. */
+@keyframes mana-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.rise > * { animation: mana-rise 0.42s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: calc(min(var(--i, 0), 6) * 55ms); }
+
+/* Photo inside a card nudges in on hover. Pointer devices only, so touch never looks "stuck". */
+@media (hover: hover) {
+  .zoomable img, .zoomable [data-img] { transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
+  .zoomable:hover img, .zoomable:hover [data-img] { transform: scale(1.03); }
+}
+
+/* A slow shine sweep on the Shop Now CTA. The sweep is a ::after element; the content underneath doesn't move. */
+.shine { position: relative; overflow: hidden; }
+.shine::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 38%, rgb(255 255 255 / 0.55) 50%, transparent 62%); transform: translateX(-120%); animation: mana-shine 4.5s ease-in-out 1.5s infinite; }
+@keyframes mana-shine { 0%, 55% { transform: translateX(-120%); } 85%, 100% { transform: translateX(120%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .lift:hover { transform: none; }
+  .rise > * { animation: none; }
+  .zoomable:hover img, .zoomable:hover [data-img] { transform: none; }
+  .shine::after { animation: none; opacity: 0; }
+}
 
 /* ============================================================== preloader (first visit per session) */
 #preloader { position: fixed; inset: 0; z-index: 200; color: #fff; background: #000; animation: pl-failsafe 0.01s 5s forwards; }
@@ -476,6 +497,30 @@ html[data-preloaded] #preloader { display: none; }  /* repeat visit: set by the 
 /* rebuild 1794749227 */
 /* rebuild 1794750769 */
 /* rebuild 1794755257 */
+
+/* ========================================== hero slide 1 — ManaBrand brand stage
+ *   Rows of small logos drift across the back on a tilted plane. The main logo sits inside a glass disc with
+ *   a slow pink ring turning around it, three sparks orbiting at different speeds, a soft floor reflection, and
+ *   a gentle ken-burns push on the aurora. All decorative, all off for reduced motion.
+ */
+.hbf-plane-inner { position: absolute; inset: -30% -20%; display: flex; flex-direction: column; justify-content: center; gap: 2.2rem; transform: rotateX(58deg) rotateZ(-2deg); transform-origin: 50% 70%; perspective: 1100px; }
+.hbf-row { display: flex; gap: 3.5rem; width: max-content; will-change: transform; }
+.hbf-row-a { animation: hbf-flow-a linear infinite; }
+.hbf-row-b { animation: hbf-flow-b linear infinite; }
+@keyframes hbf-flow-a { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes hbf-flow-b { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+
+.hbf-tilt { transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 0.35s ease-out; transform-style: preserve-3d; }
+.hbf-ring { background: conic-gradient(from 0deg, transparent 0 62%, rgba(255, 95, 176, 0.95) 84%, transparent 100%); -webkit-mask: radial-gradient(farthest-side, transparent 72%, #000 73%); mask: radial-gradient(farthest-side, transparent 72%, #000 73%); animation: hbf-spin 18s linear infinite; }
+.hbf-orbit { position: absolute; border-radius: 9999px; animation: hbf-spin linear infinite; }
+@keyframes hbf-spin { to { transform: rotate(360deg); } }
+.hbf-float { animation: hbf-float 7s ease-in-out infinite; }
+@keyframes hbf-float { 0%, 100% { transform: translateY(0) rotateY(-7deg); } 50% { transform: translateY(-14px) rotateY(7deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .hbf-row, .hbf-ring, .hbf-orbit, .hbf-float { animation: none; }
+  .hbf-tilt { transition: none; }
+}
 
 /* Hide the browser's scrollbars across the whole site (scrolling itself still works with wheel, touch and keyboard). */
 html, body, * { scrollbar-width: none; -ms-overflow-style: none; }

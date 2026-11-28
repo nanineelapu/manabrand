@@ -7,7 +7,7 @@ export interface TeamMember { id: string; name: string; email: string; role: str
 
 /** Everyone who can sign in to the admin panel. (Called only from admin pages; uses the service-role client.) */
 export async function getTeam(): Promise<TeamMember[]> {
-  if (!isSupabaseConfigured()) return [{ id: "demo", name: "Demo Admin", email: "admin@manabrand.in", role: "Super admin", since: new Date().toISOString() }];
+  if (!isSupabaseConfigured()) return [{ id: "demo", name: "Demo Admin", email: "admin@manabrand.co.in", role: "Super admin", since: new Date().toISOString() }];
   const db = createAdminClient();
   const { data: members } = await db.from("admin_members").select("user_id, admin_role, created_at").order("created_at");
   const ids = (members ?? []).map((m) => m.user_id as string);

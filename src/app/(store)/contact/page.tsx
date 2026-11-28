@@ -6,7 +6,7 @@ export const metadata = { title: "Contact us" };
 
 const channels = [
   { icon: Phone, t: "Call & WhatsApp", d: "+91 831 765 8309" },
-  { icon: Mail, t: "Email", d: "care@manabrand.in" },
+  { icon: Mail, t: "Email", d: "care@manabrand.co.in" },
   { icon: Clock, t: "Hours", d: "Mon–Sat, 9am – 8pm IST" },
   { icon: MapPin, t: "Find us", d: "Ichapuram, Srikakulam district, Andhra Pradesh 532312" },
 ];
