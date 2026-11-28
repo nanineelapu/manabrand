@@ -1,6 +1,7 @@
 "use client";
 
 import { NotifyMe } from "@/components/store/notify-me";
+import { BestPrice } from "@/components/store/best-price";
 import { OUT_OF_AREA, inServiceArea } from "@/lib/locale";
 import { groupOf } from "@/lib/fashion";
 import Link from "next/link";
@@ -136,6 +137,7 @@ export function BuyBox({ product, sellerName, sellerSlug }: { product: Product; 
         </div>
         <div className="mt-2.5 sm:mt-4"><Price price={product.price} mrp={product.mrp} size="lg" className="sm:text-2xl" /></div>
         <p className="mt-0.5 text-xs text-muted">Inclusive of all taxes{off ? ` · You save ${formatINR(product.mrp - product.price)}` : ""}</p>
+        <BestPrice price={product.price} />
       </div>
 
       {/* colour — only when there is a real choice */}

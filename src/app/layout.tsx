@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { DM_Sans, Montserrat } from "next/font/google";
 import { getSiteContent } from "@/lib/cms";
+import { JsonLd, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import { StoreHydrator } from "@/lib/stores/hydrate";
+import { siteUrl } from "@/lib/supabase/env";
 import "./globals.css";
 
 const montserrat = Montserrat({ variable: "--font-montserrat", subsets: ["latin"], style: ["normal", "italic"], display: "swap" });
@@ -19,7 +21,11 @@ const IOS_LAUNCH_IMAGES = ([
 /** Site title, description and share image come from the CMS (Site settings) — built-in values are the fallback. */
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteContent();
+  const base = siteUrl();
   return {
+  // Everything written as a relative URL ("/logo.png", "/product/...") is resolved against this, so Open Graph images and
+  // canonical links on social shares always use the real domain instead of the preview host.
+  metadataBase: new URL(base),
   title: { default: site.defaultTitle, template: site.titleTemplate },
   description: site.description,
   applicationName: site.siteName,
@@ -33,7 +39,10 @@ export async function generateMetadata(): Promise<Metadata> {
     ],
     apple: [{ url: "/pwa/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
-  openGraph: { title: site.defaultTitle, description: site.description, siteName: site.siteName, images: [site.ogImage ? { url: site.ogImage } : { url: "/logo.png", width: 819, height: 1024 }] },
+  alternates: { canonical: "/" },
+  openGraph: { title: site.defaultTitle, description: site.description, siteName: site.siteName, type: "website", url: "/", locale: "en_IN", images: [site.ogImage ? { url: site.ogImage } : { url: "/logo.png", width: 819, height: 1024 }] },
+  twitter: { card: "summary_large_image", title: site.defaultTitle, description: site.description, images: [site.ogImage || "/logo.png"] },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 } },
   };
 }
 
@@ -56,6 +65,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://cdn.sanity.io" />
+        {/* Google / Facebook read these JSON blocks to show the brand card, the site-wide search box, and link previews. */}
+        <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
       </head>
       <body className="min-h-dvh" suppressHydrationWarning>
         <StoreHydrator />

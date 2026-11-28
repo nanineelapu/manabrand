@@ -202,7 +202,7 @@ export const getWallet = async () => ({ balance: 500, history: [{ id: "w1", amou
 export const getWalletForCustomer = async (id: string) => (id ? getWallet() : getWallet());
 export const getDealBox = async () => normalizeDealBox(undefined);
 export const getSettings = async (): Promise<SettingsData> => ({
-  shipping: { freeAbove: 9999999, standardFee: 99, expressFee: 149, codFee: 40 }, payments: { upi: true, card: true, netbanking: true, cod: true, wallet: false },
+  shipping: { freeAbove: 9999999, standardFee: 49, expressFee: 149, codFee: 40 }, payments: { upi: true, card: true, netbanking: true, cod: true, wallet: false },
   commission: { default: 12 }, business: { name: "ManaBrand Pvt. Ltd.", supportEmail: "care@manabrand.in", supportPhone: "+91 831 765 8309", gstin: "27AABCM1234P1Z9" },
 });
 export const getSellerPromotions = async (): Promise<PromoRow[]> => [

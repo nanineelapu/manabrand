@@ -8,4 +8,4 @@ export const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
 export const isSupabaseConfigured = () =>
   Boolean(supabaseUrl && supabaseAnonKey && !supabaseUrl.includes("YOUR-PROJECT"));
 
-export const siteUrl = () => (process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000").replace(/\/$/, "");
+export const siteUrl = () => (process.env.NEXT_PUBLIC_SITE_URL?.trim() || (process.env.NODE_ENV === "production" ? "https://manabrand.co.in" : "http://localhost:3000")).replace(/\/$/, "");

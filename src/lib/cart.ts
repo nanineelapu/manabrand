@@ -3,7 +3,7 @@ import type { CouponLite, ProductLite } from "@/components/store/store-data";
 
 /** Free delivery by order value is switched off (the value is never reached). Keep in step with settings.shipping.freeAbove. */
 export const FREE_SHIPPING_AT = 9_999_999;
-export const SHIPPING_FEE = 99;
+export const SHIPPING_FEE = 49;
 export const COD_FEE = 40;
 
 export interface PricedLine extends CartLine { product: ProductLite; colorHex: string; lineTotal: number; lineMrp: number }

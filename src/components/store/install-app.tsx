@@ -52,8 +52,23 @@ export function useInstallApp() {
 export function RegisterServiceWorker() {
   useEffect(() => {
     if (process.env.NODE_ENV !== "production" || !("serviceWorker" in navigator)) return;
-    const reg = () => navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {});
-    if (document.readyState === "complete") reg(); else window.addEventListener("load", reg, { once: true });
+    const register = async () => {
+      try {
+        const reg = await navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" });
+        // on a new deploy: ask the new SW to take over at once, then reload so the installed app runs the new bundle
+        reg.addEventListener("updatefound", () => {
+          const sw = reg.installing;
+          if (!sw) return;
+          sw.addEventListener("statechange", () => {
+            if (sw.state === "installed" && navigator.serviceWorker.controller) sw.postMessage("skip-waiting");
+          });
+        });
+        let reloaded = false;
+        navigator.serviceWorker.addEventListener("controllerchange", () => { if (!reloaded) { reloaded = true; location.reload(); } });
+        reg.update().catch(() => {});
+      } catch { /* a blocked registration is not fatal — the site works without it */ }
+    };
+    if (document.readyState === "complete") register(); else window.addEventListener("load", register, { once: true });
   }, []);
   return null;
 }

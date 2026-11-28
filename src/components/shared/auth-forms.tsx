@@ -54,7 +54,16 @@ function useAuthSubmit() {
     setError(undefined); setFields({});
     start(async () => {
       const res = await fn();
-      if (res.ok) { toast.success(successMsg || "Welcome!"); router.replace(res.redirectTo); router.refresh(); }
+      if (res.ok) {
+        toast.success(successMsg || "Welcome!");
+        // a full reload is the one thing guaranteed to work on an installed PWA: the new session cookie is sent on
+        // the first request of the new page, the Next router cache is dropped, and any stale service-worker bundle is
+        // replaced. router.replace() + router.refresh() looks fine in the website browser but can keep the installed app
+        // on the pre-login render — the worker already has /account in memory. See public/sw.js for the SW side.
+        const asApp = typeof window !== "undefined" && (window.matchMedia("(display-mode: standalone)").matches || (navigator as { standalone?: boolean }).standalone === true);
+        if (asApp) { window.location.href = res.redirectTo; return; }
+        router.replace(res.redirectTo); router.refresh();
+      }
       else { setError(res.error); setFields(res.fieldErrors ?? {}); }
     });
   };

@@ -288,6 +288,17 @@ export async function confirmPayment(input: { orderId: string; rzpOrderId: strin
   });
 }
 
+/* ============================================================ wallet (read-only)
+ *  A tiny read-only lookup so the product page can show the "best price with your wallet" line without being made
+ *  dynamic. Signed-out visitors get 0. Never throws. */
+export async function getWalletBalance(): Promise<number> {
+  try {
+    const { getWallet } = await import("@/lib/data");
+    const w = await getWallet();
+    return Math.max(0, Math.floor(Number(w?.balance) || 0));
+  } catch { return 0; }
+}
+
 /* ============================================================ back-in-stock alerts */
 export async function subscribeStockAlert(input: { productId: string; size: string; email: string }): Promise<Result> {
   if (!live()) return demoResult();

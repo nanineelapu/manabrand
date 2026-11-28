@@ -705,7 +705,7 @@ export async function getSettings() {
   const rows = ok(await (await sb()).from("settings").select("key, value"), []) as { key: string; value: any }[];
   const m = Object.fromEntries(rows.map((r) => [r.key, r.value]));
   return {
-    shipping: { freeAbove: 9999999, standardFee: 99, expressFee: 149, codFee: 40, ...(m.shipping ?? {}) },
+    shipping: { freeAbove: 9999999, standardFee: 49, expressFee: 149, codFee: 40, ...(m.shipping ?? {}) },
     payments: { upi: true, card: true, netbanking: true, cod: true, wallet: false, ...(m.payments ?? {}) },
     commission: { default: 12, ...(m.commission ?? {}) },
     business: { name: "ManaBrand Pvt. Ltd.", supportEmail: "care@manabrand.in", supportPhone: "+91 831 765 8309", ...(m.business ?? {}) },

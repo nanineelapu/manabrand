@@ -8,13 +8,23 @@ import { BuyBox, ProductGallery, ProductSelection } from "@/components/store/pro
 import { ProductRail } from "@/components/store/product-card";
 import { ReviewsSection } from "@/components/store/reviews";
 import { getCategory, getProduct, getProductReviews, getPublicSellerById, getRelated, queryProducts, ratingBreakdown } from "@/lib/data";
+import { JsonLd, breadcrumbJsonLd, productJsonLd } from "@/lib/seo";
 
 export async function generateStaticParams() {
   try { return (await queryProducts({ pageSize: 500 })).items.map((p) => ({ slug: p.slug })); } catch { return []; }   // pages are then built on first visit
 }
 export async function generateMetadata({ params }: PageProps<"/product/[slug]">) {
   const p = await getProduct((await params).slug);
-  return p ? { title: p.seoTitle || p.name, description: p.seoDescription || p.description } : { title: "Product" };
+  if (!p) return { title: "Product" };
+  const url = `/product/${p.slug}`;
+  const img = p.images?.[0] || "/logo.png";
+  return {
+    title: p.seoTitle || p.name,
+    description: p.seoDescription || p.description,
+    alternates: { canonical: url },
+    openGraph: { type: "website", url, title: p.seoTitle || p.name, description: p.seoDescription || p.description, images: [{ url: img }] },
+    twitter: { card: "summary_large_image", title: p.seoTitle || p.name, description: p.seoDescription || p.description, images: [img] },
+  };
 }
 
 export default async function ProductPage({ params }: PageProps<"/product/[slug]">) {
@@ -31,6 +41,13 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
 
   return (
     <div className="container-page pb-20 pt-1.5 md:pb-6 md:pt-6">
+      {/* Google reads these blocks to show the product's price, availability and rating straight in the search result. */}
+      <JsonLd data={[productJsonLd(product, seller?.name ?? "ManaBrand"), breadcrumbJsonLd([
+        { name: "Home", path: "/" },
+        { name: catTitle(product.categorySlug, cat?.name), path: `/category/${product.categorySlug}` },
+        { name: product.subcategory, path: `/category/${product.categorySlug}?sub=${encodeURIComponent(product.subcategory)}` },
+        { name: product.name },
+      ])]} />
       <Breadcrumb items={[{ label: "Home", href: "/" }, { label: catTitle(product.categorySlug, cat?.name), href: `/category/${product.categorySlug}` }, { label: product.subcategory, href: `/category/${product.categorySlug}?sub=${encodeURIComponent(product.subcategory)}` }, { label: product.name }]} className="hidden md:block" />
 
       <ProductSelection product={product}>

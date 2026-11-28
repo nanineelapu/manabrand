@@ -61,7 +61,7 @@ function makeOrder(n: number, customerIdx: number, ageDays: number, status: Orde
   const subtotal = items.reduce((a, b) => a + b.price * b.qty, 0);
   const coupon = rnd() < 0.3;
   const discount = coupon ? Math.min(500, Math.round(subtotal * 0.1)) : 0;
-  const shipping = 99;
+  const shipping = 49;
   const total = subtotal - discount + shipping;
   const created = MOCK_NOW - ageDays * DAY - Math.floor(rnd() * 12) * 3600000;
   const method = pick(methods);
