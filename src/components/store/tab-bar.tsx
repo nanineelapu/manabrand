@@ -35,8 +35,9 @@ export function MobileTabBar() {
   const wish = useWishlist((s) => s.ids.length);
   const app = useInstallApp();
   const [help, setHelp] = useState(false);
-  // the 4th slot is "Install" until the app is installed, then it becomes the Bag again (the header always has a Bag button too)
-  const showInstall = mounted ? !app.installed : true;
+  // The 4th slot is "Install" only when the browser can really install the app (or on iPhone, where the Share-sheet steps
+  // are the one honest path). Everywhere else it is the Bag, so taps never lead to an instruction wall.
+  const showInstall = mounted && app.available;
   if (hideOn.some((r) => r.test(pathname))) return null;
   const current = tabs.findIndex((t) => t.match(pathname));
 
@@ -69,7 +70,7 @@ export function MobileTabBar() {
           if (label === "Bag" && showInstall) {
             return (
               <li key="install" className="relative">
-                <button type="button" aria-label="Install the ManaBrand app" onClick={() => (app.canPrompt ? app.install() : setHelp(true))}
+                <button type="button" aria-label="Install the ManaBrand app" onClick={() => (app.canPrompt ? app.install() : app.needsIOSSteps ? setHelp(true) : null)}
                   className="flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-[26px] text-[11px] font-semibold tracking-tight text-black/70 transition-colors active:scale-95">
                   <Download className="size-[22px]" strokeWidth={1.9} />
                   Install

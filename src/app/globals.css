@@ -263,6 +263,10 @@ body {
   overscroll-behavior-y: none;
 }
 
+/* Browser-level smooth scrolling. Covers wheel, keyboard arrows, and any in-page link to a #section.
+ * This is native, so there is no JS loop or FPS cost on phones, and it respects prefers-reduced-motion. */
+html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+
 /* Each surface paints its own mesh behind the glass. */
 [data-surface] { background: var(--mesh); background-attachment: fixed; }
 
