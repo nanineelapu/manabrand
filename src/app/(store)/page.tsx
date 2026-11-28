@@ -4,6 +4,7 @@ import { PopularCategories } from "@/components/store/popular-categories";
 import { ManaDealBox } from "@/components/store/mana-deal-box";
 import { WhySection } from "@/components/store/why-section";
 import { SellOnMana } from "@/components/store/sell-on-mana";
+import { homeMeta, pageMeta } from "@/lib/seo";
 import { ArrowUpRight } from "lucide-react";
 import { ProductImage } from "@/components/brand/product-image";
 import { SectionHeader } from "@/components/ui/display";
@@ -12,9 +13,11 @@ import { getHomeContent, getSiteContent } from "@/lib/cms";
 import { getCategories, getDealBox, getNewArrivals, getTrending, queryProducts } from "@/lib/data";
 import { GROUPS, groupOf } from "@/lib/fashion";
 
-/** Home tab title comes from the CMS (Site settings → Home page title). */
+/** Home page metadata. Title and description come from the CMS when set; otherwise the honest defaults from pageMeta. */
 export async function generateMetadata() {
-  return { title: { absolute: (await getSiteContent()).defaultTitle } };
+  const site = await getSiteContent();
+  const base = homeMeta();
+  return pageMeta({ ...base, title: site.defaultTitle, description: site.description || base.description, rawTitle: true });
 }
 
 const PROMOS = [

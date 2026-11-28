@@ -9,9 +9,12 @@ import { formatDate, formatNumber } from "@/lib/utils";
 export async function generateStaticParams() {
   return (await getActiveSellers()).map((s) => ({ slug: s.slug }));
 }
+import { pageMeta, sellerMeta } from "@/lib/seo";
+
 export async function generateMetadata({ params }: PageProps<"/sellers/[slug]">) {
   const s = await getSellerBySlug((await params).slug);
-  return { title: s?.name ?? "Maker" };
+  if (!s) return pageMeta({ title: "Seller not found", description: "This seller does not exist on ManaBrand.", path: `/sellers/${(await params).slug}`, noindex: true });
+  return pageMeta(sellerMeta({ name: s.name, slug: s.slug, blurb: s.blurb }));
 }
 
 export default async function SellerPage({ params, searchParams }: PageProps<"/sellers/[slug]">) {

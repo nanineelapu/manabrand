@@ -1,7 +1,8 @@
 import { ListingView } from "@/components/store/listing-view";
 import { parseListingParams } from "@/lib/listing";
 
-export const metadata = { title: "Sale" };
+import { pageMeta, saleMeta } from "@/lib/seo";
+export const metadata = pageMeta(saleMeta());
 
 export default async function SalePage({ searchParams }: PageProps<"/sale">) {
   const sp = await searchParams;

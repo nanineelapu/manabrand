@@ -79,6 +79,22 @@ export function Footer({ site, nav }: { site: CmsSite; nav: CmsNav }) {
           </div>
         </div>
 
+        {/* Local pages — small crawlable links so Google and shoppers reach the city-serving pages. */}
+        <nav aria-label="Serving" className="border-t border-white/10 py-3 text-[11px] leading-relaxed text-white/45 md:py-4 md:text-xs">
+          <span className="font-semibold uppercase tracking-[0.2em] text-white/60">Serving</span>{" "}
+          <Link href="/local/fashion-stores-ichapuram" className="hover:text-white">Fashion in Ichapuram</Link>
+          {" · "}
+          <Link href="/local/online-clothing-srikakulam" className="hover:text-white">Online clothing in Srikakulam</Link>
+          {" · "}
+          <Link href="/local/saree-shop-ichapuram" className="hover:text-white">Saree shop Ichapuram</Link>
+          {" · "}
+          <Link href="/local/mens-shirts-srikakulam" className="hover:text-white">Men&rsquo;s shirts Srikakulam</Link>
+          {" · "}
+          <Link href="/local/womens-dresses-ichapuram" className="hover:text-white">Women&rsquo;s dresses Ichapuram</Link>
+          {" · "}
+          <Link href="/local/mens-jeans-delivery-srikakulam" className="hover:text-white">Men&rsquo;s jeans Srikakulam</Link>
+        </nav>
+
         <div className="flex flex-col gap-1.5 border-t border-white/10 py-3 text-[11px] text-white/45 md:py-4 md:text-xs md:flex-row md:items-center md:justify-between">
           <p>{site.copyright}</p>
           {site.madeIn && <p className="font-semibold uppercase tracking-[0.2em]">{site.madeIn}</p>}

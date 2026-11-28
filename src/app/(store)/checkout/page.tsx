@@ -5,7 +5,8 @@ import { getMyAddresses, getWallet } from "@/lib/data";
 import { getSessionProfile } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
-export const metadata = { title: "Checkout" };
+import { pageMeta, privateMeta } from "@/lib/seo";
+export const metadata = pageMeta(privateMeta("Checkout", "/checkout"));
 
 export default async function CheckoutPage({ searchParams }: PageProps<"/checkout">) {
   const sp = await searchParams;

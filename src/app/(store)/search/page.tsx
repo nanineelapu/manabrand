@@ -1,9 +1,13 @@
 import { ListingView } from "@/components/store/listing-view";
 import { parseListingParams } from "@/lib/listing";
 
+import { pageMeta, privateMeta } from "@/lib/seo";
+
+/** Search result pages are noindex: endless query variations would create thin duplicate pages. */
 export async function generateMetadata({ searchParams }: PageProps<"/search">) {
   const q = (await searchParams).q;
-  return { title: q ? `Results for “${Array.isArray(q) ? q[0] : q}”` : "Search" };
+  const term = Array.isArray(q) ? q[0] : q;
+  return pageMeta(privateMeta(term ? `Results for “${term}”` : "Search", term ? `/search?q=${encodeURIComponent(term)}` : "/search"));
 }
 
 export default async function SearchPage({ searchParams }: PageProps<"/search">) {

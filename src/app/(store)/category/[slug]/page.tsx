@@ -5,15 +5,19 @@ import { Breadcrumb } from "@/components/ui/display";
 import { getCategories, getCategory, getSubcategories } from "@/lib/data";
 import { GROUPS, catTitle, groupOf } from "@/lib/fashion";
 import { parseListingParams } from "@/lib/listing";
+import { JsonLd, breadcrumbJsonLd, categoryMeta, pageMeta } from "@/lib/seo";
 
 export async function generateStaticParams() {
   return (await getCategories()).map((c) => ({ slug: c.slug }));
 }
 
-export async function generateMetadata({ params }: PageProps<"/category/[slug]">) {
+export async function generateMetadata({ params, searchParams }: PageProps<"/category/[slug]">) {
   const { slug } = await params;
+  const sp = await searchParams;
   const c = await getCategory(slug);
-  return { title: c ? catTitle(c.slug, c.name) : "Category" };
+  if (!c) return pageMeta({ title: "Category not found", description: "This category does not exist on ManaBrand.", path: `/category/${slug}`, noindex: true });
+  const sub = typeof sp.sub === "string" ? sp.sub : Array.isArray(sp.sub) ? sp.sub[0] : undefined;
+  return pageMeta(categoryMeta({ name: catTitle(c.slug, c.name), slug: c.slug, sub, productCount: c.productCount }));
 }
 
 export default async function CategoryPage({ params, searchParams }: PageProps<"/category/[slug]">) {
@@ -42,7 +46,15 @@ export default async function CategoryPage({ params, searchParams }: PageProps<"
     );
   }
   return (
-    <ListingView title={title} subtitle={cat.tagline} basePath={`/category/${slug}`} crumbs={crumbs}
-      subs={await getSubcategories(slug)} query={{ ...parseListingParams(sp), category: slug }} searchParams={sp} />
+    <>
+      {/* Google reads these blocks to show the crumb trail directly under the search result. */}
+      <JsonLd data={breadcrumbJsonLd([
+        { name: "Home", path: "/" },
+        ...(group ? [{ name: group.name, path: `/${group.id}` }] : [{ name: "Shop", path: "/shop" }]),
+        { name: cat.name },
+      ])} />
+      <ListingView title={title} subtitle={cat.tagline} basePath={`/category/${slug}`} crumbs={crumbs}
+        subs={await getSubcategories(slug)} query={{ ...parseListingParams(sp), category: slug }} searchParams={sp} />
+    </>
   );
 }

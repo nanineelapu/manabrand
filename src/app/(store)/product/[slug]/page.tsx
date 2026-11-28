@@ -8,23 +8,19 @@ import { BuyBox, ProductGallery, ProductSelection } from "@/components/store/pro
 import { ProductRail } from "@/components/store/product-card";
 import { ReviewsSection } from "@/components/store/reviews";
 import { getCategory, getProduct, getProductReviews, getPublicSellerById, getRelated, queryProducts, ratingBreakdown } from "@/lib/data";
-import { JsonLd, breadcrumbJsonLd, productJsonLd } from "@/lib/seo";
+import { JsonLd, breadcrumbJsonLd, pageMeta, productJsonLd, productMeta } from "@/lib/seo";
 
 export async function generateStaticParams() {
   try { return (await queryProducts({ pageSize: 500 })).items.map((p) => ({ slug: p.slug })); } catch { return []; }   // pages are then built on first visit
 }
 export async function generateMetadata({ params }: PageProps<"/product/[slug]">) {
   const p = await getProduct((await params).slug);
-  if (!p) return { title: "Product" };
-  const url = `/product/${p.slug}`;
-  const img = p.images?.[0] || "/logo.png";
-  return {
-    title: p.seoTitle || p.name,
-    description: p.seoDescription || p.description,
-    alternates: { canonical: url },
-    openGraph: { type: "website", url, title: p.seoTitle || p.name, description: p.seoDescription || p.description, images: [{ url: img }] },
-    twitter: { card: "summary_large_image", title: p.seoTitle || p.name, description: p.seoDescription || p.description, images: [img] },
-  };
+  if (!p) return pageMeta({ title: "Product not found", description: "This product is no longer available on ManaBrand.", path: `/product/${(await params).slug}`, noindex: true });
+  const [cat, seller] = await Promise.all([getCategory(p.categorySlug), getPublicSellerById(p.sellerId)]);
+  return pageMeta(productMeta({
+    name: p.name, slug: p.slug, seoTitle: p.seoTitle, seoDescription: p.seoDescription, description: p.description,
+    price: p.price, image: p.images?.[0], sellerName: seller?.name, categoryName: cat ? catTitle(cat.slug, cat.name) : undefined,
+  }));
 }
 
 export default async function ProductPage({ params }: PageProps<"/product/[slug]">) {
