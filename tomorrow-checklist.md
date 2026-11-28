@@ -23,9 +23,10 @@ Open **Supabase → SQL Editor → New query**. For each file: open it in VS Cod
 - [ ] `…000012_new_user_trigger.sql`  (fixes "Database error creating new user" — run this BEFORE creating the admin)
 - [ ] `…000013_admin_read_addresses.sql`  (lets the admin see customers' saved addresses and towns)
 - [ ] `…000014_wallet.sql`  (customer wallet, ₹500 welcome credit, checkout balance deduction)
+- [ ] `…000015_wallet_tiers_exchange_only.sql`  (wallet tier by item value, exchanges-only rule, no refund on exchange)
 
 If a file says something "already exists", that's fine — go on to the next.
-If you already ran 0001–0008 earlier, you only need 0009 to 0014.
+If you already ran 0001–0008 earlier, you only need 0009 to 0015.
 
 Then load the fashion catalogue:
 
@@ -101,7 +102,7 @@ Full steps and test cards: `docs/PAYMENTS_SETUP.md`.
 - [ ] Settings → API Keys → generate. Copy Key Id + Key Secret.
 - [ ] Settings → Webhooks → add `https://manabrand.vercel.app/api/razorpay/webhook`, a secret you invent, events `payment.captured`, `order.paid`, `refund.processed`.
 - [ ] Vercel env vars: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `PAYMENT_MODE=live` → Redeploy.
-- [ ] Test with Razorpay's test card `4111 1111 1111 1111`, then refund it from Admin → Orders.
+- [ ] Test with Razorpay's test card `4111 1111 1111 1111`, then cancel that order (before it is packed) — the payment is reversed automatically.
 - [ ] When happy: switch Razorpay to Live Mode, put the live keys in Vercel, redeploy.
 
 Until this is done the site only offers Cash on delivery.
@@ -121,7 +122,7 @@ Until this is done the site only offers Cash on delivery.
 - [ ] Footwear is "coming soon" — add a Footwear category product when ready.
 - [ ] Deal Box: Admin → Deal Box → set hours, price, picked products.
 - [ ] Admin → Settings: delivery fees, payment methods, business details.
-- [ ] Returns wording on the Shipping & returns page and FAQ is a default (7-day returns) — confirm with the client.
+- [ ] Policy: ManaBrand has NO refunds — delivered items can only be exchanged within 7 days. Cancelling before packing reverses the payment (wallet money back to the wallet). Confirm the wording on Shipping & exchanges, FAQ and Terms with the client.
 - [ ] Shekar Studio's phone / email / GSTIN in the sample data are placeholders.
 
 ## 9. Test the whole flow once (before telling anyone)
@@ -130,10 +131,10 @@ Until this is done the site only offers Cash on delivery.
 - [ ] Add a product to the bag → the black "items in your bag" pill appears above the tab bar (phone).
 - [ ] Place a Cash-on-delivery order → confirmation email + order shows in Admin.
 - [ ] Admin: confirm → pack → ship → deliver → customer gets emails; print Invoice and Packing slip.
-- [ ] Customer: request a return, write a review with a photo → approve it in Admin → Reviews.
+- [ ] Customer: request an exchange, write a review with a photo → approve it in Admin → Reviews.
 - [ ] Sold-out size: "notify me" → add stock in Admin → Inventory → email arrives.
 - [ ] Contact form → message reaches the support inbox.
-- [ ] (After Razorpay) pay with the test card, refund it.
+- [ ] (After Razorpay) pay with the test card, then cancel the order and check the payment is reversed.
 
 ## 10. Safety
 

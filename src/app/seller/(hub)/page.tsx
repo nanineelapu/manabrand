@@ -28,7 +28,7 @@ export default async function SellerHome() {
     { href: "/seller/orders?status=placed", icon: ShoppingBag, n: d.toConfirm, label: "New orders", hint: "Confirm to start", tone: "bg-gold-100 text-gold-500" },
     { href: "/seller/orders?status=processing", icon: PackageOpen, n: d.toPack, label: "To pack", hint: "Ready to be packed", tone: "bg-info-bg text-info" },
     { href: "/seller/orders?status=processing", icon: Truck, n: d.toShip, label: "To ship", hint: "Awaiting pickup", tone: "bg-accent-soft text-accent-soft-fg" },
-    { href: "/seller/returns", icon: RotateCcw, n: d.returnsOpen, label: "Returns", hint: "Need your reply", tone: "bg-danger-bg text-danger" },
+    { href: "/seller/returns", icon: RotateCcw, n: d.returnsOpen, label: "Exchanges", hint: "Need your reply", tone: "bg-danger-bg text-danger" },
   ];
   const health = [
     { t: "Store profile complete", ok: Boolean(d.seller.blurb && d.seller.pickupAddress && d.seller.kyc === "verified") },

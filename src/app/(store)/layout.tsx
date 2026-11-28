@@ -10,6 +10,7 @@ import { SearchOverlay } from "@/components/store/search-overlay";
 import { StoreDataProvider, type CouponLite } from "@/components/store/store-data";
 import { MobileTabBar } from "@/components/store/tab-bar";
 import { ShopperSync } from "@/components/store/shopper-sync";
+import { CartGuard } from "@/components/store/cart-guard";
 import { WhatsAppButton } from "@/components/store/whatsapp-button";
 import { WelcomeWalletPopup } from "@/components/store/welcome-wallet-popup";
 import { getSessionProfile } from "@/lib/auth/session";
@@ -49,6 +50,7 @@ export default async function StoreLayout({ children }: LayoutProps<"/">) {
         <main id="main" className="flex-1">{children}</main>
         <CtaBand site={site} />
         <Footer site={site} nav={navContent} />
+        <CartGuard />
         <ShopperSync signedIn={session?.role === "customer"} />
         <MobileTabBar />
         <MobileMenu items={headerItems} quickLinks={navContent.mobileQuickLinks} />

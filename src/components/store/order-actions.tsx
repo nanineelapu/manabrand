@@ -22,7 +22,6 @@ export function OrderActions({ orderId, number, status, items = [] }: { orderId:
 
   const [returnOpen, setReturnOpen] = useState(false);
   const [retItem, setRetItem] = useState(items[0]?.itemId ?? "");
-  const [retType, setRetType] = useState<"return" | "exchange">("return");
   const [retReason, setRetReason] = useState("");
   const [retNote, setRetNote] = useState("");
   const [retErr, setRetErr] = useState("");
@@ -47,8 +46,9 @@ export function OrderActions({ orderId, number, status, items = [] }: { orderId:
   const submitReturn = async () => {
     if (!retItem) { setRetErr("Please select an item"); return; }
     if (!retReason) { setRetErr("Please choose a reason"); return; }
-    await act(() => requestReturn({ orderId, itemId: retItem, type: retType, reason: retReason, note: retNote }), {
-      success: `Return requested for ${number} — our team will arrange pickup`,
+    if (!retNote.trim()) { setRetErr("Tell us the size or colour you want instead."); return; }
+    await act(() => requestReturn({ orderId, itemId: retItem, reason: retReason, note: retNote }), {
+      success: `Exchange requested for ${number} — our team will arrange pickup`,
       onOk: () => { setRetDone(true); closeReturn(); },
     });
   };
@@ -58,15 +58,15 @@ export function OrderActions({ orderId, number, status, items = [] }: { orderId:
       <div className="flex flex-wrap gap-2.5">
         <Button variant="outline" onClick={() => toast.info("Invoice will be emailed to you")}><Download className="size-4" /> Invoice</Button>
         {canCancel && <Button variant="outline" onClick={() => setOpen(true)}><XCircle className="size-4" /> Cancel order</Button>}
-        {canReturn && <Button variant="outline" onClick={() => setReturnOpen(true)}><RotateCcw className="size-4" /> Request return / exchange</Button>}
+        {canReturn && <Button variant="outline" onClick={() => setReturnOpen(true)}><RotateCcw className="size-4" /> Request exchange</Button>}
         <Button href="/contact" variant="ghost"><LifeBuoy className="size-4" /> Need help?</Button>
       </div>
 
       {done && <p role="status" className="mt-3 bg-info-bg px-4 py-3 text-sm font-medium text-info">Order cancelled — we’ll email you the details.</p>}
-      {retDone && <p role="status" className="mt-3 bg-success-bg px-4 py-3 text-sm font-medium text-success">Return request submitted — our delivery team will contact you to arrange pickup.</p>}
+      {retDone && <p role="status" className="mt-3 bg-success-bg px-4 py-3 text-sm font-medium text-success">Exchange request submitted — our delivery team will contact you to collect the item and bring your replacement.</p>}
 
       {/* Cancel Order Sheet */}
-      <Sheet open={open} onClose={closeCancel} side="dialog" title="Cancel this order?" description="Your order will be cancelled. Any wallet credit used will be restored to your wallet."
+      <Sheet open={open} onClose={closeCancel} side="dialog" title="Cancel this order?" description="Your order will be cancelled. Wallet money you used goes back to your wallet, and any online payment is returned to the way you paid."
         footer={<div className="grid grid-cols-2 gap-2.5"><Button variant="outline" onClick={closeCancel}>Keep order</Button><Button variant="danger" loading={busy} onClick={submitCancel}>Cancel order</Button></div>}>
         <div className="space-y-4">
           <Field label="Reason" htmlFor="rs" error={err}><Select id="rs" value={reason} onChange={(e) => { setReason(e.target.value); setErr(""); }} invalid={!!err}><option value="">Select a reason</option>{cancelReasons.map((r) => <option key={r}>{r}</option>)}</Select></Field>
@@ -74,12 +74,12 @@ export function OrderActions({ orderId, number, status, items = [] }: { orderId:
         </div>
       </Sheet>
 
-      {/* Request Return / Exchange Sheet */}
-      <Sheet open={returnOpen} onClose={closeReturn} side="dialog" title="Request return or exchange" description="ManaBrand offers returns and exchanges within 7 days of delivery (no cash refunds). We arrange pickup from your delivery address."
-        footer={<div className="grid grid-cols-2 gap-2.5"><Button variant="outline" onClick={closeReturn}>Keep item</Button><Button loading={busy} onClick={submitReturn}>Submit request</Button></div>}>
+      {/* Request Exchange Sheet */}
+      <Sheet open={returnOpen} onClose={closeReturn} side="dialog" title="Request an exchange" description="ManaBrand offers exchanges only — no refunds. Swap for another size or colour within 7 days of delivery. We collect the item from your delivery address."
+        footer={<div className="grid grid-cols-2 gap-2.5"><Button variant="outline" onClick={closeReturn}>Keep item</Button><Button loading={busy} onClick={submitReturn}>Request exchange</Button></div>}>
         <div className="space-y-4">
           {items.length > 1 && (
-            <Field label="Item to return" htmlFor="ret-item">
+            <Field label="Item to exchange" htmlFor="ret-item">
               <Select id="ret-item" value={retItem} onChange={(e) => { setRetItem(e.target.value); setRetErr(""); }}>
                 {items.map((it) => (
                   <option key={it.itemId} value={it.itemId}>{it.name}</option>
@@ -87,20 +87,14 @@ export function OrderActions({ orderId, number, status, items = [] }: { orderId:
               </Select>
             </Field>
           )}
-          <Field label="Request type" htmlFor="ret-type">
-            <Select id="ret-type" value={retType} onChange={(e) => setRetType(e.target.value as "return" | "exchange")}>
-              <option value="return">Return (for store credit / replacement)</option>
-              <option value="exchange">Exchange (for different size or colour)</option>
-            </Select>
-          </Field>
           <Field label="Reason" htmlFor="ret-rs" error={retErr}>
             <Select id="ret-rs" value={retReason} onChange={(e) => { setRetReason(e.target.value); setRetErr(""); }} invalid={!!retErr}>
               <option value="">Select a reason</option>
               {returnReasons.map((r) => <option key={r}>{r}</option>)}
             </Select>
           </Field>
-          <Field label="Details / replacement size" htmlFor="ret-nt" optional hint="Specify size or colour if exchanging.">
-            <Textarea id="ret-nt" value={retNote} onChange={(e) => setRetNote(e.target.value)} placeholder="Tell us what size you need, or more details…" />
+          <Field label="Size / colour you want instead" htmlFor="ret-nt" hint="We will bring this as your replacement.">
+            <Textarea id="ret-nt" value={retNote} onChange={(e) => setRetNote(e.target.value)} placeholder="e.g. Size L, same colour" />
           </Field>
         </div>
       </Sheet>

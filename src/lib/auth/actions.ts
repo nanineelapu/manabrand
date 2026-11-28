@@ -63,7 +63,7 @@ export async function registerCustomer(input: {
     return { ok: false, error: signUpErrorMessage(error) };
   }
 
-  // Dual-layer guarantee: grant ₹500 welcome credit immediately
+  // The database trigger already grants the welcome credit; this is a safety net (one welcome row per customer is enforced by a unique index, so it can never double up)
   if (newUser?.user?.id) {
     try {
       await admin.from("wallet_transactions").insert({

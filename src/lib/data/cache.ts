@@ -9,6 +9,9 @@ const pendingFetches = new Map<string, Promise<unknown>>();
 /**
  * In-memory TTL cache with concurrent promise deduplication.
  * Eliminates redundant Supabase queries during navigation and layout prefetching.
+ * It lives inside ONE server instance: on Vercel every instance has its own copy, so an admin edit clears the copy that
+ * handled the edit straight away and the others catch up when their TTL (30–60 s) runs out. Public data only — never
+ * put anything user-specific in here.
  */
 export async function withMemoryCache<T>(key: string, ttlMs: number, fetcher: () => Promise<T>): Promise<T> {
   const now = Date.now();

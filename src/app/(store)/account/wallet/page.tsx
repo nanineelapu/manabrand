@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { ArrowDownLeft, ArrowUpRight, Gift, RotateCcw, SlidersHorizontal, Wallet } from "lucide-react";
 import { getWallet } from "@/lib/data";
-import { WELCOME_CREDIT } from "@/lib/wallet";
+import { WALLET_TIERS, WELCOME_CREDIT } from "@/lib/wallet";
 import { formatDateTime, formatINR } from "@/lib/utils";
 
 export const metadata = { title: "My wallet" };
 
-const KIND = { welcome: { icon: Gift, label: "Welcome gift" }, order: { icon: ArrowUpRight, label: "Used on an order" }, refund: { icon: RotateCcw, label: "Refund" }, adjust: { icon: SlidersHorizontal, label: "Adjustment" } } as const;
+const KIND = { welcome: { icon: Gift, label: "Welcome gift" }, order: { icon: ArrowUpRight, label: "Used on an order" }, refund: { icon: RotateCcw, label: "Restored (order cancelled)" }, adjust: { icon: SlidersHorizontal, label: "Adjustment" } } as const;
 
 export default async function WalletPage() {
   const { balance, history } = await getWallet();
@@ -21,24 +21,14 @@ export default async function WalletPage() {
 
       <section className="rounded-3xl border border-line bg-card p-5 shadow-card md:p-6">
         <h2 className="font-display text-lg font-semibold">How to use your wallet</h2>
-        <p className="mt-1 text-xs text-muted">Wallet credits apply automatically at checkout based on your order total:</p>
+        <p className="mt-1 text-xs text-muted">Wallet money applies automatically at checkout, based on the value of the items in your bag (delivery fee not counted):</p>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-2xl border border-line bg-bg-subtle p-3.5 text-center">
-            <p className="text-xs text-muted">Orders &gt; ₹999</p>
-            <p className="mt-1 font-semibold text-accent">Use up to ₹200</p>
-          </div>
-          <div className="rounded-2xl border border-line bg-bg-subtle p-3.5 text-center">
-            <p className="text-xs text-muted">Orders &gt; ₹1,499</p>
-            <p className="mt-1 font-semibold text-accent">Use up to ₹250</p>
-          </div>
-          <div className="rounded-2xl border border-line bg-bg-subtle p-3.5 text-center">
-            <p className="text-xs text-muted">Orders &gt; ₹1,999</p>
-            <p className="mt-1 font-semibold text-accent">Use up to ₹300</p>
-          </div>
-          <div className="rounded-2xl border border-line bg-bg-subtle p-3.5 text-center">
-            <p className="text-xs text-muted">Orders &gt; ₹2,499</p>
-            <p className="mt-1 font-semibold text-accent">Use up to ₹350</p>
-          </div>
+          {[...WALLET_TIERS].reverse().map((t) => (
+            <div key={t.minOrder} className="rounded-2xl border border-line bg-bg-subtle p-3.5 text-center">
+              <p className="text-xs text-muted">Items worth {formatINR(t.minOrder)}+</p>
+              <p className="mt-1 font-semibold text-accent">Use up to {formatINR(t.maxWallet)}</p>
+            </div>
+          ))}
         </div>
       </section>
 

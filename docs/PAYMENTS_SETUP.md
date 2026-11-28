@@ -37,5 +37,5 @@ Vercel's free plan allows daily jobs; hourly needs the Pro plan. Emails need Res
 ## 5. Review photos
 Customers can attach up to 3 photos (JPG/PNG/WebP, 4 MB each) when reviewing a product they received. Photos are stored in the `review-images` bucket, each customer in their own folder, and show on the review once it is approved.
 
-## 6. Returns
-Returns and exchanges are accepted within **7 days of delivery** (the database enforces the 7 days). The wording on the Shipping & returns page and FAQ is a sensible default — change it in Sanity → Pages, or ask for it to be edited, if the client's policy differs.
+## 6. Exchanges (no refunds)
+ManaBrand has **no refund policy**. A delivered item can only be **exchanged**, within **7 days of delivery** (the database enforces the 7 days and refuses anything but an exchange). Completing an exchange never touches the payment. The only money that goes back is for an order **cancelled before it is packed**: wallet money returns to the wallet and an online payment is reversed through Razorpay automatically. The wording on the Shipping & exchanges page, FAQ and Terms is a sensible default - confirm it with the client.

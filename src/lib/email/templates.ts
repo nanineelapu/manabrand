@@ -93,16 +93,16 @@ export const orderStatusEmail = (o: { name: string; number: string; status: stri
 };
 
 const RETURN_COPY: Record<string, string> = {
-  approved: "Your request has been approved. We will arrange the pickup shortly.",
-  picked_up: "We have picked up your item and it is on its way back to the seller.",
-  refunded: "Your return has been received and processed successfully.",
-  rejected: "We could not approve this request. Write to us if you would like us to look at it again.",
+  approved: "Your exchange request has been approved. We will arrange the pickup shortly.",
+  picked_up: "We have picked up your item. Your replacement is on its way.",
+  refunded: "Your exchange is complete. Thank you for shopping with ManaBrand.",
+  rejected: "We could not approve this exchange request. Write to us if you would like us to look at it again.",
 };
 export const returnUpdateEmail = (o: { name: string; number: string; status: string; siteUrl: string }): Mail | null => {
   const t = RETURN_COPY[o.status]; if (!t) return null;
-  return mail(`Update on your return for order ${o.number}`, layout({
-    title: "Return update", preheader: t, siteUrl: o.siteUrl, reason: "You are receiving this because you asked for a return on ManaBrand.",
-    body: h("An update on your return") + p(`Hi ${esc(o.name.split(" ")[0])}, ${t}`) + p(`Order number: <b>${esc(o.number)}</b>`) + button(`${o.siteUrl}/account/returns`, "See your returns"),
+  return mail(`Update on your exchange for order ${o.number}`, layout({
+    title: "Exchange update", preheader: t, siteUrl: o.siteUrl, reason: "You are receiving this because you asked for an exchange on ManaBrand.",
+    body: h("An update on your exchange") + p(`Hi ${esc(o.name.split(" ")[0])}, ${t}`) + p(`Order number: <b>${esc(o.number)}</b>`) + button(`${o.siteUrl}/account/orders`, "See your orders"),
   }));
 };
 

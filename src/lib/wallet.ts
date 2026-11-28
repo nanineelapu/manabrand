@@ -2,12 +2,9 @@
 export const WELCOME_CREDIT = 500;
 
 /**
- * Conditional wallet usage tiers based on order total:
- *  - Above ₹2,499: max ₹350
- *  - Above ₹1,999: max ₹300
- *  - Above ₹1,499: max ₹250
- *  - Above ₹999:   max ₹200
- *  - Below ₹999:   ₹0 (minimum order of ₹999 required to use wallet credits)
+ * How much wallet money one order can use, by the value of the ITEMS in it (after coupons — delivery and COD fees
+ * don't count). Keep in step with place_order_wallet() in migration 0015.
+ *   ₹999+ → ₹200 · ₹1,499+ → ₹250 · ₹1,999+ → ₹300 · ₹2,499+ → ₹350 · below ₹999 → none
  */
 export const WALLET_TIERS = [
   { minOrder: 2499, maxWallet: 350 },
@@ -18,21 +15,22 @@ export const WALLET_TIERS = [
 
 export const MIN_WALLET_ORDER = 999;
 
-/** Calculate the maximum wallet credit that can be applied to an order of this total */
-export function maxWalletForOrder(orderTotal: number): number {
-  const total = Math.floor(Number(orderTotal) || 0);
-  for (const tier of WALLET_TIERS) {
-    if (total >= tier.minOrder) {
-      return tier.maxWallet;
-    }
-  }
+/** The most wallet money an order can use, from the value of its items. */
+export function maxWalletForOrder(itemsValue: number): number {
+  const v = Math.floor(Number(itemsValue) || 0);
+  for (const tier of WALLET_TIERS) if (v >= tier.minOrder) return tier.maxWallet;
   return 0;
 }
 
-/** How much of the wallet can pay for this order: subject to order tiers, balance, and order total. */
-export function walletToUse(balance: number, orderTotal: number): number {
+/** How much wallet money will pay for this order: limited by the tier, the balance and what is left to pay. */
+export function walletToUse(balance: number, itemsValue: number, payable: number): number {
   const bal = Math.max(0, Math.floor(Number(balance) || 0));
-  const tot = Math.max(0, Math.floor(Number(orderTotal) || 0));
-  const maxAllowed = maxWalletForOrder(tot);
-  return Math.min(bal, maxAllowed, tot);
+  const pay = Math.max(0, Math.floor(Number(payable) || 0));
+  return Math.min(bal, maxWalletForOrder(itemsValue), pay);
+}
+
+/** The next tier up from this item value (to tell the shopper "add ₹X more to use up to ₹Y"), or null at the top. */
+export function nextWalletTier(itemsValue: number) {
+  const v = Math.floor(Number(itemsValue) || 0);
+  return [...WALLET_TIERS].reverse().find((t) => t.minOrder > v) ?? null;
 }

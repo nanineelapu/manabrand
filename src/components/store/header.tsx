@@ -7,7 +7,8 @@ import { ChevronDown, Heart, Menu, Search, ShoppingBag, User } from "lucide-reac
 import { Logo, LogoImage } from "@/components/brand/logo";
 import { IconButton } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/sheet";
-import { useCart, useUi, useWishlist } from "@/lib/stores";
+import { useUi, useWishlist } from "@/lib/stores";
+import { useBagCount } from "./store-data";
 import { useMounted } from "@/lib/stores/hydrate";
 import { cn } from "@/lib/utils";
 import type { CmsLink, HeaderItem } from "@/lib/cms/types";
@@ -21,7 +22,7 @@ export function StoreHeader({ items, accountLabel = "Account" }: Props) {
   const mounted = useMounted();
   const pathname = usePathname();
   const { setMenu, setSearch } = useUi();
-  const bag = useCart((s) => s.lines.reduce((a, l) => a + l.qty, 0));
+  const bag = useBagCount();
   const wish = useWishlist((s) => s.ids.length);
 
   useEffect(() => {

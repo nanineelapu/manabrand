@@ -5,18 +5,19 @@ import { Check, Tag, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/form";
 import { priceCart, COD_FEE } from "@/lib/cart";
-import { toast, useCart } from "@/lib/stores";
+import { toast } from "@/lib/stores";
 import { cn, formatINR } from "@/lib/utils";
+import { useLinesSource } from "./checkout-lines";
 import { useStoreData } from "./store-data";
 
 export function useCartPricing() {
-  const { lines, coupon } = useCart();
+  const { lines, coupon } = useLinesSource();
   const { byId, coupons } = useStoreData();
   return priceCart(lines, byId, coupons, coupon);
 }
 
 export function CouponBox() {
-  const { coupon, applyCoupon } = useCart();
+  const { coupon, applyCoupon } = useLinesSource();
   const { coupons } = useStoreData();
   const cart = useCartPricing();
   const [code, setCode] = useState(""); const [err, setErr] = useState("");

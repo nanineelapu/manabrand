@@ -166,7 +166,7 @@ function WelcomeWalletPopupInner({
           <div className="relative mx-auto my-4 grid size-20 place-items-center rounded-full bg-gradient-to-tr from-[#e0247a] to-[#ff6ea7] text-white shadow-[0_10px_28px_rgba(224,36,122,0.38)]">
             <Wallet className="size-10" />
             <span className="absolute -bottom-1.5 -right-1.5 flex items-center gap-0.5 rounded-full bg-[#1f8a5f] px-2 py-0.5 text-[11px] font-black tracking-wide text-white shadow-md">
-              <Gift className="size-3" /> +₹500
+              <Gift className="size-3" /> +{formatINR(WELCOME_CREDIT)}
             </span>
           </div>
 
@@ -174,11 +174,11 @@ function WelcomeWalletPopupInner({
             id="welcome-wallet-title"
             className="font-display text-2xl font-bold tracking-tight text-neutral-900 sm:text-[28px]"
           >
-            Yay! You got ₹500 in your wallet 🎉
+            Yay! You got {formatINR(WELCOME_CREDIT)} in your wallet 🎉
           </h2>
 
           <p className="mt-2 text-sm leading-relaxed text-neutral-600">
-            Welcome to ManaBrand{data.name ? `, ${data.name}` : ""}! Your ₹500 signup gift has been credited to your wallet and is ready to use.
+            Welcome to ManaBrand{data.name ? `, ${data.name}` : ""}! Your {formatINR(WELCOME_CREDIT)} signup gift has been credited to your wallet and is ready to use.
           </p>
         </div>
 
@@ -199,7 +199,7 @@ function WelcomeWalletPopupInner({
                 <Check className="size-2.5" strokeWidth={3} />
               </span>
               <span>
-                Applied <b>automatically at checkout</b> on orders above ₹999.
+                Applied <b>automatically at checkout</b> on items worth ₹999 or more — ₹200 to ₹350 off per order.
               </span>
             </div>
             <div className="flex items-start gap-2">

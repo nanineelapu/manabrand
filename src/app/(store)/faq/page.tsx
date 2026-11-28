@@ -14,7 +14,7 @@ const groups = [
   { title: "Orders & delivery", qs: [
     ["How long does delivery take?", "Every order is delivered within 48 hours of being placed."],
     ["How much is shipping?", "Orders are delivered within 48 hours. Any delivery charge is shown at checkout before you pay."],
-    ["Can I return or exchange an item?", "Yes — within 7 days of delivery, if it is unworn and unwashed with tags. Open the order in My orders and tap Request return / exchange; our delivery team arranges pickup. ManaBrand offers returns and exchanges only (no cash or bank refunds)."],
+    ["Can I exchange an item?", "ManaBrand has no refund policy — we offer exchanges only. Within 7 days of delivery you can swap an unworn, unwashed item with tags for another size or colour. Open the order in My orders and tap Request exchange; our delivery team collects the item and brings your replacement."],
     ["Can I change my address after ordering?", "You can change the address until the order is packed. Open the order in My orders or contact support."],
   ]},
   { title: "Payments", qs: [

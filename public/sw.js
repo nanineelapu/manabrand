@@ -3,9 +3,9 @@
  *    if the network is down, a friendly /offline page is shown instead.
  *  - Built files (JS / CSS / fonts), icons and the logo are cached for fast repeat loads.
  *  - Nothing private is ever stored: no API calls, no sign-in, no admin / seller pages, no POSTs. */
-const VERSION = "mana-v1";
+const VERSION = "mana-v2";
 const STATIC = `${VERSION}-static`;
-const SHELL = ["/offline", "/logo.png", "/logo-dark.png", "/favicon/android-chrome-192x192.png", "/favicon/android-chrome-512x512.png"];
+const SHELL = ["/offline", "/logo.png", "/logo-dark.png", "/pwa/icon-192.png", "/pwa/icon-512.png"];
 const NEVER = [/^\/api\//, /^\/auth\//, /^\/studio/, /^\/admin/, /^\/seller\//, /^\/seller$/, /^\/account/, /^\/checkout/, /^\/login/, /^\/register/, /^\/reset-pin/, /^\/forgot-password/];
 
 self.addEventListener("install", (e) => {
@@ -32,7 +32,7 @@ self.addEventListener("fetch", (e) => {
   }
 
   // built assets + icons: cache first (they are fingerprinted, so a new deploy gets new URLs)
-  if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/favicon/") || url.pathname === "/logo.png" || url.pathname === "/logo-dark.png") {
+  if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/favicon/") || url.pathname.startsWith("/pwa/") || url.pathname === "/logo.png" || url.pathname === "/logo-dark.png") {
     e.respondWith(
       caches.match(req).then((hit) => hit || fetch(req).then((res) => {
         if (res.ok) { const copy = res.clone(); caches.open(STATIC).then((c) => c.put(req, copy)); }

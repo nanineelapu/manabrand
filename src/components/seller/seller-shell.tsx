@@ -47,7 +47,7 @@ export function SellerShell({ notifications, badges, seller, children }: { notif
         { href: "/seller/orders", label: "Orders", icon: ShoppingBag, badge: badges.orders },
         { href: "/seller/products", label: "Products", icon: Package },
         ...(show("manage_inventory") ? [{ href: "/seller/inventory", label: "Inventory", icon: Boxes }] : []),
-        { href: "/seller/returns", label: "Returns", icon: RotateCcw, badge: badges.returns },
+        { href: "/seller/returns", label: "Exchanges", icon: RotateCcw, badge: badges.returns },
       ]},
       { label: "Grow", items: [
         ...(show("run_promotions") ? [{ href: "/seller/promotions", label: "Promotions", icon: Megaphone }] : []),

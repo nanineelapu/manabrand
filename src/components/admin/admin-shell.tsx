@@ -26,7 +26,7 @@ export function AdminShell({ notifications, badges, user, children }: { notifica
       { label: "Marketplace", items: [
         { href: "/admin/sellers", label: "Sellers", icon: Store, badge: badges.sellers },
         { href: "/admin/payouts", label: "Payouts", icon: Wallet },
-        { href: "/admin/returns", label: "Returns", icon: RotateCcw, badge: badges.returns },
+        { href: "/admin/returns", label: "Exchanges", icon: RotateCcw, badge: badges.returns },
         { href: "/admin/reviews", label: "Reviews", icon: MessageSquareWarning, badge: badges.reviews },
       ]},
       { label: "Marketing", items: [{ href: "/admin/coupons", label: "Coupons", icon: TicketPercent }, { href: "/admin/banners", label: "Banners", icon: ImageIcon }, { href: "/admin/deal-box", label: "Deal Box", icon: Gift }, { href: "/admin/content", label: "Site content", icon: PenSquare }] },

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Gift, Heart, ShoppingBag, Trash2, Wallet } from "lucide-react";
+import { Gift, Heart, ShoppingBag, Trash2 } from "lucide-react";
 import { ProductImage } from "@/components/brand/product-image";
 import { Button } from "@/components/ui/button";
 import { Breadcrumb, EmptyState } from "@/components/ui/display";
@@ -9,14 +9,18 @@ import { QuantityStepper } from "@/components/ui/form";
 import { toast, useCart, useWishlist } from "@/lib/stores";
 import { useMounted } from "@/lib/stores/hydrate";
 import { discountPct, formatINR } from "@/lib/utils";
+import { stockIssue } from "@/lib/cart";
+import { walletToUse } from "@/lib/wallet";
 import { CouponBox, PriceBreakdown, useCartPricing } from "./price-breakdown";
+import { WalletCard } from "./wallet-card";
 import { Skeleton } from "@/components/ui/display";
 
 export function CartView({ isGuest = false, walletBalance = 0 }: { isGuest?: boolean; walletBalance?: number }) {
   const mounted = useMounted();
   const cart = useCartPricing();
   // a line that cannot be fulfilled (sold out, or more than what is left) blocks checkout until fixed
-  const blocked = cart.lines.some((l) => { const have = l.product.stock?.[l.size]; return have !== undefined && l.qty > have; });
+  const blocked = cart.lines.some((l) => stockIssue(l)?.blocking);
+  const itemsValue = Math.max(0, cart.subtotal - cart.discount);   // the wallet tier follows what you buy, not delivery fees
   const { setQty, remove } = useCart();
   const wish = useWishlist();
 
@@ -57,7 +61,7 @@ export function CartView({ isGuest = false, walletBalance = 0 }: { isGuest?: boo
             </span>
             <div>
               <p className="text-sm font-semibold text-accent-soft-fg">Get ₹500 off with your wallet</p>
-              <p className="text-xs text-muted">Sign up today and get an instant ₹500 welcome gift in your wallet to use on orders above ₹999!</p>
+              <p className="text-xs text-muted">Sign up and get an instant ₹500 welcome gift in your wallet — use ₹200 to ₹350 on every order of ₹999 or more.</p>
             </div>
           </div>
           <Button href="/register?next=/checkout" size="sm" variant="outline" className="shrink-0 rounded-full bg-card hover:bg-bg-subtle">
@@ -78,10 +82,7 @@ export function CartView({ isGuest = false, walletBalance = 0 }: { isGuest?: boo
                     <p className="text-[11px] font-medium uppercase tracking-wide text-subtle">{l.product.sellerName}</p>
                     <Link href={`/product/${l.product.slug}`} className="line-clamp-2 text-[15px] font-medium leading-snug">{l.product.name}</Link>
                     <p className="mt-1 text-[13px] text-muted">{l.color} · Size {l.size}</p>
-                    {(() => { const have = l.product.stock?.[l.size]; return have === undefined ? null : have === 0
-                      ? <p role="alert" className="mt-1 text-[13px] font-semibold text-danger">Sold out in this size — remove it to continue.</p>
-                      : l.qty > have ? <p role="alert" className="mt-1 text-[13px] font-semibold text-danger">Only {have} left — lower the quantity to continue.</p>
-                      : have <= 3 ? <p className="mt-1 text-[13px] font-medium text-warning">Only {have} left</p> : null; })()}
+                    {(() => { const issue = stockIssue(l); return issue ? <p role={issue.blocking ? "alert" : undefined} className={issue.blocking ? "mt-1 text-[13px] font-semibold text-danger" : "mt-1 text-[13px] font-medium text-warning"}>{issue.text}</p> : null; })()}
                     <p className="mt-2 flex items-baseline gap-2 tabular">
                       <span className="font-semibold">{formatINR(l.product.price)}</span>
                       {off > 0 && <><span className="text-xs text-subtle line-through">{formatINR(l.product.mrp)}</span><span className="text-xs font-semibold text-success">{off}% off</span></>}
@@ -109,23 +110,7 @@ export function CartView({ isGuest = false, walletBalance = 0 }: { isGuest?: boo
           <section className="rounded-3xl border border-line bg-card p-5 shadow-card">
             <h2 className="mb-4 text-[15px] font-semibold">Price details</h2>
             <PriceBreakdown />
-            {walletBalance > 0 && (
-              <div className="mt-4 flex items-center gap-3 rounded-2xl border border-success/30 bg-success-bg p-3">
-                <span className="grid size-7 shrink-0 place-items-center rounded-full bg-success text-white">
-                  <Wallet className="size-3.5" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-success">{formatINR(walletBalance)} wallet balance available</p>
-                  <p className="text-[11px] text-muted">
-                    {cart.total >= 2499 ? `₹${Math.min(walletBalance, 350)} will be applied at checkout` :
-                     cart.total >= 1999 ? `₹${Math.min(walletBalance, 300)} will be applied at checkout` :
-                     cart.total >= 1499 ? `₹${Math.min(walletBalance, 250)} will be applied at checkout` :
-                     cart.total >= 999 ? `₹${Math.min(walletBalance, 200)} will be applied at checkout` :
-                     `Add ${formatINR(999 - cart.total)} more to use ₹200 from wallet`}
-                  </p>
-                </div>
-              </div>
-            )}
+            {walletBalance > 0 && <div className="mt-4"><WalletCard balance={walletBalance} itemsValue={itemsValue} canUse={walletToUse(walletBalance, itemsValue, cart.total)} /></div>}
             {blocked ? <Button size="lg" full disabled className="mt-5 hidden rounded-full lg:inline-flex">Fix your bag to continue</Button> : <Button href="/checkout" size="lg" full className="mt-5 hidden rounded-full lg:inline-flex">Proceed to checkout</Button>}
           </section>
         </aside>

@@ -372,6 +372,7 @@ export async function getCurrentCustomer(): Promise<Customer> {
   const res = await db.from("profiles").select("*").eq("id", me).maybeSingle();
   const p = res.data as any;
   if (!p) {
+    console.warn("[profile] no profiles row for", me, "- is migration 0012 (new-user trigger) applied?");
     const { data: authData } = await db.auth.getUser();
     const u = authData.user;
     return {

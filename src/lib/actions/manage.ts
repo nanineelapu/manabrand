@@ -9,7 +9,6 @@ import { clampStr, demoResult, fail, guarded, isUuid, live, slugify, type Result
 import { lockoutStatus, recordAttempt, clientIp } from "@/lib/auth/throttle";
 import { DEFAULT_PERMISSIONS, mergePermissions } from "@/lib/permissions";
 import { sendEmail, SUPPORT_EMAIL } from "@/lib/email/send";
-import { refundOrderIfPaid } from "@/lib/payments/refund";
 import { adminMessageEmail } from "@/lib/email/templates";
 import { siteUrl } from "@/lib/supabase/env";
 import { notifyRestock, notifyReturnStatus, notifySellerApplied, notifySellerDecision, notifyOrderStatus } from "@/lib/email/notify";
@@ -48,16 +47,6 @@ export async function addOrderNote(orderId: string, body: string): Promise<Resul
     const { error } = await (await createClient()).from("order_notes").insert({ order_id: orderId, author_id: actor.id, body: text });
     if (error) throw new Error(error.message);
     return { ok: true };
-  });
-}
-/** Admin: refund an online-paid order to the customer's original payment method (Razorpay). */
-export async function refundOrderPayment(orderId: string): Promise<Result> {
-  return guarded(["admin"], async () => {
-    if (!isUuid(orderId)) return { ok: false, error: "Order not found." };
-    const r = await refundOrderIfPaid(orderId);
-    if (!r.ok) return { ok: false, error: r.error ?? "The refund could not be processed." };
-    if (!r.refunded) return { ok: false, error: "This order wasn’t paid online, so there is nothing to refund through the gateway." };
-    bust("/admin", "/account"); return { ok: true };
   });
 }
 /** Own delivery: the person delivering and an optional tracking / reference number, typed in by hand. */

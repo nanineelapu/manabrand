@@ -35,3 +35,13 @@ export function priceCart(lines: CartLine[], byId: Map<string, ProductLite>, cou
   };
 }
 
+
+/** What is wrong (or tight) with a bag line: sold out / too many blocks checkout; "only 2 left" is a nudge. */
+export function stockIssue(l: PricedLine): { blocking: boolean; text: string } | null {
+  const have = l.product.stock?.[l.size];
+  if (have === undefined) return null;
+  if (have === 0) return { blocking: true, text: "Sold out in this size — remove it to continue." };
+  if (l.qty > have) return { blocking: true, text: `Only ${have} left — lower the quantity to continue.` };
+  if (have <= 3) return { blocking: false, text: `Only ${have} left` };
+  return null;
+}

@@ -226,14 +226,14 @@ async function main() {
   const before = await bal();
   await as("authenticated", shopper);
 
-  // Under ₹999: order total 599 + 99 + 40 = 738 (< 999) -> wallet use is 0
+  // Items worth under ₹999 (599) -> wallet use is 0
   const under = (await one<{ order_id: string; order_number: string; total: number }>(`select * from place_order_wallet($1::jsonb, $2::jsonb, 'cod'::payment_method, null, false, 200)`, [JSON.stringify([{ product_id: A.id, option_value: A.v, qty: 1 }]), JSON.stringify(ADDR)]))[0];
   ok("wallet cannot be used on orders under ₹999", under.total === A.price + 99 + 40 && (await one<{ w: number }>(`select wallet_used w from orders where id = $1`, [under.order_id]))[0].w === 0);
 
-  // In ₹999 tier: 2 items of A (2 * 599 = 1198, total = 1198 + 99 + 40 = 1337) -> capped at 200
+  // Items worth 1198 (the ₹999 tier) -> capped at 200
   const orderTotal999 = A.price * 2 + 99 + 40;
   const wl = (await one<{ order_id: string; order_number: string; total: number }>(`select * from place_order_wallet($1::jsonb, $2::jsonb, 'cod'::payment_method, null, false, 300)`, [JSON.stringify([{ product_id: A.id, option_value: A.v, qty: 2 }]), JSON.stringify(ADDR)]))[0];
-  ok("wallet lowers the order total by tiered cap (max 200 above 999)", wl.total === orderTotal999 - 200, `(got ${wl.total}, expected ${orderTotal999 - 200})`);
+  ok("wallet lowers the order total by the tier cap (max 200 from ₹999 of items)", wl.total === orderTotal999 - 200, `(got ${wl.total}, expected ${orderTotal999 - 200})`);
   await as("postgres");
   ok("the spend is recorded in the ledger and on the order", (await bal()) === before - 200 && (await one<{ w: number }>(`select wallet_used w from orders where id = $1`, [wl.order_id]))[0].w === 200);
   await as("authenticated", shopper);
@@ -288,21 +288,23 @@ async function main() {
   const itemId = (await one<{ id: string }>(`select id from order_items where order_id=$1 limit 1`, [o2.order_id]))[0].id;
   void item2;
   await as("authenticated", other2);
-  await mustFail("a different customer cannot return it", () => db.query(`select request_return($1,$2,'return','Wrong size')`, [o2.order_id, itemId]), /Order not found/);
+  await mustFail("a different customer cannot return it", () => db.query(`select request_return($1,$2,'exchange','Wrong size')`, [o2.order_id, itemId]), /Order not found/);
   await as("authenticated", buyer);
-  await mustFail("return needs a reason", () => db.query(`select request_return($1,$2,'return','  ')`, [o2.order_id, itemId]), /reason/);
-  const ret = (await one<{ request_return: string }>(`select request_return($1,$2,'return','Wrong size')`, [o2.order_id, itemId]))[0].request_return;
-  ok("delivered order: return request created", !!ret);
-  await mustFail("duplicate return for the same item blocked", () => db.query(`select request_return($1,$2,'return','Again')`, [o2.order_id, itemId]), /already open/);
+  await mustFail("a refund or plain return is refused — exchanges only", () => db.query(`select request_return($1,$2,'refund','Wrong size')`, [o2.order_id, itemId]), /exchanges only/);
+  await mustFail("return needs a reason", () => db.query(`select request_return($1,$2,'exchange','  ')`, [o2.order_id, itemId]), /reason/);
+  const ret = (await one<{ request_return: string }>(`select request_return($1,$2,'exchange','Wrong size')`, [o2.order_id, itemId]))[0].request_return;
+  ok("delivered order: exchange request created", !!ret);
+  await mustFail("duplicate return for the same item blocked", () => db.query(`select request_return($1,$2,'exchange','Again')`, [o2.order_id, itemId]), /already open/);
   await as("authenticated", otherOwner);
   await mustFail("unrelated seller cannot decide a return", () => db.query(`select decide_return($1,'approved')`, [ret]), /Not allowed/);
   await as("authenticated", selOwner);
   await db.query(`select decide_return($1,'approved')`, [ret]);
   await db.query(`select decide_return($1,'picked_up')`, [ret]);
-  await mustFail("only admin can issue the refund", () => db.query(`select decide_return($1,'refunded')`, [ret]), /not allowed from/);
+  await mustFail("only admin can complete the exchange", () => db.query(`select decide_return($1,'refunded')`, [ret]), /not allowed from/);
   await as("authenticated", admin);
   await db.query(`select decide_return($1,'refunded')`, [ret]);
-  ok("refund marks payment refunded", (await one<{ payment_status: string }>(`select payment_status from orders where id=$1`, [o2.order_id]))[0].payment_status === "refunded");
+  const after = (await one<{ payment_status: string; status: string }>(`select payment_status, status from orders where id=$1`, [o2.order_id]))[0];
+  ok("completing an exchange never refunds the payment and the order stays delivered", after.payment_status !== "refunded" && after.status === "delivered");
 
   // old delivery → return window closed
   await as("postgres");
@@ -310,7 +312,7 @@ async function main() {
   const it4 = (await one<{ id: string }>(`insert into order_items (order_id, product_id, seller_id, name, option_value, qty, price) values ($1,$2,$3,'Old',$4,1,500) returning id`, [o4, A.id, A.seller_id, A.v]))[0].id;
   await db.query(`insert into order_events (order_id, status, created_at) values ($1,'delivered', now() - interval '10 days')`, [o4]);
   await as("authenticated", shopper);
-  await mustFail("return after 7 days is refused", () => db.query(`select request_return($1,$2,'return','Late')`, [o4, it4]), /7-day/);
+  await mustFail("return after 7 days is refused", () => db.query(`select request_return($1,$2,'exchange','Late')`, [o4, it4]), /7-day/);
 
   // payouts + dashboards
   await as("authenticated", shopper);

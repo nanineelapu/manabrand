@@ -13,6 +13,7 @@ import { Price, Rating } from "@/components/ui/display";
 import { Sheet } from "@/components/ui/sheet";
 import { Field, Input } from "@/components/ui/form";
 import { toast, useCart } from "@/lib/stores";
+import { setBuyNow } from "@/lib/buy-now";
 import { cn, discountPct, formatINR } from "@/lib/utils";
 import type { Product } from "@/types";
 import { SizeChart } from "./size-chart";
@@ -105,8 +106,12 @@ export function BuyBox({ product, sellerName, sellerSlug }: { product: Product; 
       toast.error(`Please select a ${product.optionLabel.toLowerCase()}`);
       return;
     }
+    if (goCheckout) {   // Buy now: this one product only — the bag is not touched
+      setBuyNow({ productId: product.id, color: c.name, size, qty: 1 });
+      router.push("/checkout?buy=1");
+      return;
+    }
     add({ productId: product.id, color: c.name, size });
-    if (goCheckout) { router.push("/checkout"); return; }
     toast.success("Added to your bag", { label: "View bag", href: "/cart" });
   };
 

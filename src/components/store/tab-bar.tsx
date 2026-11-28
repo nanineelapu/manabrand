@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ChevronRight, Download, Heart, Home, LayoutGrid, ShoppingBag, User } from "lucide-react";
-import { useStoreData } from "@/components/store/store-data";
+import { useBagCount, useStoreData } from "@/components/store/store-data";
 import { priceCart } from "@/lib/cart";
 import { InstallSteps, useInstallApp } from "@/components/store/install-app";
 import { useCart, useWishlist } from "@/lib/stores";
@@ -30,7 +30,7 @@ export function MobileTabBar() {
   const pathname = usePathname();
   const mounted = useMounted();
   const lines = useCart((s) => s.lines);
-  const bag = lines.reduce((a, l) => a + l.qty, 0);
+  const bag = useBagCount();
   const { byId, coupons } = useStoreData();
   const wish = useWishlist((s) => s.ids.length);
   const app = useInstallApp();

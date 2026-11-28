@@ -16,12 +16,15 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ["shopping"],
     lang: "en-IN",
     icons: [
-      { src: "/favicon/android-chrome-192x192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/favicon/android-chrome-512x512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      // black-background versions of the logo: Android draws the launch screen from these on the black background_color,
+      // so it looks like the website's preloader (the old transparent icon had black lettering that vanished on black)
+      { src: "/pwa/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/pwa/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/pwa/maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
     shortcuts: [
-      { name: "Shop", url: "/shop", icons: [{ src: "/favicon/android-chrome-192x192.png", sizes: "192x192" }] },
-      { name: "My orders", url: "/account/orders", icons: [{ src: "/favicon/android-chrome-192x192.png", sizes: "192x192" }] },
+      { name: "Shop", url: "/shop", icons: [{ src: "/pwa/icon-192.png", sizes: "192x192" }] },
+      { name: "My orders", url: "/account/orders", icons: [{ src: "/pwa/icon-192.png", sizes: "192x192" }] },
     ],
   };
 }

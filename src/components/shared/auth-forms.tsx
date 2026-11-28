@@ -7,6 +7,7 @@ import { AlertCircle, Eye, EyeOff, Gift, Lock, Mail, ShieldCheck } from "lucide-
 import { Button } from "@/components/ui/button";
 import { Checkbox, Field, Input } from "@/components/ui/form";
 import { WelcomeWalletPopup } from "@/components/store/welcome-wallet-popup";
+import { WELCOME_CREDIT } from "@/lib/wallet";
 import { completeReset, loginStaff, loginWithPhonePin, registerCustomer, requestPinReset, type AuthResult } from "@/lib/auth/actions";
 import { emailError, nameError, passwordError, phoneError, pinError } from "@/lib/auth/validation";
 import { toast } from "@/lib/stores";
@@ -140,12 +141,12 @@ export function RegisterForm({ next }: { next?: string }) {
             const sep = res.redirectTo.includes("?") ? "&" : "?";
             const target = `${res.redirectTo}${sep}welcome_wallet=1`;
             try {
-              sessionStorage.setItem("mana_welcome_wallet", JSON.stringify({ name: v.name.trim(), amount: 500, next: res.redirectTo }));
+              sessionStorage.setItem("mana_welcome_wallet", JSON.stringify({ name: v.name.trim(), amount: WELCOME_CREDIT, next: res.redirectTo }));
               window.dispatchEvent(new Event("mana_welcome_wallet_updated"));
             } catch {
               // Ignore
             }
-            toast.success("Welcome to ManaBrand! ₹500 welcome credit added to your wallet 🎁");
+            toast.success(`Welcome to ManaBrand! ₹${WELCOME_CREDIT} welcome credit added to your wallet 🎁`);
             setWelcomeData({ open: true, name: v.name.trim(), target });
           } else {
             setError(res.error);
@@ -158,8 +159,8 @@ export function RegisterForm({ next }: { next?: string }) {
             <Gift className="size-5" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold">₹500 Welcome Bonus Gift</p>
-            <p className="text-xs opacity-90">Instant ₹500 added to your wallet to save on your orders above ₹999!</p>
+            <p className="text-sm font-semibold">₹{WELCOME_CREDIT} Welcome Bonus Gift</p>
+            <p className="text-xs opacity-90">Instant ₹{WELCOME_CREDIT} in your wallet — use ₹200 to ₹350 on each order of ₹999 or more.</p>
           </div>
         </div>
         <FormError message={error} />
@@ -184,7 +185,7 @@ export function RegisterForm({ next }: { next?: string }) {
       {welcomeData && (
         <WelcomeWalletPopup
           forceOpen
-          initialData={{ name: welcomeData.name, amount: 500, next: welcomeData.target }}
+          initialData={{ name: welcomeData.name, amount: WELCOME_CREDIT, next: welcomeData.target }}
           onDismiss={() => {
             router.replace(welcomeData.target);
             router.refresh();

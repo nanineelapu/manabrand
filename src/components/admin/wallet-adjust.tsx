@@ -7,7 +7,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { adjustWallet } from "@/lib/actions/manage";
 import { useAct } from "@/lib/actions/use-act";
 
-/** Admin: give a customer wallet credit (goodwill, refund for a cash order…) or take some back. */
+/** Admin: give a customer wallet credit (goodwill, a replacement gesture…) or take some back. */
 export function WalletAdjust({ userId, name }: { userId: string; name: string }) {
   const [open, setOpen] = useState(false);
   const [f, setF] = useState({ dir: "add", amount: "", note: "" });

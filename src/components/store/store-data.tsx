@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useMemo } from "react";
 import type { ProductColor, PhotoKind } from "@/types";
+import { useCart } from "@/lib/stores";
 
 /** Slim product shape shipped to the client for cart, wishlist, search. */
 export interface ProductLite {
@@ -23,4 +24,11 @@ export function useStoreData() {
   const c = useContext(StoreDataCtx);
   if (!c) throw new Error("useStoreData must be used inside <StoreDataProvider>");
   return c;
+}
+
+/** How many items in the bag can really be bought: the badge, the bag page and checkout all count the same lines. */
+export function useBagCount() {
+  const lines = useCart((s) => s.lines);
+  const { byId } = useStoreData();
+  return lines.reduce((a, l) => (byId.has(l.productId) ? a + l.qty : a), 0);
 }
