@@ -22,7 +22,7 @@ export function Toaster({ offsetBottom = false }: { offsetBottom?: boolean }) {
       {items.map((t) => {
         const Icon = icon[t.tone];
         return (
-          <div key={t.id} className="animate-toast pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-2xl bg-ink px-4 py-3 text-sm text-white shadow-pop">
+          <div key={t.id} className=" pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-2xl bg-ink px-4 py-3 text-sm text-white shadow-pop">
             <Icon className={cn("size-5 shrink-0", tint[t.tone])} />
             <span className="min-w-0 flex-1">{t.message}</span>
             {t.action && <Link href={t.action.href} className="shrink-0 font-semibold text-gold-400 underline-offset-2 hover:underline">{t.action.label}</Link>}

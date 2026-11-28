@@ -63,7 +63,7 @@ export function RegisterWizard() {
 
   if (done) return (
     <div className="container-page max-w-lg py-16 text-center">
-      <span className="mx-auto grid size-20 animate-pop-in place-items-center rounded-full bg-gold-100"><CheckCircle2 className="size-11 text-gold-500" /></span>
+      <span className="mx-auto grid size-20  place-items-center rounded-full bg-gold-100"><CheckCircle2 className="size-11 text-gold-500" /></span>
       <h1 className="mt-6 font-display text-4xl font-semibold">You’re on the list!</h1>
       <p className="mt-2 text-muted">Thanks, {v.owner.split(" ")[0]}. We’ll verify <b className="text-fg">{v.store}</b> within 24–48 hours and email you at {v.email}.</p>
       <ol className="mx-auto mt-8 max-w-sm space-y-3 text-left text-sm">

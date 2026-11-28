@@ -1,58 +1,25 @@
-interface CacheEntry<T> {
-  value: T;
-  expiresAt: number;
-}
-
-const memoryCache = new Map<string, CacheEntry<unknown>>();
-const pendingFetches = new Map<string, Promise<unknown>>();
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 
 /**
- * In-memory TTL cache with concurrent promise deduplication.
- * Eliminates redundant Supabase queries during navigation and layout prefetching.
- * It lives inside ONE server instance: on Vercel every instance has its own copy, so an admin edit clears the copy that
- * handled the edit straight away and the others catch up when their TTL (30–60 s) runs out. Public data only — never
- * put anything user-specific in here.
+ * Shared cache for PUBLIC catalogue reads (products, categories, banners, coupons, reviews…).
+ * It is Next's data cache, so every server instance on Vercel shares it — a visitor on a cold instance still gets a
+ * cached answer instead of waiting for Supabase. Never put anything user-specific in here (it is shared by everyone).
+ *
+ * `ttlMs` is how long an answer is trusted; an admin edit clears everything straight away (see clearDataCache).
  */
-export async function withMemoryCache<T>(key: string, ttlMs: number, fetcher: () => Promise<T>): Promise<T> {
-  const now = Date.now();
-  const existing = memoryCache.get(key);
-  if (existing && existing.expiresAt > now) {
-    return existing.value as T;
-  }
+const TAG = "mana-data";
 
-  // Deduplicate in-flight fetches so concurrent requests share 1 single database call
-  const pending = pendingFetches.get(key);
-  if (pending) {
-    return pending as Promise<T>;
-  }
-
-  const p = fetcher()
-    .then((val) => {
-      memoryCache.set(key, { value: val, expiresAt: Date.now() + ttlMs });
-      pendingFetches.delete(key);
-      return val;
-    })
-    .catch((err) => {
-      pendingFetches.delete(key);
-      throw err;
-    });
-
-  pendingFetches.set(key, p);
-  return p;
+export function cachedQuery<T>(key: string, ttlMs: number, fetcher: () => Promise<T>): Promise<T> {
+  return unstable_cache(fetcher, ["mana-data", key], { revalidate: Math.max(1, Math.round(ttlMs / 1000)), tags: [TAG] })();
 }
 
-/**
- * Invalidate cached items across the data layer.
- * Call this when content or products are mutated.
- */
-export function clearDataCache(keyPattern?: string) {
-  if (!keyPattern) {
-    memoryCache.clear();
-    return;
-  }
-  for (const k of memoryCache.keys()) {
-    if (k.includes(keyPattern)) {
-      memoryCache.delete(k);
-    }
-  }
+/** Call after content or products are changed: drops every cached query and every cached storefront page. */
+export function clearDataCache() {
+  revalidateTag(TAG, { expire: 0 });
+  revalidatePath("/", "layout");
+}
+
+/** A stable cache key for a query object (same fields in any order give the same key). */
+export function queryKey(o: object): string {
+  return JSON.stringify(Object.entries(o as Record<string, unknown>).filter(([, v]) => v !== undefined).sort(([a], [b]) => a.localeCompare(b)));
 }

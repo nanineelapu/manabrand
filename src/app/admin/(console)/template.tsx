@@ -1,4 +1,4 @@
-/** Re-mounts on every navigation, so each page fades up instead of snapping in. */
+/** Keeps per-section layouts isolated. No wrapping animation — the top route-progress bar is the loading signal. */
 export default function Template({ children }: { children: React.ReactNode }) {
-  return <div className="page-in">{children}</div>;
+  return children;
 }

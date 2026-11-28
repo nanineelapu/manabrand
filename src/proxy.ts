@@ -11,6 +11,14 @@ import { isSupabaseConfigured, supabaseAnonKey, supabaseUrl } from "@/lib/supaba
 export async function proxy(request: NextRequest) {
   if (!isSupabaseConfigured()) return NextResponse.next();
 
+  const path = request.nextUrl.pathname;
+  const inArea = (area: string) => path === area || path.startsWith(area + "/");
+  // pages that need a verified login (the guards below). Everything else is the public storefront.
+  const guarded = inArea("/admin") || inArea("/seller") || inArea("/account") || path === "/checkout" || path === "/reset-pin" || path === "/login" || path === "/register";
+  const hasLogin = request.cookies.getAll().some((c) => c.name.startsWith("sb-") && c.name.includes("-auth-token"));
+  // an anonymous visitor on a public page has nothing to check or refresh: skip Supabase completely (this is most traffic)
+  if (!guarded && !hasLogin) return NextResponse.next();
+
   let response = NextResponse.next({ request });
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookieOptions: SESSION_COOKIE_OPTIONS,
@@ -24,9 +32,12 @@ export async function proxy(request: NextRequest) {
     },
   });
 
+  // Guarded pages: verify the login with the Auth server (never trust the cookie alone).
+  // Public pages for a signed-in visitor: just renew the session if it is about to expire — getSession() reads the cookie
+  // and only calls the Auth server when the token actually needs refreshing, so browsing stays fast.
+  if (!guarded) { await supabase.auth.getSession(); return response; }
   const { data: { user } } = await supabase.auth.getUser();
   const role = user?.app_metadata?.role as string | undefined; // set only by our server
-  const path = request.nextUrl.pathname;
   const go = (to: string) => {
     const url = request.nextUrl.clone();
     url.pathname = to; url.search = "";
@@ -39,7 +50,6 @@ export async function proxy(request: NextRequest) {
 
   const staffPublic = ["/admin/login", "/seller/login", "/seller/register"];
   // exact-segment match: "/seller/..." is the seller portal, but "/sellers/<store>" is a PUBLIC storefront page
-  const inArea = (area: string) => path === area || path.startsWith(area + "/");
   if (inArea("/admin") && !staffPublic.includes(path) && role !== "admin") return go("/admin/login");
   if (inArea("/seller") && !staffPublic.includes(path) && role !== "seller") return go("/seller/login");
   if ((path.startsWith("/account") || path === "/checkout" || path === "/reset-pin") && !user) return go(path === "/reset-pin" ? "/forgot-password" : "/login");

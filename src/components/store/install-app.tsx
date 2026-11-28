@@ -118,7 +118,7 @@ export function InstallBanner() {
   if (help) return <InstallSteps onClose={() => { setHelp(false); close(); }} />;
 
   return (
-    <div role="region" aria-label="Install the app" data-round className="animate-pop-in fixed inset-x-3 bottom-[calc(var(--tabbar-h)+8px)] z-[55] mx-auto flex max-w-md items-center gap-3 rounded-3xl border border-black/10 bg-white p-3 pr-2 text-neutral-900 shadow-[0_12px_40px_rgba(0,0,0,0.14)] lg:inset-x-auto lg:bottom-6 lg:right-6 lg:w-[380px]">
+    <div role="region" aria-label="Install the app" data-round className=" fixed inset-x-3 bottom-[calc(var(--tabbar-h)+8px)] z-[55] mx-auto flex max-w-md items-center gap-3 rounded-3xl border border-black/10 bg-white p-3 pr-2 text-neutral-900 shadow-[0_12px_40px_rgba(0,0,0,0.14)] lg:inset-x-auto lg:bottom-6 lg:right-6 lg:w-[380px]">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/favicon/android-chrome-192x192.png" alt="" className="size-12 shrink-0 rounded-2xl bg-neutral-100 p-1 object-contain" />
       <div className="min-w-0 flex-1">

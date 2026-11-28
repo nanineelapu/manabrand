@@ -43,7 +43,7 @@ export function ProductCard({ product: p, className, priority, style }: { produc
 export function ProductRail({ products, className, cols = 4 }: { products: Product[]; className?: string; cols?: 3 | 4 | 5 }) {
   const lg = { 3: "lg:grid-cols-3", 4: "lg:grid-cols-4", 5: "lg:grid-cols-5" }[cols];
   return (
-    <div className={cn("stagger no-scrollbar snap-row -mx-4 flex gap-3 overflow-x-auto px-4 pb-1 md:mx-0 md:px-0 lg:grid lg:gap-5 lg:overflow-visible", lg, className)}>
+    <div className={cn(" no-scrollbar snap-row -mx-4 flex gap-3 overflow-x-auto px-4 pb-1 md:mx-0 md:px-0 lg:grid lg:gap-5 lg:overflow-visible", lg, className)}>
       {products.map((p, i) => <ProductCard key={p.id} product={p} style={{ "--i": i } as React.CSSProperties} className="w-[46vw] max-w-[230px] shrink-0 md:w-[30vw] lg:w-auto lg:max-w-none" />)}
     </div>
   );
@@ -51,7 +51,7 @@ export function ProductRail({ products, className, cols = 4 }: { products: Produ
 
 export function ProductGrid({ products, className }: { products: Product[]; className?: string }) {
   return (
-    <div className={cn("stagger grid grid-cols-2 gap-x-3 gap-y-6 md:grid-cols-3 md:gap-x-5 md:gap-y-8 xl:grid-cols-4", className)}>
+    <div className={cn(" grid grid-cols-2 gap-x-3 gap-y-6 md:grid-cols-3 md:gap-x-5 md:gap-y-8 xl:grid-cols-4", className)}>
       {products.map((p, i) => <div key={p.id} style={{ "--i": i } as React.CSSProperties}><ProductCard product={p} priority={i < 4} /></div>)}
     </div>
   );

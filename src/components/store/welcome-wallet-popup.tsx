@@ -135,7 +135,7 @@ function WelcomeWalletPopupInner({
       />
 
       {/* Celebration Modal Panel */}
-      <div className="animate-pop-in relative z-10 w-full max-w-md overflow-hidden rounded-[32px] border border-black/10 bg-white p-6 text-neutral-900 shadow-[0_24px_64px_rgba(0,0,0,0.22)] sm:p-8">
+      <div className=" relative z-10 w-full max-w-md overflow-hidden rounded-[32px] border border-black/10 bg-white p-6 text-neutral-900 shadow-[0_24px_64px_rgba(0,0,0,0.22)] sm:p-8">
         {/* Soft Pink Background Glow */}
         <div
           aria-hidden

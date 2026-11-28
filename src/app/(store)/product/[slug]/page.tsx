@@ -7,10 +7,10 @@ import { Breadcrumb, Rating, SectionHeader } from "@/components/ui/display";
 import { BuyBox, ProductGallery, ProductSelection } from "@/components/store/product-detail";
 import { ProductRail } from "@/components/store/product-card";
 import { ReviewsSection } from "@/components/store/reviews";
-import { getCategory, getProduct, getProductReviews, getRelated, getSellerById, queryProducts, ratingBreakdown } from "@/lib/data";
+import { getCategory, getProduct, getProductReviews, getPublicSellerById, getRelated, queryProducts, ratingBreakdown } from "@/lib/data";
 
 export async function generateStaticParams() {
-  return (await queryProducts({ pageSize: 500 })).items.map((p) => ({ slug: p.slug }));
+  try { return (await queryProducts({ pageSize: 500 })).items.map((p) => ({ slug: p.slug })); } catch { return []; }   // pages are then built on first visit
 }
 export async function generateMetadata({ params }: PageProps<"/product/[slug]">) {
   const p = await getProduct((await params).slug);
@@ -21,7 +21,7 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
   const product = await getProduct((await params).slug);
   if (!product) notFound();
   const [cat, seller, reviews, related, grouped] = await Promise.all([
-    getCategory(product.categorySlug), getSellerById(product.sellerId), getProductReviews(product.id), getRelated(product, 8),
+    getCategory(product.categorySlug), getPublicSellerById(product.sellerId), getProductReviews(product.id), getRelated(product, 8),
     groupOf(product.categorySlug) ? queryProducts({ group: groupOf(product.categorySlug)!, sort: "rating", pageSize: 40 }) : Promise.resolve(null),
   ]);
   // "Complete the look": one top-rated piece from each OTHER category in the same group (Men / Women)

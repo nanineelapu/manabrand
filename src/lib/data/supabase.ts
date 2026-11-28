@@ -12,7 +12,7 @@ import { mergePermissions } from "@/lib/permissions";
 import { createPublicClient } from "@/lib/supabase/public";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { analytics as mockAnalytics } from "@/lib/mock/ops";
-import { withMemoryCache } from "./cache";
+import { cachedQuery, queryKey } from "./cache";
 import { WELCOME_CREDIT } from "@/lib/wallet";
 import type {
   Address, AppNotification, Banner, Category, Collection, Coupon, Customer, Order, OrderStatus, Payout, Product,
@@ -109,17 +109,22 @@ function mapReview(r: any): Review {
 
 /* ================================================================ catalogue */
 export async function getSellerNames(): Promise<Record<string, string>> {
-  return withMemoryCache("seller_names", 60_000, async () => {
+  return cachedQuery("seller_names", 60_000, async () => {
     const rows = ok(await pub().from("sellers").select("id, name"), []) as any[];
     return Object.fromEntries(rows.map((s) => [s.id, s.name]));
   });
 }
 
 async function categoryId(slug: string) {
-  return (ok(await pub().from("categories").select("id").eq("slug", slug).maybeSingle()) as any)?.id as string | undefined;
+  const id = await cachedQuery(`catid:${slug}`, 300_000, async () => ((ok(await pub().from("categories").select("id").eq("slug", slug).maybeSingle()) as any)?.id ?? null) as string | null);
+  return id ?? undefined;
 }
 
-export async function queryProducts(qy: ProductQuery = {}) {
+/** Listings are cached for 30 s and shared by every server instance. Free-text searches are one-offs, so they are not cached. */
+export function queryProducts(qy: ProductQuery = {}) {
+  return qy.q ? queryProductsRaw(qy) : cachedQuery(`products:${queryKey(qy)}`, 30_000, () => queryProductsRaw(qy));
+}
+async function queryProductsRaw(qy: ProductQuery = {}) {
   const db = pub();
   // ---- narrow by id sets (collection / sizes / colours / explicit ids)
   let idSet: string[] | null = qy.ids ? [...qy.ids] : null;
@@ -199,7 +204,7 @@ export async function queryProducts(qy: ProductQuery = {}) {
 }
 
 export async function getCategories(): Promise<Category[]> {
-  return withMemoryCache("categories", 60_000, async () => {
+  return cachedQuery("categories", 60_000, async () => {
     const db = pub();
     const [cats, counts] = await Promise.all([
       db.from("categories").select("*").order("sort"),
@@ -213,7 +218,7 @@ export async function getCategories(): Promise<Category[]> {
 export const getCategory = async (slug: string) => (await getCategories()).find((c) => c.slug === slug);
 
 export async function getSubcategoryMap(): Promise<Record<string, string[]>> {
-  return withMemoryCache("subcategory_map", 60_000, async () => {
+  return cachedQuery("subcategory_map", 60_000, async () => {
     const rows = ok(await pub().from("subcategories").select("name, sort, categories(slug)").order("sort"), []) as any[];
     const out: Record<string, string[]> = {};
     rows.forEach((r) => { if (!HIDDEN_CATEGORY_SLUGS.has(r.categories.slug)) (out[r.categories.slug] ??= []).push(r.name); });
@@ -223,8 +228,11 @@ export async function getSubcategoryMap(): Promise<Record<string, string[]>> {
 export const getSubcategories = async (slug: string) => (await getSubcategoryMap())[slug] ?? [];
 
 export async function getProduct(slug: string) {
-  const r = ok(await pub().from("products").select(PRODUCT_SELECT).eq("slug", slug).maybeSingle());
-  return r ? mapProduct(r) : undefined;
+  const p = await cachedQuery(`product:${slug}`, 30_000, async () => {
+    const r = ok(await pub().from("products").select(PRODUCT_SELECT).eq("slug", slug).maybeSingle());
+    return r ? mapProduct(r) : null;
+  });
+  return p ?? undefined;
 }
 /** Session-aware: sellers/admins can open products that are still drafts or in review. */
 export async function getProductById(id: string) {
@@ -240,17 +248,19 @@ const listBy = async (col: string, asc: boolean, n: number, extra?: (q: any) => 
   if (extra) q = extra(q);
   return (ok(await q.order(col, { ascending: asc }).limit(n), []) as any[]).map(mapProduct);
 };
-export const getNewArrivals = (n = 8) => withMemoryCache(`new_arrivals_${n}`, 30_000, () => listBy("created_at", false, n, (q) => q.contains("badges", ["new"])));
-export const getTrending = (n = 8) => withMemoryCache(`trending_${n}`, 30_000, () => listBy("sold_count", false, n));
-export const getOnSale = (n = 8) => withMemoryCache(`on_sale_${n}`, 30_000, () => listBy("discount_pct", false, n));
+export const getNewArrivals = (n = 8) => cachedQuery(`new_arrivals_${n}`, 30_000, () => listBy("created_at", false, n, (q) => q.contains("badges", ["new"])));
+export const getTrending = (n = 8) => cachedQuery(`trending_${n}`, 30_000, () => listBy("sold_count", false, n));
+export const getOnSale = (n = 8) => cachedQuery(`on_sale_${n}`, 30_000, () => listBy("discount_pct", false, n));
 export async function getRelated(p: Product, n = 8) {
-  const catId = await categoryId(p.categorySlug);
-  if (!catId) return [];
-  return listBy("sold_count", false, n, (q) => q.eq("category_id", catId).neq("id", p.id));
+  return cachedQuery(`related:${p.id}:${n}`, 60_000, async () => {
+    const catId = await categoryId(p.categorySlug);
+    if (!catId) return [];
+    return listBy("sold_count", false, n, (q) => q.eq("category_id", catId).neq("id", p.id));
+  });
 }
 
 export async function getCollections(): Promise<Collection[]> {
-  return withMemoryCache("collections", 60_000, async () => {
+  return cachedQuery("collections", 60_000, async () => {
     const rows = ok(await pub().from("collections").select("*, collection_products(product_id, sort)").order("sort"), []) as any[];
     return rows.map((c) => ({ id: c.id, slug: c.slug, name: c.name, story: c.story, tone: ["#e4ebf3", "#2a5db0"] as [string, string], photo: c.photo_kind as PhotoKind,
       productIds: [...(c.collection_products ?? [])].sort(byOrder).map((x: any) => x.product_id) }));
@@ -283,21 +293,33 @@ export async function getSellerBySlug(slug: string) {
   const r = ok(await pub().from("sellers").select("*").eq("slug", slug).maybeSingle()) as any;
   return r ? mapSeller(r, (await sellerStats([r.id]))(r.id)) : undefined;
 }
+/** Storefront: a seller card for the product page. Cached and shared (it does not depend on who is asking). */
+export async function getPublicSellerById(id: string) {
+  const s = await cachedQuery(`seller:${id}`, 60_000, async () => {
+    const r = ok(await pub().from("sellers").select("*").eq("id", id).maybeSingle()) as any;
+    return r ? mapSeller(r, (await sellerStats([r.id]))(r.id)) : null;
+  });
+  return s ?? undefined;
+}
+/** Admin / seller screens: as the signed-in user sees it (never cached). */
 export async function getSellerById(id: string) {
   const r = ok(await (await sb()).from("sellers").select("*").eq("id", id).maybeSingle()) as any;
   return r ? mapSeller(r, (await sellerStats([r.id]))(r.id)) : undefined;
 }
 
 export async function getProductReviews(productId: string) {
-  return (ok(await pub().from("reviews").select("*").eq("product_id", productId).eq("status", "published").order("created_at", { ascending: false }), []) as any[]).map(mapReview);
+  return cachedQuery(`reviews:${productId}`, 60_000, async () =>
+    (ok(await pub().from("reviews").select("*").eq("product_id", productId).eq("status", "published").order("created_at", { ascending: false }), []) as any[]).map(mapReview));
 }
 export async function ratingBreakdown(productId: string) {
-  const rows = ok(await pub().from("reviews").select("rating").eq("product_id", productId).eq("status", "published"), []) as any[];
-  return [5, 4, 3, 2, 1].map((star) => ({ star, count: rows.filter((r) => r.rating === star).length }));
+  return cachedQuery(`rating:${productId}`, 60_000, async () => {
+    const rows = ok(await pub().from("reviews").select("rating").eq("product_id", productId).eq("status", "published"), []) as any[];
+    return [5, 4, 3, 2, 1].map((star) => ({ star, count: rows.filter((r) => r.rating === star).length }));
+  });
 }
 
 export async function getHomeBanners() {
-  return withMemoryCache("home_banners", 60_000, async () => {
+  return cachedQuery("home_banners", 60_000, async () => {
     return (ok(await pub().from("banners").select("*").eq("placement", "home-hero").order("starts_on"), []) as any[]).map(mapBanner);
   });
 }
@@ -312,7 +334,7 @@ export async function getCoupon(code: string) {
 export const getTrendingSearches = async () => ["Silk saree", "Kurta", "Oversized tee", "Cargo pants", "Lehenga", "Mom jeans"];
 
 export async function getStoreProductsLite() {
-  return withMemoryCache("store_products_lite", 60_000, async () => {
+  return cachedQuery("store_products_lite", 60_000, async () => {
     const db = pub();
     const rows = ok(
       await db
@@ -469,10 +491,14 @@ export async function getAllPayouts() {
 export async function getAllReturns() {
   return (ok(await (await sb()).from("returns").select(RETURN_SELECT).order("created_at", { ascending: false }), []) as any[]).map(mapReturn);
 }
+/** Admin: every coupon, as the signed-in admin sees it (never cached — it depends on who is asking). */
 export async function getAllCoupons() {
-  return withMemoryCache("all_coupons", 30_000, async () => {
-    return (ok(await (await sb()).from("coupons").select("*").order("created_at", { ascending: false }), []) as any[]).map(mapCoupon);
-  });
+  return (ok(await (await sb()).from("coupons").select("*").order("created_at", { ascending: false }), []) as any[]).map(mapCoupon);
+}
+/** Storefront: the coupons any visitor may see. Cached and shared, because it does not depend on who is asking. */
+export async function getPublicCoupons() {
+  return cachedQuery("public_coupons", 30_000, async () =>
+    (ok(await pub().from("coupons").select("*").order("created_at", { ascending: false }), []) as any[]).map(mapCoupon));
 }
 export async function getAllBanners() {
   return (ok(await (await sb()).from("banners").select("*").order("starts_on", { ascending: false }), []) as any[]).map(mapBanner);
@@ -670,7 +696,7 @@ export async function getAddressesForCustomer(userId: string): Promise<Address[]
     .map((a) => ({ id: a.id, label: a.label, name: a.name, phone: a.phone, line1: a.line1, line2: a.line2 ?? undefined, city: a.city, state: a.state, pincode: a.pincode, isDefault: a.is_default }));
 }
 export async function getDealBox() {
-  return withMemoryCache("dealbox", 60_000, async () => {
+  return cachedQuery("dealbox", 60_000, async () => {
     const row = ok(await pub().from("settings").select("value").eq("key", "dealbox").maybeSingle()) as { value: Record<string, unknown> } | null;
     return normalizeDealBox(row?.value as never);
   });

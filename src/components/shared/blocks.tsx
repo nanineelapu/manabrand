@@ -33,7 +33,7 @@ export function StatCard({
 }) {
   const up = (delta ?? 0) >= 0;
   return (
-    <div className={cn("lift rounded-card border border-line bg-card p-4 shadow-card md:p-5", tone === "accent" && "bg-accent-soft", className)}>
+    <div className={cn(" rounded-card border border-line bg-card p-4 shadow-card md:p-5", tone === "accent" && "bg-accent-soft", className)}>
       <div className="flex items-center justify-between gap-2">
         <p className="text-[13px] font-medium text-muted">{label}</p>
         {icon && <span className="grid size-8 place-items-center rounded-full bg-bg-subtle text-muted [&>svg]:size-4">{icon}</span>}

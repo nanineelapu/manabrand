@@ -202,7 +202,7 @@ export function ForgotForm({ backHref = "/login", expired, staff }: { backHref?:
   const [sent, setSent] = useState(false); const [pending, start] = useTransition();
 
   if (sent) return (
-    <div className="animate-fade-in border border-line bg-card p-6 text-center shadow-card">
+    <div className=" border border-line bg-card p-6 text-center shadow-card">
       <span className="mx-auto grid size-14 place-items-center bg-success-bg"><ShieldCheck className="size-7 text-success" /></span>
       <h2 className="mt-4 text-lg font-semibold">Check your inbox</h2>
       <p className="mt-1 text-sm text-muted">If an account uses <b className="text-fg">{email}</b>, we’ve sent a link to {staff ? "reset your password" : "set a new PIN"}. It expires soon.</p>

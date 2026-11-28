@@ -383,57 +383,16 @@ details[open] > summary .chev { transform: rotate(180deg); }
 
 /* rect */
 
-/* ===================================================================== motion */
-@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-@keyframes page-in { from { opacity: 0.85; } to { opacity: 1; } }
-@keyframes drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-
-/* route change: smooth instantaneous transition without layout shift or jitter */
-.page-in { animation: page-in 0.14s ease-out backwards; }
-
-/* scroll reveal — <Reveal/> toggles data-reveal once the block is on screen */
-.reveal { transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
-.reveal[data-reveal="out"] { opacity: 0; transform: translateY(22px); }
-.reveal[data-reveal="in"] { opacity: 1; transform: none; }
-
-/* staggered entrance for grids / lists: children get style="--i:n" */
-.stagger > * { animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards; animation-delay: calc(min(var(--i, 0), 11) * 55ms); }
-
-/* hover lift for cards (pointer devices only, so touch never gets "stuck" hover) */
+/* ===================================================================== motion (minimal) */
+/* Decorative animations are off across the site. Only two niceties remain: a subtle card hover on pointer devices, and a press squish. */
 @media (hover: hover) {
-  .lift { transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s; }
-  .lift:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgb(0 0 0 / 0.12); }
+  .lift { transition: transform 0.2s ease-out, box-shadow 0.2s ease-out; }
+  .lift:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgb(0 0 0 / 0.1); }
 }
-.press { transition: transform 0.15s; }
+.press { transition: transform 0.12s; }
 .press:active { transform: scale(0.97); }
-
-/* keyboard / focus polish */
 :focus-visible { outline: 2px solid var(--ring, currentColor); outline-offset: 2px; }
-
-@media (prefers-reduced-motion: reduce) {
-  .reveal[data-reveal="out"] { opacity: 1; transform: none; }
-  .page-in, .stagger > * { animation: none !important; }
-  .lift:hover { transform: none; }
-}
-
-/* hero photo: slow "Ken Burns" push-in */
-@keyframes hero-zoom { from { transform: scale(1.02); } to { transform: scale(1.12); } }
-.hero-zoom { animation: hero-zoom 22s ease-out both; }
-@media (prefers-reduced-motion: reduce) { .hero-zoom { animation: none; } }
-
-/* hero thumbnail progress: fills over the autoplay interval (matches AUTOPLAY_MS in hero.tsx) */
-@keyframes hero-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-.hero-progress { animation: hero-progress 7s linear forwards; }
-@media (prefers-reduced-motion: reduce) { .hero-progress { animation: none; transform: scaleX(1); } }
-
-/* hero 3D logo levitation */
-@keyframes hero-logo-levitate {
-  0% { transform: translateY(0px) rotate(0deg) scale(1); }
-  50% { transform: translateY(-14px) rotate(1.2deg) scale(1.02); }
-  100% { transform: translateY(6px) rotate(-1deg) scale(0.99); }
-}
-.hero-logo-levitate { animation: hero-logo-levitate 5.5s ease-in-out infinite alternate; }
-@media (prefers-reduced-motion: reduce) { .hero-logo-levitate { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .lift:hover { transform: none; } }
 
 /* ============================================================== preloader (first visit per session) */
 #preloader { position: fixed; inset: 0; z-index: 200; color: #fff; background: #000; animation: pl-failsafe 0.01s 5s forwards; }
@@ -517,27 +476,6 @@ html[data-preloaded] #preloader { display: none; }  /* repeat visit: set by the 
 /* rebuild 1794749227 */
 /* rebuild 1794750769 */
 /* rebuild 1794755257 */
-
-/* ============================================ hero slide 1 — brand stage (hero-brand-flow.tsx) */
-.hbf-plane { perspective: 1100px; }
-.hbf-plane-inner { position: absolute; inset: -30% -20%; display: flex; flex-direction: column; justify-content: center; gap: 2.2rem; transform: rotateX(58deg) rotateZ(-24deg) scale(1.5); transform-style: preserve-3d; }
-.hbf-row { display: flex; gap: 3.5rem; width: max-content; will-change: transform; }
-.hbf-row-a { animation: hbf-flow-a linear infinite; }
-.hbf-row-b { animation: hbf-flow-b linear infinite; }
-@keyframes hbf-flow-a { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-@keyframes hbf-flow-b { from { transform: translateX(-50%); } to { transform: translateX(0); } }
-
-.hbf-tilt { transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 0.35s ease-out; transform-style: preserve-3d; }
-.hbf-ring { background: conic-gradient(from 0deg, transparent 0 62%, rgba(255, 95, 176, 0.95) 84%, transparent 100%); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px)); animation: hbf-spin 9s linear infinite; }
-.hbf-orbit { animation: hbf-spin linear infinite; }
-@keyframes hbf-spin { to { transform: rotate(360deg); } }
-.hbf-float { animation: hbf-float 7s ease-in-out infinite; }
-@keyframes hbf-float { 0%, 100% { transform: translateY(0) rotateY(-7deg); } 50% { transform: translateY(-14px) rotateY(7deg); } }
-
-@media (prefers-reduced-motion: reduce) {
-  .hbf-row, .hbf-ring, .hbf-orbit, .hbf-float { animation: none; }
-  .hbf-tilt { transition: none; }
-}
 
 /* Hide the browser's scrollbars across the whole site (scrolling itself still works with wheel, touch and keyboard). */
 html, body, * { scrollbar-width: none; -ms-overflow-style: none; }

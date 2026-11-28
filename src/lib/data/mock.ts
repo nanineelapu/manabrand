@@ -95,6 +95,7 @@ export const getCollection = async (slug: string) => collections.find((c) => c.s
 export const getActiveSellers = async () => sellers.filter((s) => s.status === "active");
 export const getSellerBySlug = async (slug: string) => sellers.find((s) => s.slug === slug);
 export const getSellerById = async (id: string) => sellerById(id);
+export const getPublicSellerById = getSellerById;
 export const getProductReviews = async (productId: string) => reviews.filter((r) => r.productId === productId && r.status === "published");
 export const getHomeBanners = async () => banners.filter((b) => b.placement === "home-hero" && b.status === "live");
 export const getStripBanner = async () => banners.find((b) => b.placement === "home-strip" && b.status === "live");
@@ -142,6 +143,7 @@ export const getAllProducts = async () => products;
 export const getAllPayouts = async () => payouts;
 export const getAllReturns = async () => returns;
 export const getAllCoupons = async () => coupons;
+export const getPublicCoupons = async () => coupons;
 export const getAllBanners = async () => banners;
 export const getAllReviews = async () => reviews;
 export const getAnalytics = async () => analytics;

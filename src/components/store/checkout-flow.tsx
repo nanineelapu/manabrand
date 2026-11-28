@@ -254,10 +254,10 @@ function CheckoutSteps({ addresses: initial, onlinePayments = true, gateway = fa
                     <div className="flex items-center gap-3"><span className="text-muted">{o.icon}</span><span><span className="block text-sm font-semibold">{o.label}</span><span className="block text-xs text-muted">{o.sub}</span></span></div>
                   </Radio>
                   {!gateway && pay === o.id && o.id === "upi" && (
-                    <div className="animate-fade-in mt-2 rounded-2xl bg-bg-subtle p-4"><Field label="UPI ID" htmlFor="vpa" error={errs.vpa}><Input id="vpa" autoCapitalize="none" placeholder="yourname@okhdfc" value={f.vpa} onChange={(e) => setField("vpa", e.target.value)} invalid={!!errs.vpa} /></Field></div>
+                    <div className=" mt-2 rounded-2xl bg-bg-subtle p-4"><Field label="UPI ID" htmlFor="vpa" error={errs.vpa}><Input id="vpa" autoCapitalize="none" placeholder="yourname@okhdfc" value={f.vpa} onChange={(e) => setField("vpa", e.target.value)} invalid={!!errs.vpa} /></Field></div>
                   )}
                   {!gateway && pay === o.id && o.id === "card" && (
-                    <div className="animate-fade-in mt-2 space-y-3.5 rounded-2xl bg-bg-subtle p-4">
+                    <div className=" mt-2 space-y-3.5 rounded-2xl bg-bg-subtle p-4">
                       <Field label="Card number" htmlFor="cc" error={errs.card}><Input id="cc" inputMode="numeric" autoComplete="cc-number" placeholder="1234 5678 9012 3456" maxLength={19} value={f.card} onChange={(e) => setField("card", e.target.value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim())} invalid={!!errs.card} /></Field>
                       <Field label="Name on card" htmlFor="cn" error={errs.name}><Input id="cn" autoComplete="cc-name" value={f.name} onChange={(e) => setField("name", e.target.value)} invalid={!!errs.name} /></Field>
                       <div className="grid grid-cols-2 gap-3">
@@ -267,7 +267,7 @@ function CheckoutSteps({ addresses: initial, onlinePayments = true, gateway = fa
                     </div>
                   )}
                   {!gateway && pay === o.id && o.id === "netbanking" && (
-                    <div className="animate-fade-in mt-2 rounded-2xl bg-bg-subtle p-4"><Field label="Choose your bank" htmlFor="bk" error={errs.bank}><Select id="bk" value={f.bank} onChange={(e) => setField("bank", e.target.value)} invalid={!!errs.bank}><option value="">Select bank</option>{["HDFC Bank", "ICICI Bank", "State Bank of India", "Axis Bank", "Kotak Mahindra Bank"].map((b) => <option key={b}>{b}</option>)}</Select></Field></div>
+                    <div className=" mt-2 rounded-2xl bg-bg-subtle p-4"><Field label="Choose your bank" htmlFor="bk" error={errs.bank}><Select id="bk" value={f.bank} onChange={(e) => setField("bank", e.target.value)} invalid={!!errs.bank}><option value="">Select bank</option>{["HDFC Bank", "ICICI Bank", "State Bank of India", "Axis Bank", "Kotak Mahindra Bank"].map((b) => <option key={b}>{b}</option>)}</Select></Field></div>
                   )}
                 </div>
               ))}

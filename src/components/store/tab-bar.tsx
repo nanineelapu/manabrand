@@ -47,7 +47,7 @@ export function MobileTabBar() {
     {/* "bag" indicator above the tab bar — compact white capsule theme */}
     {mounted && bag > 0 && (
       <Link key={bag} href="/cart" aria-label={`View bag, ${bag} ${bag === 1 ? "item" : "items"}, ${formatINR(subtotal)}`} data-round
-        className="animate-pop-in fixed bottom-[calc(max(0.35rem,env(safe-area-inset-bottom))+4.2rem)] left-3 right-3 z-40 mx-auto flex max-w-[340px] items-center gap-2.5 rounded-full border border-black/10 bg-white/95 py-2 pl-2 pr-4 text-neutral-900 shadow-[0_8px_24px_rgba(0,0,0,0.12)] backdrop-blur-xl sm:right-16 sm:max-w-sm lg:hidden">
+        className=" fixed bottom-[calc(max(0.35rem,env(safe-area-inset-bottom))+4.2rem)] left-3 right-3 z-40 mx-auto flex max-w-[340px] items-center gap-2.5 rounded-full border border-black/10 bg-white/95 py-2 pl-2 pr-4 text-neutral-900 shadow-[0_8px_24px_rgba(0,0,0,0.12)] backdrop-blur-xl sm:right-16 sm:max-w-sm lg:hidden">
         <span className="relative grid size-8.5 shrink-0 place-items-center rounded-full bg-accent-soft text-accent">
           <ShoppingBag className="size-4.5" />
           <span className="absolute -right-1 -top-1 grid min-w-[16px] place-items-center rounded-full bg-accent px-1 text-[9px] font-bold leading-[16px] text-white tabular">{bag}</span>
@@ -63,7 +63,7 @@ export function MobileTabBar() {
       <ul className="relative mx-auto grid h-[60px] max-w-md grid-cols-5 rounded-[32px] border border-white/70 bg-white/60 p-1 backdrop-blur-3xl backdrop-saturate-[2] [box-shadow:inset_0_1px_0_rgb(255_255_255/0.9),inset_0_-1px_0_rgb(255_255_255/0.25),0_0_0_0.5px_rgb(0_0_0/0.08)]">
         {/* the sliding glass pill behind the active tab */}
         <span aria-hidden
-          className={cn("tab-pill pointer-events-none absolute bottom-1 left-1 top-1 w-[calc((100%-0.5rem)/5)] rounded-[26px] transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.3,1.25,0.5,1)]", current < 0 && "opacity-0")}
+          className={cn(" pointer-events-none absolute bottom-1 left-1 top-1 w-[calc((100%-0.5rem)/5)] rounded-[26px] transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.3,1.25,0.5,1)]", current < 0 && "opacity-0")}
           style={{ transform: `translateX(${Math.max(current, 0) * 100}%)` }} />
         {tabs.map(({ href, label, icon: Icon, match }) => {
           if (label === "Bag" && showInstall) {

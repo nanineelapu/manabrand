@@ -38,7 +38,7 @@ export function Preloader() {
 
     const html = document.documentElement;
     html.style.overflow = "hidden";
-    window.__lenis?.stop();
+    
 
     const hero = document.querySelector<HTMLImageElement>("section[aria-label='Featured'] img");
     const heroReady = new Promise<void>((resolve) => {
@@ -76,7 +76,7 @@ export function Preloader() {
             sessionStorage.setItem("mb_preloaded", "true");
             document.documentElement.setAttribute("data-preloaded", "true");
           } catch {}
-          window.__lenis?.start();
+          
           timers.push(setTimeout(() => setPhase("gone"), EXIT_MS));
         }, FLASH_MS));
         return;

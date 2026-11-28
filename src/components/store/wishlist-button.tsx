@@ -29,7 +29,7 @@ export function WishlistButton({
         className,
       )}
     >
-      <Heart key={String(on)} className={cn("size-[18px]", on ? "animate-heart fill-accent text-accent" : "text-fg")} />
+      <Heart key={String(on)} className={cn("size-[18px]", on ? " fill-accent text-accent" : "text-fg")} />
       {label && <span>{on ? "Wishlisted" : label}</span>}
     </button>
   );

@@ -57,24 +57,11 @@ export function Sheet({
     lastFocus.current = document.activeElement as HTMLElement | null;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    const lenis = (window as { __lenis?: { stop: () => void; start: () => void } }).__lenis;
-    lenis?.stop();
-    const el = ref.current;
-    el?.focus();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { e.stopPropagation(); onClose(); return; }
-      if (e.key !== "Tab" || !el) return;
-      const f = el.querySelectorAll<HTMLElement>('a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])');
-      if (!f.length) return;
-      const first = f[0], last = f[f.length - 1];
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
-      lenis?.start();
+      document.removeEventListener("keydown", onKey);
       lastFocus.current?.focus?.();
     };
   }, [open, onClose]);

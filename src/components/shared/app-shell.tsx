@@ -152,7 +152,7 @@ export function AppShell({ cfg, notifications, children }: { cfg: ShellConfig; n
             </IconButton>
             <details className="group relative">
               <summary className="flex cursor-pointer items-center gap-2 rounded-full p-1 pr-1 hover:bg-bg-subtle lg:pr-3"><Avatar name={cfg.user.name} size={34} /><span className="hidden text-left leading-tight lg:block"><span className="block text-[13px] font-semibold">{cfg.user.name}</span><span className="block text-[11px] text-muted">{cfg.user.role}</span></span></summary>
-              <div className="animate-pop-in absolute right-0 top-full z-40 mt-2 w-56 rounded-card border border-line bg-panel p-1.5 shadow-pop">
+              <div className=" absolute right-0 top-full z-40 mt-2 w-56 rounded-card border border-line bg-panel p-1.5 shadow-pop">
                 <Link href={`${cfg.base}/${cfg.surface === "admin" ? "settings" : "profile"}`} className="flex h-10 items-center gap-2.5 rounded-lg px-3 text-sm hover:bg-bg-subtle"><Settings className="size-4" /> {cfg.surface === "admin" ? "Settings" : "Store profile"}</Link>
                 <SignOutButton area={cfg.surface} className="flex h-10 w-full items-center gap-2.5 px-3 text-sm text-danger hover:bg-danger-bg"><LogOut className="size-4" /> Sign out</SignOutButton>
               </div>

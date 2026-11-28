@@ -15,10 +15,12 @@ export function ProductImage({
   /** An uploaded photo URL; when present it wins over the stock photo set. */
   src?: string;
 }) {
+  // an uploaded photo is resized by Next (phone-sized instead of the full camera original); stock photos are already sized by their URL
+  const optimisable = !!src && /^https:\/\/([^/]+\.supabase\.co|cdn\.sanity\.io)\//.test(src);
   return (
     <span className={cn("relative block size-full overflow-hidden bg-bg-subtle", rounded && "rounded-[inherit]", className)}>
       <Image
-        src={src || photoUrl(photo, { seed, variant: color, view, w, h })} alt={title ?? ""} fill sizes={sizes} unoptimized priority={priority}
+        src={src || photoUrl(photo, { seed, variant: color, view, w, h })} alt={title ?? ""} fill sizes={sizes} unoptimized={!optimisable} priority={priority}
         className="object-cover" aria-hidden={title ? undefined : true}
       />
     </span>

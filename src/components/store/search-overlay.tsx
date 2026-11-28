@@ -43,7 +43,7 @@ export function SearchOverlay({ trending }: { trending: string[] }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[80] animate-fade-in bg-bg" role="dialog" aria-modal="true" aria-label="Search">
+    <div className="fixed inset-0 z-[80]  bg-bg" role="dialog" aria-modal="true" aria-label="Search">
       <div className="mx-auto flex h-full max-w-2xl flex-col">
         <form onSubmit={(e) => { e.preventDefault(); go(q); }} className="flex items-center gap-2 border-b border-line px-4 py-3">
           <div className="relative flex-1">

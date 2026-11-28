@@ -58,7 +58,7 @@ export function InventoryEditor({ products }: { products: Product[] }) {
       </ul>
 
       {dirty && (
-        <div className="animate-pop-in sticky bottom-[calc(var(--tabbar-h)+10px+env(safe-area-inset-bottom))] z-10 mt-4 flex items-center gap-3 rounded-card border border-line bg-card p-3 shadow-pop lg:bottom-4">
+        <div className=" sticky bottom-[calc(var(--tabbar-h)+10px+env(safe-area-inset-bottom))] z-10 mt-4 flex items-center gap-3 rounded-card border border-line bg-card p-3 shadow-pop lg:bottom-4">
           <p className="mr-auto pl-2 text-sm font-medium">You have unsaved stock changes</p>
           <Button variant="outline" onClick={() => setStock(Object.fromEntries(Object.entries(base).map(([k, v]) => [k, { ...v }])))}>Discard</Button>
           <Button loading={busy} onClick={() => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import { loadShopperState, saveCart, saveWishlist } from "@/lib/actions/store";
 import { lineKey, useCart, useWishlist } from "@/lib/stores";
 
@@ -8,7 +8,12 @@ import { lineKey, useCart, useWishlist } from "@/lib/stores";
  * Signed-in shoppers: merge the on-device bag/wishlist with the saved one once, then keep the database copy
  * up to date (debounced). Signed-out shoppers keep using localStorage only.
  */
-export function ShopperSync({ signedIn }: { signedIn: boolean }) {
+/** Is there a login cookie in this browser? (Only a hint to start syncing — the server actions check the real session.) */
+const hasLoginCookie = () => /(?:^|;\s*)sb-[^=]*-auth-token/.test(document.cookie);
+const noSubscribe = () => () => {};
+
+export function ShopperSync() {
+  const signedIn = useSyncExternalStore(noSubscribe, hasLoginCookie, () => false);
   const lines = useCart((s) => s.lines);
   const coupon = useCart((s) => s.coupon);
   const wishlist = useWishlist((s) => s.ids);
